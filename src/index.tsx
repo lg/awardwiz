@@ -2,18 +2,32 @@ import * as React from "react"
 import * as ReactDOM from "react-dom"
 import "./index.css"
 
-class NearbyAirports extends React.Component<{}, {airportCode: string}> {
+class NearbyAirports extends React.Component<{}, { airportCode: string }> {
   state = { airportCode: "SFO" }
 
   render() {
     return (
       <div>
-        Airport:
-        <input
-          type="text"
-          value={this.state.airportCode}
-          onChange={(event) => this.setState({ airportCode: event.target.value })}
-        />
+        <form onSubmit={(e) => {
+          e.preventDefault()
+          // eslint-disable-next-line
+          window.alert(this.state.airportCode)
+        }}>
+          <label>
+            Airport:
+            <input
+              type="text"
+              value={this.state.airportCode}
+              onChange={(e) => this.setState({ airportCode: e.target.value })}
+            />
+          </label>
+          <input type="submit" value="Lookup" />
+        </form>
+        <ul>
+          <li>abc</li>
+          <li>def</li>
+          <li>ghi</li>
+        </ul>
       </div>
     )
   }

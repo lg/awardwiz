@@ -5,6 +5,7 @@
     "module": "esnext",
     "target": "esnext",
     "strict": true,
+    "moduleResolution": "node",
 
     "noImplicitAny": true
   },
