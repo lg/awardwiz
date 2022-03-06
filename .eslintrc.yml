@@ -1,0 +1,33 @@
+env:
+  browser: true
+  es2022: true
+extends:
+  - plugin:react/recommended
+  - airbnb
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: latest
+  sourceType: module
+plugins:
+  - react
+  - '@typescript-eslint'
+rules:
+  quotes: ["error", "double"]
+  semi: ["error", "never", {"beforeStatementContinuationChars": "always"}]
+  max-len: off
+  no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]
+  no-use-before-define: off
+  no-undef: off # because of JSX
+  max-classes-per-file: off
+  comma-dangle: off
+  no-multiple-empty-lines: off
+  nonblock-statement-body-position: off # allows for if without {}
+  curly: off
+
+  react/jsx-one-expression-per-line: off
+  react/state-in-constructor: off
+  react/button-has-type: off # really dont think this is necessary
+  react/destructuring-assignment: off
+  react/jsx-filename-extension: ["error", {'extensions': ['.ts', '.tsx']}]
