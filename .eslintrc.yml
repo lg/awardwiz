@@ -31,3 +31,9 @@ rules:
   react/button-has-type: off # really dont think this is necessary
   react/destructuring-assignment: off
   react/jsx-filename-extension: ["error", {'extensions': ['.ts', '.tsx']}]
+  react/function-component-definition: ["error", {"namedComponents": "arrow-function"}]
+  react/require-default-props: off
+
+  # these should be on before commiting
+  react/prefer-stateless-function: off
+

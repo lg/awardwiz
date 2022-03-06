@@ -4,7 +4,9 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "target": "esnext",
-    "strict": true
+    "strict": true,
+
+    "noImplicitAny": true
   },
   "exclude": [
     "node_modules",
