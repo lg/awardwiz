@@ -53,22 +53,18 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
 
 class NearbyAirports extends React.Component<{}, { airportCode: string }> {
   state = { airportCode: "SFO" }
+  private airportCodeInput: React.RefObject<HTMLInputElement> = React.createRef()
 
   render() {
     return (
       <div>
         <form onSubmit={(e) => {
           e.preventDefault()
-          // eslint-disable-next-line
-          window.alert(this.state.airportCode)
+          this.setState({airportCode: this.airportCodeInput.current!.value.toUpperCase()})
         }}>
           <label>
             Airport:
-            <input
-              type="text"
-              value={this.state.airportCode}
-              onChange={(e) => this.setState({ airportCode: e.target.value })}
-            />
+            <input type="text" defaultValue={this.state.airportCode} ref={this.airportCodeInput} />
           </label>
           <input type="submit" value="Lookup" />
         </form>
