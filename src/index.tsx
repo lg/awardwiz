@@ -1,23 +1,19 @@
 /* eslint-disable */
 
-// TODO: remove the as-you-type stuff and make the button work
-// TODO: cache long/lat of airports from other results
-// TODO: dont save a failed request
-// TODO: check that a lookup of a non-existant airport doesnt blow things up
-
 import * as React from "react"
 import * as ReactDOM from "react-dom"
 import * as ReactQuery from "react-query"
-import { useQuery } from "react-query"
 import { persistQueryClient } from 'react-query/persistQueryClient-experimental'
 import { createWebStoragePersistor } from 'react-query/createWebStoragePersistor-experimental'
+import { ReactQueryDevtools } from 'react-query/devtools'
 import "./index.css"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 24, // 60 * 1000,
-      cacheTime: 1000 * 60 * 60 * 24
+      staleTime: 1000 * 60 * 5,         // refresh data every 5min
+      cacheTime: 1000 * 60 * 60 * 24,   // when unreferenced, drop after 24hrs
+      retry: false
     }
   }
 })
@@ -25,22 +21,34 @@ const queryClient = new ReactQuery.QueryClient({
 const localStoragePersistor = createWebStoragePersistor({storage: window.localStorage})
 persistQueryClient({ queryClient, persistor: localStoragePersistor })
 
+const airLabsFetch = (endpoint: string, signal?: AbortSignal) => {
+  return fetch(`https://airlabs.co/api/v9${endpoint}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
+    .then((resp) => resp.json())
+    .then((resp) => {
+      if (resp.error)
+        throw new Error(`Error while making API call ${resp.error.message}`)
+      return resp.response
+    })
+}
+
 const NearbyAirportsResults = ({ code }: { code: string }) => {
-  const { data: airportLongLats } = useQuery(["airportLongLats", code], ({ signal }) => {
-    return fetch(`https://airlabs.co/api/v9/airports?iata_code=${code}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
-    .then((resp) => resp.json())
-  })
+  const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", code], ({ signal }) => {
+    return fetch("/airports.json", { signal })
+      .then(async (resp) => {
+        const airports = await resp.json()
+        const localAirport = airports.find((item: any) => item.iata_code === code)
+        return localAirport ? [localAirport] : airLabsFetch(`/airports?iata_code=${code}`, signal)
+      })
+      .then((airport) => airport[0] ? airLabsFetch(`/nearby?lat=${airport[0].lat}&lng=${airport[0].lng}&distance=50`, signal) : {response: {airports: []}})
+      .then((response) => response.airports)
+  }, { staleTime: Infinity })
 
-  const { data: nearbyAirports, isIdle, isLoading, error } = useQuery(["nearbyAirports", [airportLongLats?.response[0].lng, airportLongLats?.response[0].lat]], ({ signal }) => {
-    return fetch(`https://airlabs.co/api/v9/nearby?lat=${airportLongLats.response[0].lat}&lng=${airportLongLats.response[0].lng}&distance=50&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
-    .then((resp) => resp.json())
-    .then((result) => result.response.airports)
-  }, { enabled: !!airportLongLats })
-
-  if (isLoading || isIdle)
+  if (isLoading)
     return <div>Loading...</div>
   if (error)
     return <div>An error occured: {(error as Error).message}</div>
+  if (!nearbyAirports)
+    return <div>No results</div>
 
   return (
     <ol>
@@ -83,6 +91,7 @@ class App extends React.Component<{}, AppState> {
     return (
       <ReactQuery.QueryClientProvider client={queryClient}>
         <NearbyAirports />
+        <ReactQueryDevtools initialIsOpen={false} />
       </ReactQuery.QueryClientProvider>
     )
   }
