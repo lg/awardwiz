@@ -1,6 +1,9 @@
 import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as haversine from "haversine"
+import { Input, Card } from "antd"
+
+const { Search } = Input
 
 const NearbyAirportsResults = ({ code }: { code: string }) => {
   const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", code], ({ signal }) => {
@@ -27,7 +30,7 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
 
   return (
     <ol>
-      {nearbyAirports.map((airport) => (
+      {nearbyAirports.sort((a, b) => a.distance - b.distance).map((airport) => (
         <li key={airport.iata_code}>{airport.name} - {airport.iata_code} - {Math.floor(airport.distance)}km</li>
       ))}
     </ol>
@@ -37,24 +40,15 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
 export default class NearbyAirports extends React.Component<unknown, { airportCode: string }> {
   state = { airportCode: "SFO" }
 
-  private airportCodeInput: React.RefObject<HTMLInputElement> = React.createRef()
-
   render() {
     return (
-      <div>
-        <form onSubmit={(e) => {
-          e.preventDefault()
-          this.setState({ airportCode: this.airportCodeInput.current!.value.toUpperCase() })
-        }}>
-          Nearby airport&nbsp;
-          <label>
-            code
-            <input type="text" defaultValue={this.state.airportCode} ref={this.airportCodeInput} />
-          </label>
-          <input type="submit" value="Lookup" />
-        </form>
+      <Card style={{ width: 500 }} size="small" title={(
+        <Search addonBefore="Nearby airport search" defaultValue={this.state.airportCode} enterButton onSearch={(value) => {
+          this.setState({ airportCode: value.toUpperCase() })
+        }} />
+      )}>
         <NearbyAirportsResults code={this.state.airportCode} />
-      </div>
+      </Card>
     )
   }
 }

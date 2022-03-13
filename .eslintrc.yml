@@ -37,6 +37,7 @@ rules:
   "@typescript-eslint/no-non-null-assertion": off
   import/extensions: off
   no-debugger: off
+  no-console: off
   object-curly-newline: off
   no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result"] }]
   lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
@@ -49,6 +50,8 @@ rules:
   react/function-component-definition: ["error", {"namedComponents": "arrow-function"}]
   react/require-default-props: off
   react/jsx-closing-bracket-location: off
+  react/jsx-max-props-per-line: off
+  react/jsx-first-prop-new-line: off
 
   # these should be on before commiting
   react/prefer-stateless-function: off
