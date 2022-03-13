@@ -7,30 +7,20 @@ import { createWebStoragePersistor } from "react-query/createWebStoragePersistor
 import { ReactQueryDevtools } from "react-query/devtools"
 import "./index.css"
 import NearbyAirports from "./NearbyAirports"
-import AirportDetails from "./AirportDetails"
+import RouteSearch from "./RouteSearch"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,         // when referenced and online, refresh data every 5min
+      staleTime: 1000 * 60 * 60 * 12,   // when referenced and online, refresh data every 12hrs
       cacheTime: 1000 * 60 * 60 * 24,   // when unreferenced, drop after 24hrs
       retry: false
     }
   }
 })
 
-// const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-// persistQueryClient({ queryClient, persistor: localStoragePersistor })
-
-// const airLabsFetch = (endpoint: string, signal?: AbortSignal) => {
-//   return fetch(`https://airlabs.co/api/v9${endpoint}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
-//     .then((resp) => resp.json())
-//     .then((resp) => {
-//       if (resp.error)
-//         throw new Error(`Error while making API call ${resp.error.message}`)
-//       return resp.response
-//     })
-// }
+const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
+persistQueryClient({ queryClient, persistor: localStoragePersistor })
 
 interface AppState {}
 class App extends React.Component<{}, AppState> {
@@ -40,7 +30,7 @@ class App extends React.Component<{}, AppState> {
     return (
       <ReactQuery.QueryClientProvider client={queryClient}>
         <NearbyAirports />
-        <AirportDetails />
+        <RouteSearch />
         <ReactQueryDevtools initialIsOpen={false} />
       </ReactQuery.QueryClientProvider>
     )

@@ -35,6 +35,10 @@ rules:
   arrow-body-style: off
   no-multi-spaces: ["error", {"ignoreEOLComments": true}]
   "@typescript-eslint/no-non-null-assertion": off
+  import/extensions: off
+  no-debugger: off
+  object-curly-newline: off
+  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result"] }]
 
   react/jsx-one-expression-per-line: off
   react/state-in-constructor: off

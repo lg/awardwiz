@@ -16,7 +16,7 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
           return result
         }, [])
       })
-  }, { staleTime: Infinity })
+  })
 
   if (isLoading)
     return <div>Loading...</div>
