@@ -3,44 +3,51 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom"
 import * as ReactQuery from "react-query"
-import { persistQueryClient } from 'react-query/persistQueryClient-experimental'
-import { createWebStoragePersistor } from 'react-query/createWebStoragePersistor-experimental'
-import { ReactQueryDevtools } from 'react-query/devtools'
+import { persistQueryClient } from "react-query/persistQueryClient-experimental"
+import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
+import { ReactQueryDevtools } from "react-query/devtools"
 import "./index.css"
+import * as haversine from "haversine"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,         // refresh data every 5min
+      staleTime: 1000 * 60 * 5,         // when referenced and online, refresh data every 5min
       cacheTime: 1000 * 60 * 60 * 24,   // when unreferenced, drop after 24hrs
       retry: false
     }
   }
 })
 
-const localStoragePersistor = createWebStoragePersistor({storage: window.localStorage})
+const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
 persistQueryClient({ queryClient, persistor: localStoragePersistor })
 
-const airLabsFetch = (endpoint: string, signal?: AbortSignal) => {
-  return fetch(`https://airlabs.co/api/v9${endpoint}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
-    .then((resp) => resp.json())
-    .then((resp) => {
-      if (resp.error)
-        throw new Error(`Error while making API call ${resp.error.message}`)
-      return resp.response
-    })
-}
+// const airLabsFetch = (endpoint: string, signal?: AbortSignal) => {
+//   return fetch(`https://airlabs.co/api/v9${endpoint}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
+//     .then((resp) => resp.json())
+//     .then((resp) => {
+//       if (resp.error)
+//         throw new Error(`Error while making API call ${resp.error.message}`)
+//       return resp.response
+//     })
+// }
 
+type Airport = { country_code: string, iata_code: string, icao_code: string, lat: number, lng: number, name: string}
+type AirportWithDistance = Airport & { distance: number }
 const NearbyAirportsResults = ({ code }: { code: string }) => {
   const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", code], ({ signal }) => {
-    return fetch("/airports.json", { signal })
-      .then(async (resp) => {
-        const airports = await resp.json()
-        const localAirport = airports.find((item: any) => item.iata_code === code)
-        return localAirport ? [localAirport] : airLabsFetch(`/airports?iata_code=${code}`, signal)
+    return fetch("/airports.json", { signal }).then((resp) => resp.json())
+      .then((resp: Airport[]) => {
+        const airport = resp.find((checkAirport) => checkAirport.iata_code === code)
+        if (!airport) return []
+
+        return resp.reduce((result: AirportWithDistance[], checkAirport) => {
+          const distance = haversine({ latitude: airport.lat, longitude: airport.lng }, { latitude: checkAirport.lat, longitude: checkAirport.lng })
+          if (distance < 50)
+            result.push({ distance, ...checkAirport })
+          return result
+        }, [])
       })
-      .then((airport) => airport[0] ? airLabsFetch(`/nearby?lat=${airport[0].lat}&lng=${airport[0].lng}&distance=50`, signal) : {response: {airports: []}})
-      .then((response) => response.airports)
   }, { staleTime: Infinity })
 
   if (isLoading)
@@ -61,6 +68,7 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
 
 class NearbyAirports extends React.Component<{}, { airportCode: string }> {
   state = { airportCode: "SFO" }
+
   private airportCodeInput: React.RefObject<HTMLInputElement> = React.createRef()
 
   render() {
@@ -68,10 +76,10 @@ class NearbyAirports extends React.Component<{}, { airportCode: string }> {
       <div>
         <form onSubmit={(e) => {
           e.preventDefault()
-          this.setState({airportCode: this.airportCodeInput.current!.value.toUpperCase()})
+          this.setState({ airportCode: this.airportCodeInput.current!.value.toUpperCase() })
         }}>
           <label>
-            Airport:
+            Nearby airport:
             <input type="text" defaultValue={this.state.airportCode} ref={this.airportCodeInput} />
           </label>
           <input type="submit" value="Lookup" />

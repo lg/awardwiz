@@ -25,6 +25,8 @@ rules:
   no-multiple-empty-lines: off
   nonblock-statement-body-position: off # allows for if without {}
   curly: off
+  arrow-body-style: off
+  no-multi-spaces: ["error", {"ignoreEOLComments": true}]
 
   react/jsx-one-expression-per-line: off
   react/state-in-constructor: off
