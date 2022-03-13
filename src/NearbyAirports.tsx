@@ -2,8 +2,6 @@ import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as haversine from "haversine"
 
-type Airport = { country_code: string, iata_code: string, icao_code: string, lat: number, lng: number, name: string}
-type AirportWithDistance = Airport & { distance: number }
 const NearbyAirportsResults = ({ code }: { code: string }) => {
   const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", code], ({ signal }) => {
     return fetch("/airports.json", { signal }).then((resp) => resp.json())
@@ -29,14 +27,14 @@ const NearbyAirportsResults = ({ code }: { code: string }) => {
 
   return (
     <ol>
-      {nearbyAirports.map((airport: {name: string, iata_code: string, distance: number}) => (
+      {nearbyAirports.map((airport) => (
         <li key={airport.iata_code}>{airport.name} - {airport.iata_code} - {Math.floor(airport.distance)}km</li>
       ))}
     </ol>
   )
 }
 
-export default class NearbyAirports extends React.Component<{}, { airportCode: string }> {
+export default class NearbyAirports extends React.Component<unknown, { airportCode: string }> {
   state = { airportCode: "SFO" }
 
   private airportCodeInput: React.RefObject<HTMLInputElement> = React.createRef()

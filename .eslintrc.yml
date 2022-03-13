@@ -2,8 +2,11 @@ env:
   browser: true
   es2022: true
 extends:
-  - plugin:react/recommended
   - airbnb
+  - plugin:import/typescript
+  - plugin:@typescript-eslint/recommended
+  - plugin:react/recommended
+  - plugin:promise/recommended
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaFeatures:
@@ -13,11 +16,15 @@ parserOptions:
 plugins:
   - react
   - '@typescript-eslint'
+  - promise
+  - no-loops
 rules:
+  "no-loops/no-loops": 2
   quotes: ["error", "double"]
   semi: ["error", "never", {"beforeStatementContinuationChars": "always"}]
   max-len: off
   no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]
+  "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
   no-use-before-define: off
   no-undef: off # because of JSX
   max-classes-per-file: off
@@ -27,6 +34,7 @@ rules:
   curly: off
   arrow-body-style: off
   no-multi-spaces: ["error", {"ignoreEOLComments": true}]
+  "@typescript-eslint/no-non-null-assertion": off
 
   react/jsx-one-expression-per-line: off
   react/state-in-constructor: off

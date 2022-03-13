@@ -7,6 +7,7 @@ import { createWebStoragePersistor } from "react-query/createWebStoragePersistor
 import { ReactQueryDevtools } from "react-query/devtools"
 import "./index.css"
 import NearbyAirports from "./NearbyAirports"
+import AirportDetails from "./AirportDetails"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -18,8 +19,8 @@ const queryClient = new ReactQuery.QueryClient({
   }
 })
 
-const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-persistQueryClient({ queryClient, persistor: localStoragePersistor })
+// const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
+// persistQueryClient({ queryClient, persistor: localStoragePersistor })
 
 // const airLabsFetch = (endpoint: string, signal?: AbortSignal) => {
 //   return fetch(`https://airlabs.co/api/v9${endpoint}&api_key=${process.env.REACT_APP_AIRLABS_API_KEY}`, { signal })
@@ -39,6 +40,7 @@ class App extends React.Component<{}, AppState> {
     return (
       <ReactQuery.QueryClientProvider client={queryClient}>
         <NearbyAirports />
+        <AirportDetails />
         <ReactQueryDevtools initialIsOpen={false} />
       </ReactQuery.QueryClientProvider>
     )
