@@ -2,7 +2,7 @@ import * as React from "react"
 import * as ReactQuery from "react-query"
 import { airLabsFetch } from "./common"
 
-const RouteSearchResults = ({ origin, destination }: { origin: string, destination: string }) => {
+const CarrierSearchResults = ({ origin, destination }: { origin: string, destination: string }) => {
   const { data: airlineNames } = ReactQuery.useQuery(["airlineNames"], ({ signal }) => {
     return fetch("/airlines.json", { signal }).then((resp) => resp.json()).then((arr: AirLabsAirlineName[]) => {
       return arr.reduce((result: {[key: string]: string}, item) => {
@@ -48,11 +48,10 @@ const RouteSearchResults = ({ origin, destination }: { origin: string, destinati
   )
 }
 
-export default class RouteSearch extends React.Component<unknown, { origin: string, destination: string }> {
+export default class CarrierSearch extends React.Component<unknown, { origin: string, destination: string }> {
   state = { origin: "LIH", destination: "SFO" }
 
   private originInput: React.RefObject<HTMLInputElement> = React.createRef()
-
   private destinationInput: React.RefObject<HTMLInputElement> = React.createRef()
 
   render() {
@@ -65,7 +64,7 @@ export default class RouteSearch extends React.Component<unknown, { origin: stri
             destination: this.destinationInput.current!.value.toUpperCase()
           })
         }}>
-          Search
+          Carrier search&nbsp;
           <label>
             origin:
             <input type="text" defaultValue={this.state.origin} ref={this.originInput} />
@@ -76,7 +75,7 @@ export default class RouteSearch extends React.Component<unknown, { origin: stri
           </label>
           <input type="submit" value="Lookup" />
         </form>
-        <RouteSearchResults origin={this.state.origin} destination={this.state.destination} />
+        <CarrierSearchResults origin={this.state.origin} destination={this.state.destination} />
       </div>
     )
   }

@@ -39,6 +39,7 @@ rules:
   no-debugger: off
   object-curly-newline: off
   no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result"] }]
+  lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
 
   react/jsx-one-expression-per-line: off
   react/state-in-constructor: off

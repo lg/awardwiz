@@ -1,13 +1,11 @@
-/* eslint-disable */
 import * as React from "react"
 import * as ReactDOM from "react-dom"
 import * as ReactQuery from "react-query"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
-import { ReactQueryDevtools } from "react-query/devtools"
 import "./index.css"
 import NearbyAirports from "./NearbyAirports"
-import RouteSearch from "./RouteSearch"
+import CarrierSearch from "./CarrierSearch"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -22,16 +20,12 @@ const queryClient = new ReactQuery.QueryClient({
 const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
 persistQueryClient({ queryClient, persistor: localStoragePersistor })
 
-interface AppState {}
-class App extends React.Component<{}, AppState> {
-  state: AppState = {}
-
+class App extends React.Component {
   render() {
     return (
       <ReactQuery.QueryClientProvider client={queryClient}>
         <NearbyAirports />
-        <RouteSearch />
-        <ReactQueryDevtools initialIsOpen={false} />
+        <CarrierSearch />
       </ReactQuery.QueryClientProvider>
     )
   }

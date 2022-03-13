@@ -46,8 +46,9 @@ export default class NearbyAirports extends React.Component<unknown, { airportCo
           e.preventDefault()
           this.setState({ airportCode: this.airportCodeInput.current!.value.toUpperCase() })
         }}>
+          Nearby airport&nbsp;
           <label>
-            Nearby airport:
+            code
             <input type="text" defaultValue={this.state.airportCode} ref={this.airportCodeInput} />
           </label>
           <input type="submit" value="Lookup" />
