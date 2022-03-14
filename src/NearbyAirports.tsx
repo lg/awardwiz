@@ -1,54 +1,51 @@
 import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as haversine from "haversine"
-import { Input, Card } from "antd"
+import { Input, Card, Alert } from "antd"
 
 const { Search } = Input
 
-const NearbyAirportsResults = ({ code }: { code: string }) => {
-  const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", code], ({ signal }) => {
+export const NearbyAirports = () => {
+  const [airportCode, setAirportCode] = React.useState("SFO")
+
+  const { isLoading, error, data: nearbyAirports } = ReactQuery.useQuery(["nearbyAirports", airportCode], ({ signal }) => {
     return fetch("/airports.json", { signal }).then((resp) => resp.json())
       .then((resp: Airport[]) => {
-        const airport = resp.find((checkAirport) => checkAirport.iata_code === code)
+        const airport = resp.find((checkAirport) => checkAirport.iata_code === airportCode)
         if (!airport) return []
 
         return resp.reduce((result: AirportWithDistance[], checkAirport) => {
           const distance = haversine({ latitude: airport.lat, longitude: airport.lng }, { latitude: checkAirport.lat, longitude: checkAirport.lng })
           if (distance < 50)
-            result.push({ distance, ...checkAirport })
+            if (checkAirport.iata_code)  // ensure this is a valid iata airport
+              result.push({ distance, ...checkAirport })
           return result
         }, [])
       })
   })
 
-  if (isLoading)
-    return <div>Loading...</div>
-  if (error)
-    return <div>An error occured: {(error as Error).message}</div>
-  if (!nearbyAirports)
-    return <div>No results</div>
+  let results = null
+  if (nearbyAirports && nearbyAirports.length > 0) {
+    results = (
+      <ol>
+        {nearbyAirports.sort((a, b) => a.distance - b.distance).map((airport) => (
+          <li key={airport.iata_code}>{airport.name} - {airport.iata_code} - {Math.floor(airport.distance)}km</li>
+        ))}
+      </ol>
+    )
+  } else if (error) {
+    results = <Alert message={`An error occured: ${(error as Error).message}`} type="error" />
+  } else if (nearbyAirports && nearbyAirports.length === 0) {
+    results = <Alert message={`Airport ${airportCode} not found`} type="info" />
+  }
 
   return (
-    <ol>
-      {nearbyAirports.sort((a, b) => a.distance - b.distance).map((airport) => (
-        <li key={airport.iata_code}>{airport.name} - {airport.iata_code} - {Math.floor(airport.distance)}km</li>
-      ))}
-    </ol>
+    <Card style={{ width: 500 }} size="small" title={(
+      <Search addonBefore="Nearby airport search" defaultValue={airportCode} enterButton loading={isLoading} onSearch={(value) => {
+        setAirportCode(value.toUpperCase())
+      }} />
+    )}>
+      { results }
+    </Card>
   )
-}
-
-export default class NearbyAirports extends React.Component<unknown, { airportCode: string }> {
-  state = { airportCode: "SFO" }
-
-  render() {
-    return (
-      <Card style={{ width: 500 }} size="small" title={(
-        <Search addonBefore="Nearby airport search" defaultValue={this.state.airportCode} enterButton onSearch={(value) => {
-          this.setState({ airportCode: value.toUpperCase() })
-        }} />
-      )}>
-        <NearbyAirportsResults code={this.state.airportCode} />
-      </Card>
-    )
-  }
 }

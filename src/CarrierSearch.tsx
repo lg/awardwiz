@@ -35,15 +35,17 @@ const CarrierSearchResults = ({ origin, destination }: { origin: string, destina
 
   return (
     <table>
-      {
-        departures.map((departure) => (
-          <tr key={`${departure.airlineCode}${departure.origin}${departure.destination}`}>
-            <td>{departure.origin} ➤ {departure.destination}</td>
-            <td>{departure.airlineCode}</td>
-            <td>{departure.airlineName}</td>
-          </tr>
-        ))
-      }
+      <tbody>
+        {
+          departures.map((departure) => (
+            <tr key={`${departure.airlineCode}${departure.origin}${departure.destination}`}>
+              <td>{departure.origin} ➤ {departure.destination}</td>
+              <td>{departure.airlineCode}</td>
+              <td>{departure.airlineName}</td>
+            </tr>
+          ))
+        }
+      </tbody>
     </table>
   )
 }
