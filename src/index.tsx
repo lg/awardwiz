@@ -5,7 +5,8 @@ import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import "./index.css"
 import { NearbyAirports } from "./NearbyAirports"
-import CarrierSearch from "./CarrierSearch"
+import { CarrierSearch } from "./CarrierSearch"
+
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
