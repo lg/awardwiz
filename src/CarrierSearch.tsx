@@ -6,6 +6,18 @@ import { QueryFunctionContext } from "react-query"
 import { FR24ServesRoutes } from "./common"
 
 export const CarrierSearch = () => {
+  const [allAirports, setAllAirports] = React.useState([] as { value: string, label: string }[])
+  React.useMemo(() => {
+    fetch("/airports.json")
+      .then((resp) => resp.json() as Promise<Airport[]>)
+      .then((resp) => {
+        setAllAirports(resp.map((airport) => ({
+          value: airport.iata_code,
+          label: `${airport.iata_code} - ${airport.name}`
+        })))
+      })
+  }, [])
+
   const [origins, setOrigins] = React.useState(["LIH"])
   const [destinations, setDestinations] = React.useState(["SFO"])
 
@@ -42,8 +54,8 @@ export const CarrierSearch = () => {
   return (
     <Card style={{ width: 700 }} size="small" title={(
       <Space>
-        Origin: <Select mode="tags" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={origins} onChange={(values) => setOrigins(values)} />
-        Destination: <Select mode="tags" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={destinations} onChange={(values) => setDestinations(values)} open={false} />
+        Origin: <Select mode="multiple" size="small" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={origins} options={allAirports} onChange={(values) => setOrigins(values)} />
+        Destination: <Select mode="multiple" size="small" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={destinations} options={allAirports} onChange={(values) => setDestinations(values)} />
       </Space>
     )}>
       { resultsRender }
