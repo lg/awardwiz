@@ -1,58 +1,52 @@
 /* eslint-disable */
-import { SearchOutlined } from "@ant-design/icons"
-import { Alert, Button, Card, Form, Input, InputRef, Space, Table } from "antd"
+import { Alert, Card, Space, Table, Select } from "antd"
 import * as React from "react"
 import * as ReactQuery from "react-query"
+import { QueryFunctionContext } from "react-query"
 import { FR24ServesRoutes } from "./common"
 
 export const CarrierSearch = () => {
-  const [origin, setOrigin] = React.useState("LIH")
-  const [destination, setDestination] = React.useState("SFO")
+  const [origins, setOrigins] = React.useState(["LIH"])
+  const [destinations, setDestinations] = React.useState(["SFO"])
 
-  const { isLoading: isLoading1, error: error1, data: airlineNames } = ReactQuery.useQuery(["airlineNames"], ({ signal }) => {
-    return fetch("/airlines.json", { signal }).then((resp) => resp.json()).then((arr: AirLabsAirlineName[]) => {
-      return arr.reduce((result: {[key: string]: string}, item) => {
-        result[item.iata_code] = item.name
-        return result
-      }, {})
-    })
-  })
+  const queries = ReactQuery.useQueries(
+    origins.map(origin => {
+      return destinations.map(destination => {
+        return {
+          queryKey: ["carrierSearch", origin, destination],
+          queryFn: (context: QueryFunctionContext) => FR24ServesRoutes(origin, destination, context.signal)
+        }
+      })
+    }).flatMap(x => x)
+  )
+  const departures = queries.filter(x => x.data).flatMap(x => x.data) as AirlineRoute[]
+  const isLoading = queries.some(query => query.isLoading)
+  const error = queries.find(query => query.isError)?.error
 
-  const { isLoading: isLoading2, error: error2, data: departures } = ReactQuery.useQuery(["routes", origin, destination], ({ signal }) => {
-    return FR24ServesRoutes(origin, destination, signal)
-  }, { enabled: !!airlineNames })
-
-  const originObj = React.createRef<InputRef>()
-  const destinationObj = React.createRef<InputRef>()
-
-  const onEnterPress = () => {
-    setOrigin(originObj.current!.input!.value.toUpperCase())
-    setDestination(destinationObj.current!.input!.value.toUpperCase())
-  }
-
-  let results = null
+  let resultsRender = null
   if (departures && departures.length > 0) {
     const columns = [
       {title: "Origin + Destination", render: (data: any) => `${data.origin} ➤ ${data.destination}`},
       {title: "Airline Code", dataIndex: "airlineCode"},
       {title: "Airline Name", dataIndex: "airlineName"}
     ]
-    results = <Table dataSource={departures} columns={columns} size="small" pagination={false} />
-  } else if (error1 || error2) {
-    results = <Alert message={`An error occured: ${((error1 || error2) as Error).message}`} type="error" />
-  } else if (departures && departures.length === 0) {
-    results = <Alert message={`Carriers for ${origin} to ${destination} not found`} type="info" />
+    resultsRender = <Table dataSource={departures} columns={columns} size="small" pagination={false} rowKey={(row) => `${row.origin}${row.destination}${row.airlineCode}`} />
+  } else if (error) {
+    resultsRender = <Alert message={`An error occured: ${(error as Error).message}`} type="error" />
+  } else if (departures && departures.length === 0 && !isLoading) {
+    resultsRender = <Alert message={`Carriers for ${origins.join("/")} to ${destinations.join("/")} not found`} type="warning" />
+  } else {
+    resultsRender = <Alert message="Loading..." type="info" />
   }
 
   return (
-    <Card style={{ width: 500 }} size="small" title={(
+    <Card style={{ width: 700 }} size="small" title={(
       <Space>
-        <Input addonBefore="Carrier Search Origin" defaultValue={origin} ref={originObj} onPressEnter={onEnterPress} />
-        <Input addonBefore="Destination" defaultValue={destination} ref={destinationObj} onPressEnter={onEnterPress} />
-        <Button type="primary" icon={<SearchOutlined />} loading={isLoading1 || isLoading2} onClick={onEnterPress} />
+        Origin: <Select mode="tags" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={origins} onChange={(values) => setOrigins(values)} />
+        Destination: <Select mode="tags" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={destinations} onChange={(values) => setDestinations(values)} open={false} />
       </Space>
     )}>
-      { results }
+      { resultsRender }
     </Card>
   )
 }

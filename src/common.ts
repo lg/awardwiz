@@ -10,6 +10,9 @@ export const FR24ServesRoutes = (origin: string, destination: string, signal?: A
   return browserlessFetch(`https://api.flightradar24.com/common/v1/search.json?query=default&origin=${origin}&destination=${destination}`, signal)
     .then(async (resp) => {
       const json = await resp.json() as FR24SearchResult
+      if (json.errors)
+        throw new Error(`${json.errors.message} -- ${JSON.stringify(json.errors.errors)}`)
+
       if (!json.result.response.flight.data)
         return []
 

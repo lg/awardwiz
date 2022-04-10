@@ -1,6 +1,12 @@
 export interface FR24SearchResult {
   result: Result
+  errors?: FR24Errors
   _api: API
+}
+
+export interface FR24Errors {
+  message: string
+  errors: object
 }
 
 export interface API {
