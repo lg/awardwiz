@@ -1,10 +1,9 @@
 /* eslint-disable */
 import { SearchOutlined } from "@ant-design/icons"
 import { Alert, Button, Card, Form, Input, InputRef, Space, Table } from "antd"
-import Search from "antd/lib/input/Search"
 import * as React from "react"
 import * as ReactQuery from "react-query"
-import { airLabsFetch } from "./common"
+import { FR24ServesRoutes } from "./common"
 
 export const CarrierSearch = () => {
   const [origin, setOrigin] = React.useState("LIH")
@@ -20,17 +19,7 @@ export const CarrierSearch = () => {
   })
 
   const { isLoading: isLoading2, error: error2, data: departures } = ReactQuery.useQuery(["routes", origin, destination], ({ signal }) => {
-    return airLabsFetch(`/routes?dep_iata=${origin}&arr_iata=${destination}`, signal)
-      .then((schedules: AirLabsSchedule[]) => {
-        const filtered = schedules.filter((schedule) => schedule.cs_flight_iata === null && schedule.airline_iata !== null)   // remove codeshares and private jets
-        return filtered.reduce((result: AirlineRoute[], checkItem) => {
-          if (!result.find((item) => item.airlineCode === checkItem.airline_iata) && checkItem.airline_iata) {
-            const airlineName = airlineNames![checkItem.airline_iata]
-            result.push({ origin, destination, airlineCode: checkItem.airline_iata!, airlineName })
-          }
-          return result
-        }, [])
-      })
+    return FR24ServesRoutes(origin, destination, signal)
   }, { enabled: !!airlineNames })
 
   const originObj = React.createRef<InputRef>()

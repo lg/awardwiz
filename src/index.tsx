@@ -7,7 +7,6 @@ import "./index.css"
 import { NearbyAirports } from "./NearbyAirports"
 import { CarrierSearch } from "./CarrierSearch"
 
-
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
     queries: {
