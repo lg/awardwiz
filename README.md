@@ -3,8 +3,8 @@ Make a request to: https://airlabs.co/api/v9/airlines?iata_code=&api_key=YOUR-AP
 
 ### Running server side
 
-Currently using browserless' docker container
+Currently using browserless' docker container. It listens on port `4000`, no token.
 
 ```shell
-docker run --rm -p 4000:3000 -e "MAX_CONCURRENT_SESSIONS=10" -e "ENABLE_CORS=true" browserless/chrome:latest
+docker-compose up
 ```
