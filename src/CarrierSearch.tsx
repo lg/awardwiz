@@ -6,8 +6,7 @@ import { QueryFunctionContext } from "react-query"
 import { FR24ServesRoutes } from "./common"
 
 export const CarrierSearch = () => {
-  const [allAirports, setAllAirports] = React.useState([] as { value: string, label: string }[])
-  React.useMemo(() => {
+  React.useEffect(() => {
     fetch("/airports.json")
       .then((resp) => resp.json() as Promise<Airport[]>)
       .then((resp) => {
