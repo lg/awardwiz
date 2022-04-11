@@ -45,7 +45,7 @@ export interface Datum {
   identification: Identification
   status: DatumStatus
   aircraft: Aircraft | null
-  airline: Airline
+  airline: Airline | null
   airport: Airport
   time: Time
 }

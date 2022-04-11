@@ -16,8 +16,9 @@ export const FR24ServesRoutes = (origin: string, destination: string, signal?: A
       if (!json.result.response.flight.data)
         return []
 
-      return json.result.response.flight.data.map((item) => {
-        return { origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline.code.iata, airlineName: item.airline.name }
-      }).filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
+      return json.result.response.flight.data
+        .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name }))
+        .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
+        .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
     })
 }
