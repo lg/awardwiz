@@ -1,19 +1,26 @@
 /* eslint-disable */
-import { Alert, Card, Space, Table, Select } from "antd"
+import { Alert, Card, Space, Table, Select, Tag } from "antd"
 import * as React from "react"
 import * as ReactQuery from "react-query"
 import { QueryFunctionContext } from "react-query"
 import { FR24ServesRoutes } from "./common"
 
+type AirportOption = { label: string; value: string }
 export const CarrierSearch = () => {
+  const [allAirports, setAllAirports] = React.useState([] as AirportOption[])
+
   React.useEffect(() => {
     fetch("/airports.json")
       .then((resp) => resp.json() as Promise<Airport[]>)
       .then((resp) => {
-        setAllAirports(resp.map((airport) => ({
-          value: airport.iata_code,
-          label: `${airport.iata_code} - ${airport.name}`
-        })))
+        const airportMap: { [key: string]: AirportOption } = {}
+        resp.forEach((airport) => {
+          if (!airport.iata_code || !airport.name || airport.iata_code.length !== 3)
+            return
+
+          airportMap[airport.iata_code] = { value: airport.iata_code, label: `${airport.iata_code} - ${airport.name}` }
+        })
+        setAllAirports(Object.values(airportMap))
       })
   }, [])
 
@@ -50,11 +57,27 @@ export const CarrierSearch = () => {
     resultsRender = <Alert message="Loading..." type="info" />
   }
 
+  const AirportSelectTag = ({ ...props }) =>
+    <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>
+
+  const AirportSelect = ({ ...props }) => {
+    return <Select
+      style={{ width: '220px' }}
+      loading={isLoading}
+      mode="multiple"
+      tagRender={AirportSelectTag}
+      tokenSeparators={[",", " ", "/"]}
+      options={allAirports}
+      optionFilterProp="value"
+      {...props}
+    />
+  }
+
   return (
-    <Card style={{ width: 700 }} size="small" title={(
+    <Card style={{ width: 700 }} title={(
       <Space>
-        Origin: <Select mode="multiple" size="small" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={origins} options={allAirports} onChange={(values) => setOrigins(values)} />
-        Destination: <Select mode="multiple" size="small" tokenSeparators={[",", " ", "/"]} style={{ width: '220px' }} defaultValue={destinations} options={allAirports} onChange={(values) => setDestinations(values)} />
+        Origin: <AirportSelect defaultValue={origins} onChange={setOrigins} />
+        Destination: <AirportSelect defaultValue={destinations} onChange={setDestinations} />
       </Space>
     )}>
       { resultsRender }

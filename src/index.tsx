@@ -17,8 +17,10 @@ const queryClient = new ReactQuery.QueryClient({
   }
 })
 
+if (process.env.CACHE_OFF !== "true") {
 const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
 persistQueryClient({ queryClient, persistor: localStoragePersistor })
+}
 
 class App extends React.Component {
   render() {
