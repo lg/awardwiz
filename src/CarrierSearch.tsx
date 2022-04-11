@@ -1,4 +1,11 @@
 /* eslint-disable */
+
+// TODO:
+// - Don't hide the dropdown when using onChange
+// - Put the currently selected airports at the top of the list
+// - Location based sorting of airports
+// - Remove the crappy airports and airlines
+
 import { Alert, Card, Space, Table, Select, Tag } from "antd"
 import * as React from "react"
 import * as ReactQuery from "react-query"
@@ -7,7 +14,7 @@ import { FR24ServesRoutes } from "./common"
 
 type AirportOption = { label: string; value: string }
 export const CarrierSearch = () => {
-  const [allAirports, setAllAirports] = React.useState([] as AirportOption[])
+  const [allAirports, setAllAirports] = React.useState<AirportOption[]>([])
 
   React.useEffect(() => {
     fetch("/airports.json")
@@ -58,7 +65,7 @@ export const CarrierSearch = () => {
   }
 
   const AirportSelectTag = ({ ...props }) =>
-    <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>
+    <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>  // only display the airport code in the tag (versus the full name)
 
   const AirportSelect = ({ ...props }) => {
     return <Select

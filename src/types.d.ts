@@ -1,10 +1,13 @@
 declare type Airport = {
-  country_code: string
-  iata_code: string
   icao_code: string
-  lat: number
-  lng: number
+  iata_code: string
   name: string
+  longitude: number
+  latitude: number
+  url: string | null
+  popularity: number
+  city: string
+  country: string
 }
 
 declare type AirportWithDistance = Airport & { distance: number }

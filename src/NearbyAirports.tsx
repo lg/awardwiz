@@ -15,7 +15,7 @@ export const NearbyAirports = () => {
         if (!airport) return []
 
         return resp.reduce((result: AirportWithDistance[], checkAirport) => {
-          const distance = haversine({ latitude: airport.lat, longitude: airport.lng }, { latitude: checkAirport.lat, longitude: checkAirport.lng })
+          const distance = haversine({ latitude: airport.latitude, longitude: airport.longitude }, { latitude: checkAirport.latitude, longitude: checkAirport.longitude })
           if (distance < 50)
             if (checkAirport.iata_code)  // ensure this is a valid iata airport
               result.push({ distance, ...checkAirport })
