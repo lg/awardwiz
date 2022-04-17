@@ -4,8 +4,10 @@ import * as ReactQuery from "react-query"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import "./index.css"
-import { NearbyAirports } from "./NearbyAirports"
+// import { NearbyAirports } from "./NearbyAirports"
 import { CarrierSearch } from "./CarrierSearch"
+import { SearchResults } from "./SearchResults"
+import { TestScrape } from "./TestScrape"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -18,16 +20,18 @@ const queryClient = new ReactQuery.QueryClient({
 })
 
 if (process.env.CACHE_OFF !== "true") {
-const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-persistQueryClient({ queryClient, persistor: localStoragePersistor })
+  const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
+  persistQueryClient({ queryClient, persistor: localStoragePersistor })
 }
 
 class App extends React.Component {
   render() {
     return (
       <ReactQuery.QueryClientProvider client={queryClient}>
-        <NearbyAirports />
+        {/* <NearbyAirports /> */}
         <CarrierSearch />
+        <SearchResults />
+        <TestScrape />
       </ReactQuery.QueryClientProvider>
     )
   }

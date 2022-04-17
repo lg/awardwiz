@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "buildx": "react-scripts build",
+    "build": "node ./build.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -29,6 +30,7 @@
     "@ant-design/icons": "^4.7.0",
     "antd": "^4.19.2",
     "haversine": "^1.1.1",
+    "moment": "^2.29.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^3.34.16",

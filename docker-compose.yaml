@@ -10,6 +10,7 @@ services:
       - PREBOOT_CHROME=true
       - DEMO_MODE=false
       - ENABLE_DEBUGGER=false
+      - ENABLE_CORS=true
       - PORT=4000
       - WORKSPACE_DELETE_EXPIRED=true
     container_name: "browserless"
