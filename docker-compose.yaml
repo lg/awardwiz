@@ -7,12 +7,15 @@ services:
       - MAX_CONCURRENT_SESSIONS=10
       - CONNECTION_TIMEOUT=60000
       - MAX_QUEUE_LENGTH=20
-      - PREBOOT_CHROME=true
       - DEMO_MODE=false
-      - ENABLE_DEBUGGER=false
+      - ENABLE_DEBUGGER=true
       - ENABLE_CORS=true
       - PORT=4000
       - WORKSPACE_DELETE_EXPIRED=true
+
+      - DEFAULT_HEADLESS=false
+      - DEFAULT_BLOCK_ADS=true
+      - DEFAULT_STEALTH=true
     container_name: "browserless"
     restart: always
     ports:

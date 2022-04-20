@@ -31,6 +31,7 @@
     "antd": "^4.19.2",
     "haversine": "^1.1.1",
     "moment": "^2.29.2",
+    "puppeteer": "^13.5.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-query": "^3.34.16",
@@ -51,7 +52,6 @@
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-no-loops": "^0.3.0",
     "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-react": "^7.29.2",
-    "eslint-plugin-react-hooks": "^4.3.0"
+    "eslint-plugin-react": "^7.29.2"
   }
 }
