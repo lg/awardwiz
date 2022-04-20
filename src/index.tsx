@@ -6,7 +6,6 @@ import { createWebStoragePersistor } from "react-query/createWebStoragePersistor
 import "./index.css"
 // import { NearbyAirports } from "./NearbyAirports"
 import { CarrierSearch } from "./CarrierSearch"
-import { SearchResults } from "./SearchResults"
 import { TestScrape } from "./TestScrape"
 
 const queryClient = new ReactQuery.QueryClient({
@@ -30,7 +29,6 @@ class App extends React.Component {
       <ReactQuery.QueryClientProvider client={queryClient}>
         {/* <NearbyAirports /> */}
         <CarrierSearch />
-        <SearchResults />
         <TestScrape />
       </ReactQuery.QueryClientProvider>
     )
