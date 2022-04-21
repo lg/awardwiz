@@ -11,7 +11,7 @@ export const TestScrape = () => {
   const [form] = Form.useForm()
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>({ origin: "HNL", destination: "SFO", departureDate: moment().format("YYYY-MM-DD"), program: "united" })
 
-  const { isFetching, error, data } = ReactQuery.useQuery(["awardAvailability", searchQuery], async ({ signal, queryKey }) => {
+  const { isLoading, error, data } = ReactQuery.useQuery(["awardAvailability", searchQuery], async ({ signal, queryKey }) => {
     const query = queryKey[1] as SearchQuery
 
     console.log(`[${query.program} ${query.departureDate} ${query.origin}➤${query.destination}] Fetching award availability`)
@@ -33,11 +33,11 @@ export const TestScrape = () => {
         <Form.Item name="destination" style={{ width: 100 }}><Input prefix={<LoginOutlined />} placeholder="Destination" /></Form.Item>
         <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
         <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isFetching}>Search</Button></Form.Item>
+        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
       </Form>
       {error && <Alert message={(error as Error).message} type="error" />}
 
-      <SearchResults results={data} />
+      <SearchResults results={data} isLoading={isLoading} />
     </>
   )
 }

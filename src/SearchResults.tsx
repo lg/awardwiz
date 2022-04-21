@@ -1,11 +1,10 @@
 import * as React from "react"
-
 import { Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import * as moment from "moment"
 import { FlightFare, FlightWithFares } from "./scrapers"
 
-export const SearchResults = ({ results }: { results?: FlightWithFares[] }) => {
+export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
     const faresForClass = fares?.filter((fare) => fare.cabin === cabin)
     if (!faresForClass || faresForClass.length === 0)
@@ -18,38 +17,37 @@ export const SearchResults = ({ results }: { results?: FlightWithFares[] }) => {
       title: "Flight",
       dataIndex: "flightNo",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.flightNo.localeCompare(recordB.flightNo),
-      width: 100
     },
     {
-      title: "Origin",
+      title: "From",
       dataIndex: "origin",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.origin.localeCompare(recordB.origin),
-      width: 70
+    },
+    {
+      key: "departure",
+      render: (_text: string, record: FlightWithFares) => moment(record.departureDateTime).format("M/D"),
     },
     {
       title: "Departure",
       dataIndex: "departureDateTime",
-      render: (departureDateTime: string) => moment(departureDateTime).format("M/D h:mm A"),
+      render: (text: string) => moment(text).format("h:mm A"),
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => moment(recordA.departureDateTime).diff(moment(recordB.departureDateTime)),
-      width: 130
     },
     {
       title: "Arrival",
       dataIndex: "arrivalDateTime",
-      render: (arrivalDateTime: string) => moment(arrivalDateTime).format("M/D h:mm A"),
+      render: (_text: string, record: FlightWithFares) => `${moment(record.arrivalDateTime).format("h:mm A")} ${moment(record.arrivalDateTime).isAfter(moment(record.departureDateTime), "day") ? " (+1)" : ""}`,
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => moment(recordA.arrivalDateTime).diff(moment(recordB.arrivalDateTime)),
-      width: 130,
     },
     {
-      title: "Destination",
+      title: "Dest",
       dataIndex: "destination",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.destination.localeCompare(recordB.destination),
-      width: 70
     },
     ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
-      render: (record: FlightWithFares) => {
+      render: (_text: string, record: FlightWithFares) => {
         const smallestFare = lowestFare(record.fares, column.key)
         if (!smallestFare)
           return ""
@@ -64,12 +62,11 @@ export const SearchResults = ({ results }: { results?: FlightWithFares[] }) => {
         const fareBMiles = lowestFare(recordB.fares, column.key)?.miles ?? Number.MAX_VALUE
         return fareAMiles - fareBMiles
       },
-      width: 70,
-      align: "center"
+      align: "center",
     }))
   ]
 
   return (
-    <Table dataSource={results} columns={columns} rowKey="flightNo" size="small" />
+    <Table<FlightWithFares> dataSource={results} columns={columns} rowKey="flightNo" size="small" loading={isLoading} showSorterTooltip={false} />
   )
 }
