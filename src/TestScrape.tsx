@@ -3,73 +3,40 @@ import { Alert, Button, DatePicker, Form, Input } from "antd"
 import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as moment from "moment"
-import { ScraperResults } from "./scrapers"
+import axios from "axios"
+import { ScraperResults, SearchQuery } from "./scrapers"
 import { SearchResults } from "./SearchResults"
 
 export const TestScrape = () => {
-  type SearchQuery = {
-    origin: string
-    destination: string
-    departureDate: moment.Moment
-    program: string
-  }
-
-  const today = moment()
-
   const [form] = Form.useForm()
-  const [origin, setOrigin] = React.useState("")
-  const [destination, setDestination] = React.useState("")
-  const [departureDate, setDepartureDate] = React.useState(today)
-  const [awardProgram, setAwardProgram] = React.useState("")
+  const [searchQuery, setSearchQuery] = React.useState<SearchQuery>({ origin: "HNL", destination: "SFO", departureDate: moment().format("YYYY-MM-DD"), program: "united" })
 
-  const { isLoading, error, data } = ReactQuery.useQuery(["awardAvailability", origin, destination, departureDate, awardProgram], async ({ signal }) => {
-    if (!origin || !destination || !departureDate || !awardProgram)
-      return []
+  const { isFetching, error, data } = ReactQuery.useQuery(["awardAvailability", searchQuery], async ({ signal, queryKey }) => {
+    const query = queryKey[1] as SearchQuery
 
-    console.log(`Fetching award availability for ${origin} to ${destination} on ${departureDate.format("YYYY-MM-DD")} using ${awardProgram}`)
-    const resp = await fetch(`/scrapers/${awardProgram}.js`, { signal })
-    if (!resp.ok)
-      throw new Error(`Failed to retrieve scraper for ${awardProgram}`)
-    const scraperCode = await resp.text()
+    console.log(`[${query.program} ${query.departureDate} ${query.origin}➤${query.destination}] Fetching award availability`)
+    const startTime = Date.now()
+    const { data: scraperCode } = await axios.get<string>(`/scrapers/${query.program}.js`, { signal })
 
-    const postData = {
-      code: scraperCode,
-      context: {
-        origin, destination, departureDate: departureDate.format("YYYY-MM-DD")
-      }
-    }
+    const postData = { code: scraperCode, context: { ...query } }
+    const { data: results } = await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })
+    console.log(`[${query.program} ${query.departureDate} ${query.origin}➤${query.destination}] Finished in ${Date.now() - startTime}ms`)
 
-    const results: ScraperResults = await fetch("http://localhost:4000/function", { signal, method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(postData) }).then((res2) => res2.json())
     return results.flightsWithFares
   }, { staleTime: 1000 * 60, retry: false })
 
-  const onFinish = async (values: SearchQuery) => {
-    setOrigin(values.origin)
-    setDestination(values.destination)
-    setDepartureDate(values.departureDate)
-    setAwardProgram(values.program)
-  }
-
-  const defaults: SearchQuery = {
-    origin: "HNL",
-    destination: "SFO",
-    departureDate: today,
-    program: "united",
-  }
-
+  const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   return (
     <>
-      <Form form={form} name="searchFields" initialValues={defaults} onFinish={onFinish} layout="inline">
+      <Form form={form} name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: values.departureDate.format("YYYY-MM-DD") }) }}>
         <Form.Item name="origin" style={{ width: 100 }}><Input prefix={<LogoutOutlined />} placeholder="Origin" /></Form.Item>
         <Form.Item name="destination" style={{ width: 100 }}><Input prefix={<LoginOutlined />} placeholder="Destination" /></Form.Item>
-        <Form.Item name="departureDate">
-          <DatePicker format="YYYY-MM-DD" />
-        </Form.Item>
+        <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
         <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isFetching}>Search</Button></Form.Item>
       </Form>
-
       {error && <Alert message={(error as Error).message} type="error" />}
+
       <SearchResults results={data} />
     </>
   )

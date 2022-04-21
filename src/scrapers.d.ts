@@ -1,3 +1,10 @@
+export type SearchQuery = {
+  origin: string
+  destination: string
+  departureDate: string
+  program: string
+}
+
 export type ScraperResults = {
   flightsWithFares: FlightWithFares[]
   warnings: string[]

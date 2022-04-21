@@ -29,6 +29,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "antd": "^4.19.2",
+    "axios": "^0.26.1",
     "haversine": "^1.1.1",
     "moment": "^2.29.2",
     "puppeteer": "^13.5.2",
