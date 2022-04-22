@@ -52,6 +52,8 @@ rules:
   react/jsx-closing-bracket-location: off
   react/jsx-max-props-per-line: off
   react/jsx-first-prop-new-line: off
+  react/jsx-props-no-spreading: off
+  react/prop-types: ["error", { skipUndeclared: true }]
 
   # these should be on before commiting
   react/prefer-stateless-function: off
@@ -61,3 +63,5 @@ rules:
 
   import/prefer-default-export: off
   import/no-unresolved: off
+
+  "@typescript-eslint/no-empty-function": off
