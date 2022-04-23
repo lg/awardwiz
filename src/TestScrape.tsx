@@ -28,7 +28,7 @@ const getScrapers = (qc: ReactQuery.QueryClient) => {
   }, { staleTime: 1000 * 60 })
 }
 
-type ServingCarrier = {origin: string, destination: string, airlineCode?: string, airlineName?: string}
+type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
 const getServingCarriers = (qc: ReactQuery.QueryClient, origin: string, destination: string) => {
   return qc.fetchQuery<ServingCarrier[]>(["servingCarriers", origin, destination], async ({ signal }) => {
     const postData = {
@@ -53,15 +53,15 @@ export const TestScrape = () => {
   const qc = ReactQuery.useQueryClient()
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>({ origins: ["HNL"], destinations: ["SFO"], departureDate: moment().format("YYYY-MM-DD"), program: "united" })
 
-  const queries = ReactQuery.useQueries<FlightWithFares[]>(
+  const queries = ReactQuery.useQueries(
     searchQuery.origins.map((origin) => {
-      return searchQuery.destinations.map((destination) => {
-        return {
-          queryKey: ["awardAvailability", origin, destination, searchQuery.departureDate],
-          queryFn: (context: QueryFunctionContext) => awardSearchRoute(origin, destination, searchQuery.departureDate, context.signal)
-        }
-      })
-    }, { staleTime: 1000 * 60 * 5, retry: 1 }).flatMap((x) => x)
+      return searchQuery.destinations.map((destination) => ({
+        queryKey: ["awardAvailability", origin, destination, searchQuery.departureDate],
+        queryFn: (context) => awardSearchRoute(origin, destination, searchQuery.departureDate, context.signal),
+        staleTime: 1000 * 60 * 5,
+        retry: 1
+      }) as ReactQuery.UseQueryOptions<FlightWithFares[]>)
+    }).flat()
   )
 
   const awardSearchRoute = async (origin: string, destination: string, departureDate: string, signal?: AbortSignal) => {
@@ -88,22 +88,18 @@ export const TestScrape = () => {
   React.useEffect(() => { setFormReady(true) }, [])
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   return (
-    <>
+    <Space direction="vertical" style={{ margin: 10 }}>
       {formReady && (
-        <Space style={{ marginTop: 10, marginLeft: 10 }}>
-          <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
-            <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
-            <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
-            <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
-            <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-            <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
-          </Form>
-        </Space>
+        <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
+          <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
+          <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
+          <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
+          <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
+          <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+        </Form>
       )}
       {error && <Alert message={(error as Error).message} type="error" />}
-      <Space style={{ marginInline: 10 }}>
-        <SearchResults results={data} isLoading={isLoading} />
-      </Space>
-    </>
+      <SearchResults results={data} isLoading={isLoading} />
+    </Space>
   )
 }
