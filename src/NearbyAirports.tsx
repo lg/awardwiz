@@ -2,6 +2,7 @@ import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as haversine from "haversine"
 import { Input, Card, Alert } from "antd"
+import { Airport, AirportWithDistance } from "./types/types"
 
 const { Search } = Input
 

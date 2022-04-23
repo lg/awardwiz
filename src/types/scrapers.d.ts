@@ -1,10 +1,3 @@
-export type SearchQuery = {
-  origins: string[]
-  destinations: string[]
-  departureDate: string
-  program: string
-}
-
 export type ScraperQuery = {
   origin: string
   destination: string

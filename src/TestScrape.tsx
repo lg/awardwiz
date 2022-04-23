@@ -6,10 +6,11 @@ import * as moment from "moment"
 import axios from "axios"
 import { QueryFunctionContext } from "react-query"
 
-import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "./scrapers"
+import { FlightWithFares, ScraperQuery, ScraperResults } from "./types/scrapers"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
-import { FR24SearchResult } from "./fr24"
+import { FR24SearchResult } from "./types/fr24"
+import { SearchQuery } from "./types/types"
 
 // possible bug: HNL-LIH not many results
 

@@ -14,7 +14,7 @@ module.exports = async ({ page, context }) => {
   const raw = await response.json()
 
   console.log("Received flights, parsing")
-  /** @type {import("../../src/scrapers").FlightWithFares[]} */
+  /** @type {import("../../src/types/scrapers").FlightWithFares[]} */
   const flightsWithFares = []
   if (raw.data.Trips !== null && raw.data.Trips.length > 0) {
     const flights = standardizeResults(raw.data.Trips[0])
@@ -38,10 +38,10 @@ module.exports = async ({ page, context }) => {
  * @param {import("./united").Trip} unitedTrip
  */
 const standardizeResults = (unitedTrip) => {
-  /** @type {import("../../src/scrapers").FlightWithFares[]} */
+  /** @type {import("../../src/types/scrapers").FlightWithFares[]} */
   const results = []
   unitedTrip.Flights.forEach((flight) => {
-    /** @type {import("../../src/scrapers").FlightWithFares} */
+    /** @type {import("../../src/types/scrapers").FlightWithFares} */
     const result = {
       departureDateTime: flight.DepartDateTime,
       arrivalDateTime: flight.DestinationDateTime,

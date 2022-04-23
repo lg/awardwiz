@@ -2,6 +2,7 @@ import * as React from "react"
 import * as ReactQuery from "react-query"
 import { Select, Tag } from "antd"
 import axios from "axios"
+import { Airport } from "./types/types"
 
 const SelectAirportTag = ({ ...props }) => <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>
 
