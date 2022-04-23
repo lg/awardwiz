@@ -9,38 +9,97 @@ import { QueryFunctionContext } from "react-query"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "./scrapers"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
+import { FR24SearchResult } from "./fr24"
 
 // possible bug: HNL-LIH not many results
 
+const getScraperCode = (qc: ReactQuery.QueryClient, program: string) => {
+  return qc.fetchQuery<string>(["scraper", program], async ({ signal }) => {
+    const response = await axios.get<string>(`/scrapers/${program}.js`, { signal })
+    return response.data
+  })
+}
+
+type Scraper = { scraper: string, supportedAirlines: string[] }
+const getScrapers = (qc: ReactQuery.QueryClient) => {
+  return qc.fetchQuery<Scraper[]>(["scrapers"], async ({ signal }) => {
+    return (await axios.get<Scraper[]>("/scrapers.json", { signal })).data
+  }, { staleTime: 1000 * 60 })
+}
+
+type ServingCarrier = {origin: string, destination: string, airlineCode?: string, airlineName?: string}
+const getServingCarriers = (qc: ReactQuery.QueryClient, origin: string, destination: string) => {
+  return qc.fetchQuery<ServingCarrier[]>(["servingCarriers", origin, destination], async ({ signal }) => {
+    const postData = {
+      code: "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c);const d=await a.content();const innerText = await a.evaluate(() => document.body.innerText);return{data:JSON.parse(innerText),type:\"application/json\"}};",
+      context: { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${origin}&destination=${destination}` }
+    }
+    const { data } = await axios.post<FR24SearchResult>("http://localhost:4000/function", postData, { signal })
+
+    if (data.errors)
+      throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
+    if (!data.result.response.flight.data)
+      return []
+
+    return data.result.response.flight.data
+      .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name } as ServingCarrier))
+      .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
+      .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
+  })
+}
+
 export const TestScrape = () => {
+  const qc = ReactQuery.useQueryClient()
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>({ origins: ["HNL"], destinations: ["SFO"], departureDate: moment().format("YYYY-MM-DD"), program: "united" })
 
   const queries = ReactQuery.useQueries<FlightWithFares[]>(
     searchQuery.origins.map((origin) => {
       return searchQuery.destinations.map((destination) => {
         return {
-          queryKey: ["awardAvailability", origin, destination, searchQuery.departureDate, searchQuery.program],
-          queryFn: (context: QueryFunctionContext) => awardSearch({ origin, destination, departureDate: searchQuery.departureDate, program: searchQuery.program }, context.signal)
+          queryKey: ["awardAvailability", origin, destination, searchQuery.departureDate],
+          queryFn: (context: QueryFunctionContext) => awardSearchRoute(origin, destination, searchQuery.departureDate, context.signal)
         }
       })
     }, { staleTime: 1000 * 60 * 5, retry: 1 }).flatMap((x) => x)
   )
 
+  const awardSearchRoute = async (origin: string, destination: string, departureDate: string, signal?: AbortSignal) => {
+    console.log(`[${departureDate} ${origin}➤${destination}] Fetching award availability`)
+    const startTime = Date.now()
+
+    console.log(`[${departureDate} ${origin}➤${destination}] Getting serving carriers`)
+    const allCarriers = await getServingCarriers(qc, origin, destination)
+    if (allCarriers.length === 0) {
+      console.log(`[${departureDate} ${origin}➤${destination}]   No known airlines flying route`)
+      return []
+    }
+    console.log(`[${departureDate} ${origin}➤${destination}]   Received: ${allCarriers.map((carrier) => carrier.airlineCode).join(", ")}`)
+
+    const allScrapers = await getScrapers(qc)
+    const compatibleScrapers = allScrapers.filter((scraper) => scraper.supportedAirlines.some((supportedAirlineCode) => allCarriers.some((carrier) => carrier.airlineCode === supportedAirlineCode)))
+    if (compatibleScrapers.length === 0) {
+      console.log(`[${departureDate} ${origin}➤${destination}]   No compatible scrapers found!`)
+      return []
+    }
+
+    const scraperResults = await Promise.all(compatibleScrapers.map(async (program) => {
+      const scraperStartTime = Date.now()
+      console.log(`[${departureDate} ${origin}➤${destination}]   Running scraper ${program.scraper}`)
+      const scraperCode = await getScraperCode(qc, program.scraper)
+      const postData = { code: scraperCode, context: { origin, destination, departureDate } as ScraperQuery }
+      const { data: results } = await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })
+      console.log(`[${departureDate} ${origin}➤${destination}]     Completed running scraper ${program.scraper} in ${Date.now() - scraperStartTime}ms`)
+      return results
+    }))
+
+    const flightsWithFares = scraperResults.flatMap((scraperResult) => scraperResult.flightsWithFares)
+    console.log(`[${departureDate} ${origin}➤${destination}]   Finished in ${Date.now() - startTime}ms with ${flightsWithFares.length} flights`)
+    return flightsWithFares
+  }
+
   const isLoading = queries.some((query) => query.isLoading)
   const error = queries.find((query) => query.isError)?.error
   const data = queries.filter((query) => query.data).flatMap((query) => query.data) as FlightWithFares[]
-
-  const awardSearch = async (query: ScraperQuery, signal?: AbortSignal) => {
-    console.log(`[${query.program} ${query.departureDate} ${query.origin}➤${query.destination}] Fetching award availability`)
-    const startTime = Date.now()
-    const { data: scraperCode } = await axios.get<string>(`/scrapers/${query.program}.js`, { signal })
-
-    const postData = { code: scraperCode, context: { ...query } }
-    const { data: results } = await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })
-
-    console.log(`[${query.program} ${query.departureDate} ${query.origin}➤${query.destination}] Finished in ${Date.now() - startTime}ms with ${results.flightsWithFares.length} flights`)
-    return results.flightsWithFares
-  }
 
   const [formReady, setFormReady] = React.useState(false)   // not sure why this is required, but otherwise react query runs the query on Form.Item render
   React.useEffect(() => { setFormReady(true) }, [])
