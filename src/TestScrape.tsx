@@ -64,37 +64,19 @@ export const TestScrape = () => {
   )
 
   const awardSearchRoute = async (origin: string, destination: string, departureDate: string, signal?: AbortSignal) => {
-    console.log(`[${departureDate} ${origin}➤${destination}] Fetching award availability`)
-    const startTime = Date.now()
-
-    console.log(`[${departureDate} ${origin}➤${destination}] Getting serving carriers`)
     const allCarriers = await getServingCarriers(qc, origin, destination)
-    if (allCarriers.length === 0) {
-      console.log(`[${departureDate} ${origin}➤${destination}]   No known airlines flying route`)
-      return []
-    }
-    console.log(`[${departureDate} ${origin}➤${destination}]   Received: ${allCarriers.map((carrier) => carrier.airlineCode).join(", ")}`)
 
-    const allScrapers = await getScrapers(qc)
-    const compatibleScrapers = allScrapers.filter((scraper) => scraper.supportedAirlines.some((supportedAirlineCode) => allCarriers.some((carrier) => carrier.airlineCode === supportedAirlineCode)))
-    if (compatibleScrapers.length === 0) {
-      console.log(`[${departureDate} ${origin}➤${destination}]   No compatible scrapers found!`)
-      return []
-    }
+    const compatibleScrapers = (await getScrapers(qc)).filter((scraper) => {
+      return scraper.supportedAirlines.some((supportedAirlineCode) => allCarriers.some((carrier) => carrier.airlineCode === supportedAirlineCode))
+    })
 
     const scraperResults = await Promise.all(compatibleScrapers.map(async (program) => {
-      const scraperStartTime = Date.now()
-      console.log(`[${departureDate} ${origin}➤${destination}]   Running scraper ${program.scraper}`)
       const scraperCode = await getScraperCode(qc, program.scraper)
       const postData = { code: scraperCode, context: { origin, destination, departureDate } as ScraperQuery }
-      const { data: results } = await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })
-      console.log(`[${departureDate} ${origin}➤${destination}]     Completed running scraper ${program.scraper} in ${Date.now() - scraperStartTime}ms`)
-      return results
+      return (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
     }))
 
-    const flightsWithFares = scraperResults.flatMap((scraperResult) => scraperResult.flightsWithFares)
-    console.log(`[${departureDate} ${origin}➤${destination}]   Finished in ${Date.now() - startTime}ms with ${flightsWithFares.length} flights`)
-    return flightsWithFares
+    return scraperResults.flatMap((scraperResult) => scraperResult.flightsWithFares)
   }
 
   const isLoading = queries.some((query) => query.isLoading)

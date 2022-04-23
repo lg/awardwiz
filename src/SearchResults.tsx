@@ -67,6 +67,6 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
   ]
 
   return (
-    <Table<FlightWithFares> dataSource={results} columns={columns} rowKey="flightNo" size="small" loading={isLoading} showSorterTooltip={false} />
+    <Table<FlightWithFares> dataSource={results} columns={columns} rowKey="flightNo" size="small" loading={isLoading} showSorterTooltip={false} pagination={false} />
   )
 }
