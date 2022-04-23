@@ -1,5 +1,5 @@
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { Alert, Button, DatePicker, Form, Input } from "antd"
+import { Alert, Button, DatePicker, Form, Input, Space } from "antd"
 import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as moment from "moment"
@@ -90,16 +90,20 @@ export const TestScrape = () => {
   return (
     <>
       {formReady && (
-        <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
-          <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
-          <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
-          <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
-          <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-          <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
-        </Form>
+        <Space style={{ marginTop: 10, marginLeft: 10 }}>
+          <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
+            <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
+            <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
+            <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
+            <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
+            <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+          </Form>
+        </Space>
       )}
       {error && <Alert message={(error as Error).message} type="error" />}
-      <SearchResults results={data} isLoading={isLoading} />
+      <Space style={{ marginInline: 10 }}>
+        <SearchResults results={data} isLoading={isLoading} />
+      </Space>
     </>
   )
 }

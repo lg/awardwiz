@@ -32,6 +32,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       dataIndex: "departureDateTime",
       render: (text: string) => moment(text).format("h:mm A"),
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => moment(recordA.departureDateTime).diff(moment(recordB.departureDateTime)),
+      defaultSortOrder: "ascend",
     },
     {
       title: "Arrival",
@@ -67,6 +68,14 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
   ]
 
   return (
-    <Table<FlightWithFares> dataSource={results} columns={columns} rowKey="flightNo" size="small" loading={isLoading} showSorterTooltip={false} pagination={false} />
+    <Table<FlightWithFares>
+      dataSource={results}
+      columns={columns}
+      rowKey="flightNo"
+      size="small"
+      loading={isLoading}
+      showSorterTooltip={false}
+      pagination={false}
+    />
   )
 }
