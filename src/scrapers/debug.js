@@ -8,7 +8,7 @@ const puppeteer = require("puppeteer");
   const page = await browser.newPage()
 
   const scraper = require("./united")
-  const results = await scraper({ page, context: { origin: "HNL", destination: "SFO", departureDate: "2022-04-21" } })
+  const results = await scraper({ page, context: { origin: "HNL", destination: "SFO", departureDate: "2022-04-25" } })
 
   debugger
 })()

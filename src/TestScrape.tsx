@@ -4,29 +4,15 @@ import * as React from "react"
 import * as ReactQuery from "react-query"
 import * as moment from "moment"
 import axios from "axios"
-import { QueryFunctionContext } from "react-query"
 
-import { FlightWithFares, ScraperQuery, ScraperResults } from "./types/scrapers"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
-import { FR24SearchResult } from "./types/fr24"
-import { SearchQuery } from "./types/types"
+import type { FlightWithFares, ScraperQuery, ScraperResults } from "./types/scrapers"
+import type { FR24SearchResult } from "./types/fr24"
+import type { SearchQuery } from "./types/types"
 
-// possible bug: HNL-LIH not many results
-
-const getScraperCode = (qc: ReactQuery.QueryClient, program: string) => {
-  return qc.fetchQuery<string>(["scraper", program], async ({ signal }) => {
-    const response = await axios.get<string>(`/scrapers/${program}.js`, { signal })
-    return response.data
-  })
-}
-
-type Scraper = { scraper: string, supportedAirlines: string[] }
-const getScrapers = (qc: ReactQuery.QueryClient) => {
-  return qc.fetchQuery<Scraper[]>(["scrapers"], async ({ signal }) => {
-    return (await axios.get<Scraper[]>("/scrapers.json", { signal })).data
-  }, { staleTime: 1000 * 60 })
-}
+import scrapers from "./scrapers/scrapers.json"
+const scraperCode = import.meta.glob("./scrapers/*.js", { as: "raw" })
 
 type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
 const getServingCarriers = (qc: ReactQuery.QueryClient, origin: string, destination: string) => {
@@ -67,13 +53,15 @@ export const TestScrape = () => {
   const awardSearchRoute = async (origin: string, destination: string, departureDate: string, signal?: AbortSignal) => {
     const allCarriers = await getServingCarriers(qc, origin, destination)
 
-    const compatibleScrapers = (await getScrapers(qc)).filter((scraper) => {
+    const compatibleScrapers = scrapers.filter((scraper) => {
       return scraper.supportedAirlines.some((supportedAirlineCode) => allCarriers.some((carrier) => carrier.airlineCode === supportedAirlineCode))
     })
 
     const scraperResults = await Promise.all(compatibleScrapers.map(async (program) => {
-      const scraperCode = await getScraperCode(qc, program.scraper)
-      const postData = { code: scraperCode, context: { origin, destination, departureDate } as ScraperQuery }
+      const code = scraperCode[`./scrapers/${program.scraper}.js`]
+      if (!code)
+        throw new Error(`Could not find scraper ${program.scraper}`)
+      const postData = { code, context: { origin, destination, departureDate } as ScraperQuery }
       return (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
     }))
 
@@ -84,22 +72,19 @@ export const TestScrape = () => {
   const error = queries.find((query) => query.isError)?.error
   const data = queries.filter((query) => query.data).flatMap((query) => query.data) as FlightWithFares[]
 
-  const [formReady, setFormReady] = React.useState(false)   // not sure why this is required, but otherwise react query runs the query on Form.Item render
-  React.useEffect(() => { setFormReady(true) }, [])
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   return (
-    <Space direction="vertical" style={{ margin: 10 }}>
-      {formReady && (
-        <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
-          <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
-          <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
-          <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
-          <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-          <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
-        </Form>
-      )}
+    <Space direction="vertical" style={{ margin: 10 }}><>
+      <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
+        <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
+        <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
+        <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
+        <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
+        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+      </Form>
+
       {error && <Alert message={(error as Error).message} type="error" />}
       <SearchResults results={data} isLoading={isLoading} />
-    </Space>
+    </></Space>
   )
 }

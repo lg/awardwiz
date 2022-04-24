@@ -1,9 +1,0 @@
-{
-  "short_name": "AwardWiz 2",
-  "name": "AwardWiz 2",
-  "icons": [],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
-}

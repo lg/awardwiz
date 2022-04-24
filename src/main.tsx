@@ -1,10 +1,10 @@
-import * as React from "react"
-import * as ReactDOM from "react-dom"
-import * as ReactQuery from "react-query"
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import * as ReactQuery from 'react-query'
 import { ReactQueryDevtools } from "react-query/devtools"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
-import "./index.css"
+import './index.css'
 import { TestScrape } from "./TestScrape"
 
 const queryClient = new ReactQuery.QueryClient({
@@ -20,22 +20,19 @@ const queryClient = new ReactQuery.QueryClient({
   }
 })
 
-if (process.env.CACHE_OFF !== "true") {
+// if (process.env.CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
   const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
   persistQueryClient({ queryClient, persistor: localStoragePersistor })
-} else {
-  console.debug("Not using persistent cache")
-}
+// } else {
+//  console.debug("Not using persistent cache")
+// }
 
-// ========================================
-
-ReactDOM.render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ReactQuery.QueryClientProvider client={queryClient}>
       <TestScrape />
       <ReactQueryDevtools initialIsOpen={false} />
     </ReactQuery.QueryClientProvider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 )

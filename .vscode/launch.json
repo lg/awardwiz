@@ -11,7 +11,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/public/scrapers/debug.js",
+      "program": "${workspaceFolder}/src/scrapers/debug.js",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
