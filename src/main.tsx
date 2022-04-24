@@ -1,10 +1,10 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import * as ReactQuery from 'react-query'
+import React from "react"
+import ReactDOM from "react-dom/client"
+import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
 import { persistQueryClient } from "react-query/persistQueryClient-experimental"
 import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
-import './index.css'
+import "./index.css"
 import { TestScrape } from "./TestScrape"
 
 const queryClient = new ReactQuery.QueryClient({
@@ -28,7 +28,7 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Not using persistent cache")
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ReactQuery.QueryClientProvider client={queryClient}>
       <TestScrape />

@@ -74,17 +74,19 @@ export const TestScrape = () => {
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   return (
-    <Space direction="vertical" style={{ margin: 10 }}><>
-      <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
-        <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
-        <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
-        <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
-        <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
-      </Form>
+    <Space direction="vertical" style={{ margin: 10 }}>
+      <>
+        <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
+          <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
+          <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
+          <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
+          <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
+          <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+        </Form>
 
-      {error && <Alert message={(error as Error).message} type="error" />}
-      <SearchResults results={data} isLoading={isLoading} />
-    </></Space>
+        {error && <Alert message={(error as Error).message} type="error" />}
+        <SearchResults results={data} isLoading={isLoading} />
+      </>
+    </Space>
   )
 }

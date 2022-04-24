@@ -7,7 +7,7 @@ const SelectAirportTag = ({ ...props }) => <Tag style={{ marginRight: 3 }} {...p
 
 export const SelectAirport = ({ ...props }) => {
   const allAirports = React.useMemo(() => {
-    const airportMap: { [key: string]: DefaultOptionType } = {};   // faster for deduplication
+    const airportMap: { [key: string]: DefaultOptionType } = {}   // faster for deduplication
     airports.forEach((airport) => {
       if (airport.iata_code && airport.name && airport.iata_code.length === 3)
         airportMap[airport.iata_code] = { value: airport.iata_code, label: `${airport.iata_code} - ${airport.name}` }

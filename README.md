@@ -8,8 +8,3 @@ Currently using browserless' docker container. It listens on port `4000`, no tok
 ```shell
 docker-compose up
 ```
-
-### Migration
-
-- havent moved over eslint
-- havent moved over tsconfig

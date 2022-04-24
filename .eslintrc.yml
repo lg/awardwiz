@@ -65,3 +65,4 @@ rules:
   import/no-unresolved: off
 
   "@typescript-eslint/no-empty-function": off
+  import/newline-after-import: off
