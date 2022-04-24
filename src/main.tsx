@@ -20,19 +20,19 @@ const queryClient = new ReactQuery.QueryClient({
   }
 })
 
-// if (process.env.CACHE_OFF !== "true") {
+if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
   const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
   persistQueryClient({ queryClient, persistor: localStoragePersistor })
-// } else {
-//  console.debug("Not using persistent cache")
-// }
+} else {
+  console.debug("Not using persistent cache")
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ReactQuery.QueryClientProvider client={queryClient}>
       <TestScrape />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
     </ReactQuery.QueryClientProvider>
   </React.StrictMode>
 )
