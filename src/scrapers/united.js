@@ -9,7 +9,7 @@ module.exports = async ({ page, context }) => {
   console.log("Going to search page...")
 
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
-  const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 10000 })
+  const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
   /** @type {import("./united").UnitedFetchFlights} */
   const raw = await response.json()
 

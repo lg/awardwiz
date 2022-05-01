@@ -14,6 +14,7 @@
     "moment": "^2.29.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-moment": "^1.1.2",
     "react-query": "^4.0.0-beta.7",
     "use-deep-compare-effect": "^1.8.1"
   },

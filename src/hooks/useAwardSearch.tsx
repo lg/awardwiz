@@ -3,6 +3,7 @@ import * as ReactQuery from "react-query"
 import { ExperimentOutlined, NodeIndexOutlined, RocketOutlined } from "@ant-design/icons"
 import axios from "axios"
 import useDeepCompareEffect from "use-deep-compare-effect"
+import moment from "moment"
 import { DebugTreeNode, genNewDebugTreeNode, useDebugTree } from "../DebugTree"
 import type { SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
@@ -99,6 +100,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       return {
         queryKey: ["awardAvailability", scraperQuery],
         staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 15,
         retry: 1,
         queryFn: async ({ signal }) => {
           const startTime = Date.now()
@@ -126,6 +128,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
   const isLoading = servingCarriersQueries.some((query) => query.isLoading) || searchQueries.some((query) => query.isLoading)
   const error = servingCarriersQueries.find((query) => query.error) || searchQueries.find((query) => query.error)
+  const dataNoOlderThan = searchQueries.reduce((acc, query) => {
+    return moment(query.dataUpdatedAt) < acc ? moment(query.dataUpdatedAt) : acc
+  }, moment())
 
-  return { searchResults: scraperResults, isLoading, error: error && error?.error as Error }
+  return { searchResults: scraperResults, isLoading, error: error && error?.error as Error, dataNoOlderThan }
 }

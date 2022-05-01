@@ -2,7 +2,7 @@ import { LoadingOutlined } from "@ant-design/icons"
 import { Tree } from "antd"
 import React, { ReactNode } from "react"
 
-type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: string, textB: string, origIcon: ReactNode, isLoading: boolean }
+type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: ReactNode, textB: ReactNode, origIcon: ReactNode, isLoading: boolean }
 export type DebugTreeNode = DebugTreeNodeNoComputed & { title: string, icon: ReactNode }
 type DebugTreeNodeUpdate = Partial<Omit<DebugTreeNodeNoComputed, "key">>
 
@@ -52,7 +52,7 @@ const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: DebugTree
       node.children.splice(node.children.indexOf(child), 1)
   })
 
-  node.title = `${node.textA}${node.textB.length > 0 ? ` (${node.textB})` : ""}`
+  node.title = `${node.textA}${node.textB!.toString().length > 0 ? ` (${node.textB})` : ""}`
   node.icon = node.isLoading ? <LoadingOutlined /> : node.origIcon
 
   return newTree
@@ -77,7 +77,7 @@ export const DebugTreeProvider = (props: React.PropsWithChildren<{ rootNode: Deb
   return (
     <DebugTreeContext.Provider value={dispatch}>
       {props.children}
-      <Tree showIcon expandedKeys={allKeys(state, [])} treeData={[state]} />
+      <Tree style={{ marginTop: 10 }} showIcon showLine={{ showLeafIcon: false }} expandedKeys={allKeys(state, [])} treeData={[state]} />
     </DebugTreeContext.Provider>
   )
 }
