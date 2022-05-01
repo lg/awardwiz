@@ -2,6 +2,7 @@ import React from "react"
 import * as ReactQuery from "react-query"
 import { ExperimentOutlined, NodeIndexOutlined, RocketOutlined } from "@ant-design/icons"
 import axios from "axios"
+import useDeepCompareEffect from "use-deep-compare-effect"
 import { DebugTreeNode, genNewDebugTreeNode, useDebugTree } from "../DebugTree"
 import type { SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
@@ -18,7 +19,6 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Take all origins and destinations and create a list of all possible pairs
   const [queryPairings, setQueryPairings] = React.useState<QueryPairing[]>([])  // 1-to-1 mappings of origin/destination (ex. SFO-HNL, OAK-HNL, SJC-HNL)
   React.useEffect(() => {
-    console.log(`New search: ${JSON.stringify(searchQuery)}`)
     const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
     const debugChildren = pairings.map((pairing) => genNewDebugTreeNode({
       key: `${pairing.origin}${pairing.destination}`, textA: `${pairing.origin} → ${pairing.destination}`, textB: "pending", origIcon: <NodeIndexOutlined />
@@ -68,12 +68,11 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .filter((item) => item.data)
     .map((item) => item.data)
     .flat() as ServingCarrier[]
-  const servingCarriersJSON = JSON.stringify(servingCarriers)
 
   // Figure out which scrapers are compatible for the given pairings
   const [scrapeQueries, setScrapeQueries] = React.useState<ScraperQuery[]>([])
-  React.useEffect(() => {
-    const origDestCarriers = (JSON.parse(servingCarriersJSON) as ServingCarrier[]).reduce((result, servingCarrier: ServingCarrier) => {
+  useDeepCompareEffect(() => {
+    const origDestCarriers = servingCarriers.reduce((result, servingCarrier: ServingCarrier) => {
       const scrapedBy = scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).map((scraper) => scraper.name)
       const debugChild = genNewDebugTreeNode({ key: `${servingCarrier.origin}${servingCarrier.destination}${servingCarrier.airlineCode}`, textA: `${servingCarrier.airlineName}`, textB: scrapedBy.length > 0 ? `Scraped by: ${scrapedBy.join(", ")}` : "Missing scraper", origIcon: <RocketOutlined /> })
       const origDest = `${servingCarrier.origin}${servingCarrier.destination}`
@@ -94,7 +93,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     })
 
     setScrapeQueries(newScrapeQueries)
-  }, [servingCarriersJSON, debugTree, searchQuery.departureDate])
+  }, [debugTree, searchQuery.departureDate, servingCarriers])
 
   // Run the scrapers
   const searchQueries = ReactQuery.useQueries(
