@@ -1,92 +1,92 @@
-import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { Alert, Button, DatePicker, Form, Input, Space } from "antd"
-import * as React from "react"
-import * as ReactQuery from "react-query"
-import * as moment from "moment"
-import axios from "axios"
+// TODO:
+//   - bring back caching between browser reloads
+//   - bring loading indicator back
+//   - make sure requests are cancelable
 
+import * as React from "react"
+import moment from "moment"
+
+import { ExperimentOutlined, NodeIndexOutlined, RocketOutlined, SearchOutlined } from "@ant-design/icons"
+import { Alert, Button, DatePicker, Form, Input } from "antd"
+import type { SearchQuery } from "./types/types"
+import { QueryPairing, ServingCarrier, useServingCarriersQuery } from "./hooks/useServingCarriersQuery"
+import { DebugTreeNode, genNewDebugTreeNode, useDebugTree } from "./DebugTree"
+import scrapers from "./scrapers/scrapers.json"
+import type { ScraperQuery } from "./types/scrapers"
+import { useScrapers } from "./hooks/useScrapers"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
-import type { FlightWithFares, ScraperQuery, ScraperResults } from "./types/scrapers"
-import type { FR24SearchResult } from "./types/fr24"
-import type { SearchQuery } from "./types/types"
-
-import scrapers from "./scrapers/scrapers.json"
-const scraperCode = import.meta.glob("./scrapers/*.js", { as: "raw" })
-
-type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
-const getServingCarriers = (qc: ReactQuery.QueryClient, origin: string, destination: string) => {
-  return qc.fetchQuery<ServingCarrier[]>(["servingCarriers", origin, destination], async ({ signal }) => {
-    const postData = {
-      code: "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c);const d=await a.content();const innerText = await a.evaluate(() => document.body.innerText);return{data:JSON.parse(innerText),type:\"application/json\"}};",
-      context: { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${origin}&destination=${destination}` }
-    }
-    const { data } = await axios.post<FR24SearchResult>("http://localhost:4000/function", postData, { signal })
-
-    if (data.errors)
-      throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
-    if (!data.result.response.flight.data)
-      return []
-
-    return data.result.response.flight.data
-      .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name } as ServingCarrier))
-      .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
-      .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
-  })
-}
 
 export const TestScrape = () => {
-  const qc = ReactQuery.useQueryClient()
-  const [searchQuery, setSearchQuery] = React.useState<SearchQuery>({ origins: ["HNL"], destinations: ["SFO"], departureDate: moment().format("YYYY-MM-DD"), program: "united" })
+  console.log("render")
 
-  const queries = ReactQuery.useQueries(
-    searchQuery.origins.map((origin) => {
-      return searchQuery.destinations.map((destination) => ({
-        queryKey: ["awardAvailability", origin, destination, searchQuery.departureDate],
-        queryFn: (context) => awardSearchRoute(origin, destination, searchQuery.departureDate, context.signal),
-        staleTime: 1000 * 60 * 5,
-        retry: 1
-      }) as ReactQuery.UseQueryOptions<FlightWithFares[]>)
-    }).flat()
-  )
+  const debugTree = useDebugTree()
+  const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => ({ origins: ["HNL", "LIH"], destinations: ["SFO"], departureDate: moment().format("YYYY-MM-DD"), program: "united" }))
 
-  const awardSearchRoute = async (origin: string, destination: string, departureDate: string, signal?: AbortSignal) => {
-    const allCarriers = await getServingCarriers(qc, origin, destination)
+  // Take all origins and destinations and create a list of all possible pairs
+  const [queryPairings, setQueryPairings] = React.useState<QueryPairing[]>([])  // 1-to-1 mappings of origin/destination (ex. SFO-HNL, OAK-HNL, SJC-HNL)
+  React.useEffect(() => {
+    console.log(`New search: ${JSON.stringify(searchQuery)}`)
+    const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
+    const debugChildren = pairings.map((pairing) => genNewDebugTreeNode({ key: `${pairing.origin}${pairing.destination}`, textA: `${pairing.origin} → ${pairing.destination}`, textB: "pending", origIcon: <NodeIndexOutlined /> }))
 
-    const compatibleScrapers = scrapers.filter((scraper) => {
-      return scraper.supportedAirlines.some((supportedAirlineCode) => allCarriers.some((carrier) => carrier.airlineCode === supportedAirlineCode))
+    debugTree({ type: "update", payload: { key: "root", updateData: { textA: `Search for ${searchQuery.origins.join(",")} → ${searchQuery.destinations.join(",")} on ${searchQuery.departureDate}`, children: debugChildren } } })
+    setQueryPairings(pairings)
+  }, [searchQuery, debugTree])
+
+  // Search each possible pair of origin/destination for which airlines serve the route
+  const servingCarriers = useServingCarriersQuery(queryPairings, (origin, destination, statusText, isLoading) => {
+    debugTree({ type: "update", payload: { key: `${origin}${destination}`, updateData: { textB: statusText, isLoading } } })
+  })
+  React.useEffect(() => {
+    const origDestCarriers = (JSON.parse(servingCarriers) as ServingCarrier[]).reduce((result, servingCarrier: ServingCarrier) => {
+      const scrapedBy = scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).map((scraper) => scraper.name)
+      const debugChild = genNewDebugTreeNode({ key: `${servingCarrier.origin}${servingCarrier.destination}${servingCarrier.airlineCode}`, textA: `${servingCarrier.airlineName}`, textB: scrapedBy.length > 0 ? `Scraped by: ${scrapedBy.join(", ")}` : "Missing scraper", origIcon: <RocketOutlined /> })
+      const origDest = `${servingCarrier.origin}${servingCarrier.destination}`
+
+      result[origDest] ||= { debugChildren: [], scrapers: [], origin: servingCarrier.origin, destination: servingCarrier.destination }
+      result[origDest].debugChildren.push(debugChild)
+      result[origDest].scrapers.push(...scrapedBy)
+      return result
+    }, {} as { [key: string]: { debugChildren: DebugTreeNode[], scrapers: string[], origin: string, destination: string } })
+
+    // Loop over flight pairings and create queries to run scraper (and also add to debug tree)
+    const newScrapeQueries = Object.entries(origDestCarriers).flatMap(([origDestKey, carrierItem]): ScraperQuery[] => {
+      const uniqueScrapers = [...new Set(carrierItem.scrapers)]
+      const uniqueScraperNodes = uniqueScrapers.map((scraper) => genNewDebugTreeNode({ key: `${origDestKey}${scraper}`, textA: `Scraper: ${scraper}`, origIcon: <ExperimentOutlined /> }))
+      debugTree({ type: "update", payload: { key: origDestKey, updateData: { children: carrierItem.debugChildren.concat(uniqueScraperNodes) } } })
+
+      return uniqueScrapers.map((scraper) => ({ scraper, origin: carrierItem.origin, destination: carrierItem.destination, departureDate: searchQuery.departureDate }))
     })
+    setScrapeQueries(newScrapeQueries)
+  }, [servingCarriers, searchQuery.departureDate, debugTree]) //, searchQuery.departureDate, setDebugTree])
 
-    const scraperResults = await Promise.all(compatibleScrapers.map(async (program) => {
-      const code = scraperCode[`./scrapers/${program.scraper}.js`]
-      if (!code)
-        throw new Error(`Could not find scraper ${program.scraper}`)
-      const postData = { code, context: { origin, destination, departureDate } as ScraperQuery }
-      return (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
-    }))
+  // Run scrapers given the pairs found above
+  const [scrapeQueries, setScrapeQueries] = React.useState<ScraperQuery[]>([])  // 1-to-1 mappings of origin/destination (ex. SFO-HNL, OAK-HNL, SJC-HNL)
+  console.log("scrapeQueries", scrapeQueries)
+  const searchResults = useScrapers(scrapeQueries, (scraperQuery, statusText, isLoading) => {
+    debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: statusText, isLoading } } })
+  })
 
-    return scraperResults.flatMap((scraperResult) => scraperResult.flightsWithFares)
-  }
-
-  const isLoading = queries.some((query) => query.isLoading)
-  const error = queries.find((query) => query.isError)?.error
-  const data = queries.filter((query) => query.data).flatMap((query) => query.data) as FlightWithFares[]
+  // const isLoading = queries.some((query) => query.isLoading)
+  // const error = queries.find((query) => query.isError)?.error
+  // const data = queries.filter((query) => query.data).flatMap((query) => query.data) as FlightWithFares[]
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
+  const isLoading = false
+  const error = undefined
   return (
-    <Space direction="vertical" style={{ margin: 10 }}>
-      <>
-        <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
-          <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
-          <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
-          <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
-          <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
-          <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
-        </Form>
+    <>
+      <Form name="searchFields" initialValues={initialValuesWithMoment} layout="inline" onFinish={(values) => { setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") }) }}>
+        <Form.Item name="origins" style={{ width: 200 }}><SelectAirport placeholder="Origins" /></Form.Item>
+        <Form.Item name="destinations" style={{ width: 200 }}><SelectAirport placeholder="Destinations" /></Form.Item>
+        <Form.Item name="departureDate"><DatePicker allowClear={false} /></Form.Item>
+        <Form.Item name="program" style={{ width: 200 }}><Input prefix={<NodeIndexOutlined />} placeholder="Program" /></Form.Item>
+        <Form.Item wrapperCol={{ offset: 2, span: 3 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+      </Form>
 
-        {error && <Alert message={(error as Error).message} type="error" />}
-        <SearchResults results={data} isLoading={isLoading} />
-      </>
-    </Space>
+      {error && <Alert message={(error as Error).message} type="error" />}
+      <SearchResults results={searchResults} isLoading={false} />
+    </>
   )
 }

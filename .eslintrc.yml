@@ -7,6 +7,7 @@ extends:
   - plugin:@typescript-eslint/recommended
   - plugin:react/recommended
   - plugin:promise/recommended
+  - plugin:react-hooks/recommended
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaFeatures:
@@ -18,13 +19,14 @@ plugins:
   - '@typescript-eslint'
   - promise
   - no-loops
+  - react-hooks
 rules:
   "no-loops/no-loops": 2
   quotes: ["error", "double"]
   semi: ["error", "never", {"beforeStatementContinuationChars": "always"}]
   max-len: off
-  no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]
-  "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+  no-unused-vars: ["error", { "args": "none" }]
+  "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }]
   no-use-before-define: off
   no-undef: off # because of JSX
   max-classes-per-file: off
@@ -54,6 +56,7 @@ rules:
   react/jsx-first-prop-new-line: off
   react/jsx-props-no-spreading: off
   react/prop-types: ["error", { skipUndeclared: true }]
+  react/jsx-no-useless-fragment: off
 
   # these should be on before commiting
   react/prefer-stateless-function: off
@@ -66,3 +69,7 @@ rules:
 
   "@typescript-eslint/no-empty-function": off
   import/newline-after-import: off
+
+  react-hooks/rules-of-hooks: "error"
+  "react-hooks/exhaustive-deps": "warn"
+  spaced-comment: off

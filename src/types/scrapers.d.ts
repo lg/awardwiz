@@ -2,6 +2,7 @@ export type ScraperQuery = {
   origin: string
   destination: string
   departureDate: string
+  scraper: string
 }
 
 export type ScraperResults = {

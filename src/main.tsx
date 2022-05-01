@@ -1,9 +1,11 @@
+import { SearchOutlined } from "@ant-design/icons"
 import React from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
-import { persistQueryClient } from "react-query/persistQueryClient-experimental"
-import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
+import { DebugTreeProvider, genNewDebugTreeNode } from "./DebugTree"
+// import { persistQueryClient } from "react-query/localStorage/client"
+// import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import "./index.css"
 import { TestScrape } from "./TestScrape"
 
@@ -22,17 +24,17 @@ const queryClient = new ReactQuery.QueryClient({
 
 if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
-  const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-  persistQueryClient({ queryClient, persistor: localStoragePersistor })
+  // const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
+  // persistQueryClient({ queryClient, persistor: localStoragePersistor })
 } else {
   console.debug("Not using persistent cache")
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ReactQuery.QueryClientProvider client={queryClient}>
+  <ReactQuery.QueryClientProvider client={queryClient}>
+    <DebugTreeProvider rootNode={genNewDebugTreeNode({ key: "root", textA: "(no search yet)", origIcon: <SearchOutlined /> })}>
       <TestScrape />
-      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
-    </ReactQuery.QueryClientProvider>
-  </React.StrictMode>
+    </DebugTreeProvider>
+    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+  </ReactQuery.QueryClientProvider>
 )

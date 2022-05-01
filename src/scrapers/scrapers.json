@@ -1,6 +1,6 @@
 [
   {
-    "scraper": "united",
+    "name": "united",
     "supportedAirlines": [
       "star alliance",
       "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA",
