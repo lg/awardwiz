@@ -29,7 +29,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   }, [searchQuery, debugTree])
 
   // Return the list of carriers that fly the given pairings
-  const servingCarriersQueries = ReactQuery.useQueries(
+  const servingCarriersQueries = ReactQuery.useQueries({ queries:
     queryPairings.map((pairing) => {
       return {
         queryKey: ["servingCarriers", pairing.origin, pairing.destination],
@@ -60,9 +60,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
           return carriers
         },
         onError: (err: Error) => debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: `Error: ${err.message}`, isLoading: false } } })
-      }
+      } as ReactQuery.UseQueryOptions<ServingCarrier[]>
     })
-  )
+  })
 
   const servingCarriers = servingCarriersQueries
     .filter((item) => item.data)
@@ -96,7 +96,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   }, [debugTree, searchQuery.departureDate, servingCarriers])
 
   // Run the scrapers
-  const searchQueries = ReactQuery.useQueries(
+  const searchQueries = ReactQuery.useQueries({ queries:
     scrapeQueries.map((scraperQuery) => {
       return {
         queryKey: ["awardAvailability", scraperQuery],
@@ -117,11 +117,15 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
         onError: (err: Error) => debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Error: ${err.message}`, isLoading: false } } })
       } as ReactQuery.UseQueryOptions<FlightWithFares[]>
     })
-  )
+  })
 
   const scraperResults = searchQueries
     .filter((item) => item.data)
     .map((item) => item.data)
-    .flat()
-  return scraperResults as FlightWithFares[]
+    .flat() as FlightWithFares[]
+
+  const isLoading = servingCarriersQueries.some((query) => query.isLoading) || searchQueries.some((query) => query.isLoading)
+  const error = servingCarriersQueries.find((query) => query.error) || searchQueries.find((query) => query.error)
+
+  return { searchResults: scraperResults, isLoading, error: error && error?.error as Error }
 }
