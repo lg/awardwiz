@@ -21,7 +21,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   React.useEffect(() => {
     const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
     const debugChildren = pairings.map((pairing) => genNewDebugTreeNode({
-      key: `${pairing.origin}${pairing.destination}`, textA: `${pairing.origin} → ${pairing.destination}`, textB: "pending", origIcon: <NodeIndexOutlined />
+      key: `${pairing.origin}${pairing.destination}`, textA: `${pairing.origin} → ${pairing.destination}`, origIcon: <NodeIndexOutlined />
     }))
 
     debugTree({ type: "update", payload: { key: "root", updateData: { textA: `Search for ${searchQuery.origins.join(",")} → ${searchQuery.destinations.join(",")} on ${searchQuery.departureDate}`, children: debugChildren } } })
