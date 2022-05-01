@@ -3,9 +3,9 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
+import { persistQueryClient } from "react-query/persistQueryClient"
+import { createWebStoragePersister } from "react-query/createWebStoragePersister"
 import { DebugTreeProvider, genNewDebugTreeNode } from "./DebugTree"
-// import { persistQueryClient } from "react-query/localStorage/client"
-// import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import "./index.css"
 import { TestScrape } from "./TestScrape"
 
@@ -24,8 +24,8 @@ const queryClient = new ReactQuery.QueryClient({
 
 if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
-  // const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-  // persistQueryClient({ queryClient, persistor: localStoragePersistor })
+  const localStoragePersister = createWebStoragePersister({ storage: window.localStorage })
+  persistQueryClient({ queryClient, persister: localStoragePersister })
 } else {
   console.debug("Not using persistent cache")
 }

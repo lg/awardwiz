@@ -33,8 +33,6 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     queryPairings.map((pairing) => {
       return {
         queryKey: ["servingCarriers", pairing.origin, pairing.destination],
-        staleTime: 1000 * 60 * 5,
-        retry: 1,
         queryFn: async () => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: "Requesting serving carriers...", isLoading: true } } })
@@ -100,6 +98,8 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     scrapeQueries.map((scraperQuery) => {
       return {
         queryKey: ["awardAvailability", scraperQuery],
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
         queryFn: async ({ signal }) => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: "Searching...", isLoading: true } } })
