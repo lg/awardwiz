@@ -31,10 +31,12 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <ReactQuery.QueryClientProvider client={queryClient}>
-    <DebugTreeProvider rootNode={genNewDebugTreeNode({ key: "root", textA: "(no search yet)", origIcon: <SearchOutlined /> })}>
-      <TestScrape />
-    </DebugTreeProvider>
-    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
-  </ReactQuery.QueryClientProvider>
+  <React.StrictMode>
+    <ReactQuery.QueryClientProvider client={queryClient}>
+      <DebugTreeProvider rootNode={genNewDebugTreeNode({ key: "root", textA: "(no search yet)", origIcon: <SearchOutlined /> })}>
+        <TestScrape />
+      </DebugTreeProvider>
+      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+    </ReactQuery.QueryClientProvider>
+  </React.StrictMode>
 )

@@ -33,14 +33,23 @@ export const genNewDebugTreeNode = (newNode: Partial<Omit<DebugTreeNodeNoCompute
 const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: DebugTreeNodeUpdate) => {
   const newTree = { ...tree }
   const node = newTree.key === key ? newTree : findInTree(newTree, key)
-  if (!node)
+  if (!node) {
+    debugger
     throw new Error(`Could not find node with key ${key}`)
+  }
 
+  // When we have children by the same keys coming in, we don't want to overwrite them
   const { children: updateChildren, ...updateDataNoChildren } = updateData
   Object.assign(node, updateDataNoChildren)
   updateChildren?.forEach((child) => {
     if (!node.children.find((checkElement) => child.key === checkElement.key))
       node.children.push(child)
+  })
+
+  // Remove nodes that are missing
+  node.children.forEach((child) => {
+    if (!updateData.children?.find((checkElement) => child.key === checkElement.key))
+      node.children.splice(node.children.indexOf(child), 1)
   })
 
   node.title = `${node.textA}${node.textB.length > 0 ? ` (${node.textB})` : ""}`
