@@ -1,26 +1,21 @@
 // TODO:
-//   - bring back caching between browser reloads
-//   - bring loading indicator back
 //   - make sure requests are cancelable
 
 import * as React from "react"
 import moment from "moment"
 import { LeftOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
-import { Alert, Button, DatePicker, Form, Typography } from "antd"
-import Moment from "react-moment"
-import type { SearchQuery } from "./types/types"
+import { Alert, Button, DatePicker, Form } from "antd"
+import type { SearchQuery } from "../types/types"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
-import { useAwardSearch } from "./hooks/useAwardSearch"
+import { useAwardSearch } from "../hooks/useAwardSearch"
 
-const { Text } = Typography
-
-export const TestScrape = () => {
+export const FlightSearch = () => {
   console.log("render")
 
   const defaultSearchQuery: SearchQuery = { origins: ["HNL", "LIH"], destinations: ["SFO"], departureDate: moment().add("1", "day").format("YYYY-MM-DD"), program: "united" }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(defaultSearchQuery)
-  const { searchResults, isLoading, error, dataNoOlderThan } = useAwardSearch(searchQuery)
+  const { searchResults, isLoading, error } = useAwardSearch(searchQuery)
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   const [form] = Form.useForm()
@@ -38,9 +33,6 @@ export const TestScrape = () => {
 
       {error && <Alert message={error.message} type="error" />}
       <SearchResults results={searchResults} isLoading={false} />
-      {searchResults.length > 0 && <Text style={{ fontSize: 10 }}>Flight availability as of <Moment interval={1000} date={dataNoOlderThan} fromNow /></Text>}
     </>
   )
 }
-
-// {moment.duration(moment().diff(dataNoOlderThan, "minutes")).humanize()}

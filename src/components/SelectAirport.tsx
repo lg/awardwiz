@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Select, Tag } from "antd"
 import type { DefaultOptionType } from "antd/lib/select"
-import airports from "./airports.json"
+import airports from "../airports.json"
 
 const SelectAirportTag = ({ ...props }) => <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>
 

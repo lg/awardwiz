@@ -5,9 +5,9 @@ import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
 import { persistQueryClient } from "react-query/persistQueryClient"
 import { createWebStoragePersister } from "react-query/createWebStoragePersister"
-import { DebugTreeProvider, genNewDebugTreeNode } from "./DebugTree"
+import { DebugTreeProvider, genNewDebugTreeNode } from "./components/DebugTree"
 import "./index.css"
-import { TestScrape } from "./TestScrape"
+import { FlightSearch } from "./components/FlightSearch"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -34,7 +34,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ReactQuery.QueryClientProvider client={queryClient}>
       <DebugTreeProvider rootNode={genNewDebugTreeNode({ key: "root", textA: "(no search yet)", origIcon: <SearchOutlined /> })}>
-        <TestScrape />
+        <FlightSearch />
       </DebugTreeProvider>
       {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
     </ReactQuery.QueryClientProvider>

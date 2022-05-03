@@ -2,7 +2,7 @@ import { LoadingOutlined } from "@ant-design/icons"
 import { Tree } from "antd"
 import React, { ReactNode } from "react"
 
-type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: ReactNode, textB: ReactNode, origIcon: ReactNode, isLoading: boolean }
+type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: string, textB: string, origIcon: ReactNode, isLoading: boolean }
 export type DebugTreeNode = DebugTreeNodeNoComputed & { title: string, icon: ReactNode }
 type DebugTreeNodeUpdate = Partial<Omit<DebugTreeNodeNoComputed, "key">>
 
@@ -10,14 +10,14 @@ type DebugTreeAction = { type: "update", payload: { key: string, updateData: Deb
 type Dispatch = (action: DebugTreeAction) => void
 export const DebugTreeContext = React.createContext<Dispatch | undefined>(undefined)
 
-const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
+export const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
   if (item.children)
     collectedKeys.push(item.key)
   item.children.forEach((child) => allKeys(child as {key: string, children: unknown[]}, collectedKeys))
   return collectedKeys
 }
 
-const findInTree = (node: DebugTreeNode, findKey: string): DebugTreeNode | undefined => {
+export const findInTree = (node: DebugTreeNode, findKey: string): DebugTreeNode | undefined => {
   if (node.key === findKey)
     return node
   if (node.children.length === 0)
@@ -25,12 +25,12 @@ const findInTree = (node: DebugTreeNode, findKey: string): DebugTreeNode | undef
   return node.children.reduce((acc: DebugTreeNode | undefined, child) => (acc || findInTree(child, findKey)), undefined)
 }
 
-export const genNewDebugTreeNode = (newNode: Partial<Omit<DebugTreeNodeNoComputed, "key">> & { key: string }): DebugTreeNode => {
+export const genNewDebugTreeNode = (newNode: DebugTreeNodeUpdate & { key: string }): DebugTreeNode => {
   const node: DebugTreeNode = { textA: "", textB: "", icon: "", title: "", children: [], key: newNode.key, origIcon: "", isLoading: false }
   return updateDebugTree(node, node.key, newNode)   // to run computed properties
 }
 
-const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: DebugTreeNodeUpdate) => {
+export const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: DebugTreeNodeUpdate) => {
   const newTree = { ...tree }
   const node = newTree.key === key ? newTree : findInTree(newTree, key)
   if (!node) {
@@ -52,7 +52,7 @@ const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: DebugTree
       node.children.splice(node.children.indexOf(child), 1)
   })
 
-  node.title = `${node.textA}${node.textB!.toString().length > 0 ? ` (${node.textB})` : ""}`
+  node.title = `${node.textA}${node.textB.length > 0 ? ` (${node.textB})` : ""}`
   node.icon = node.isLoading ? <LoadingOutlined /> : node.origIcon
 
   return newTree
