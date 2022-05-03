@@ -11,6 +11,7 @@ import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers
 import PhAirplaneTilt from "~icons/ph/airplane-tilt"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import scrapers from "../scrapers/scrapers.json"
+import Text from "antd/lib/typography/Text"
 const scraperCode = import.meta.glob("../scrapers/*.js", { as: "raw" })
 
 type QueryPairing = {origin: string, destination: string, departureDate: string}
@@ -75,7 +76,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   useDeepCompareEffect(() => {
     const origDestCarriers = servingCarriers.reduce((result, servingCarrier: ServingCarrier) => {
       const scrapedBy = scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).map((scraper) => scraper.name)
-      const debugChild = genNewDebugTreeNode({ key: `${servingCarrier.origin}${servingCarrier.destination}${servingCarrier.airlineCode}`, textA: `${servingCarrier.airlineName}`, textB: scrapedBy.length > 0 ? `Scraped by: ${scrapedBy.join(", ")}` : "Missing scraper", origIcon: <PhAirplaneTilt /> })
+      const debugChild = genNewDebugTreeNode({ key: `${servingCarrier.origin}${servingCarrier.destination}${servingCarrier.airlineCode}`, textA: `${servingCarrier.airlineName}`, textB: scrapedBy.length > 0 ? <Text code>{scrapedBy.join(", ")}</Text> : "", origIcon: <PhAirplaneTilt /> })
       const origDest = `${servingCarrier.origin}${servingCarrier.destination}`
 
       result[origDest] ||= { debugChildren: [], scrapers: [], origin: servingCarrier.origin, destination: servingCarrier.destination }
@@ -87,7 +88,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     // Loop over flight pairings and create queries to run scraper (and also add to debug tree)
     const newScrapeQueries = Object.entries(origDestCarriers).flatMap(([origDestKey, carrierItem]): ScraperQuery[] => {
       const uniqueScrapers = [...new Set(carrierItem.scrapers)]
-      const uniqueScraperNodes = uniqueScrapers.map((scraper) => genNewDebugTreeNode({ key: `${origDestKey}${scraper}`, textA: `Scraper: ${scraper}`, origIcon: <CarbonPaintBrush /> }))
+      const uniqueScraperNodes = uniqueScrapers.map((scraper) => genNewDebugTreeNode({ key: `${origDestKey}${scraper}`, textA: <>Scraper: <Text code>{scraper}</Text></>, origIcon: <CarbonPaintBrush /> }))
       debugTree({ type: "update", payload: { key: origDestKey, updateData: { children: carrierItem.debugChildren.concat(uniqueScraperNodes) } } })
 
       return uniqueScrapers.map((scraper) => ({ scraper, origin: carrierItem.origin, destination: carrierItem.destination, departureDate: searchQuery.departureDate }))

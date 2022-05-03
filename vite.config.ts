@@ -18,7 +18,8 @@ export default defineConfig({
   ],
 
   test: {
-    includeSource: ["src/**/*.{js,tsx}"],
+    globals: true,
+    environment: "jsdom",
     coverage: {
       reporter: ["lcovonly"],
       enabled: true,

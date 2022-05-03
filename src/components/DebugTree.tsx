@@ -2,8 +2,8 @@ import { LoadingOutlined } from "@ant-design/icons"
 import { Tree } from "antd"
 import React, { ReactNode } from "react"
 
-type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: string, textB: string, origIcon: ReactNode, isLoading: boolean }
-export type DebugTreeNode = DebugTreeNodeNoComputed & { title: string, icon: ReactNode }
+type DebugTreeNodeNoComputed = { key: string, children: DebugTreeNode[], textA: ReactNode, textB: ReactNode, origIcon: ReactNode, isLoading: boolean }
+export type DebugTreeNode = DebugTreeNodeNoComputed & { title: ReactNode, icon: ReactNode }
 type DebugTreeNodeUpdate = Partial<Omit<DebugTreeNodeNoComputed, "key">>
 
 type DebugTreeAction = { type: "update", payload: { key: string, updateData: DebugTreeNodeUpdate } }
@@ -52,7 +52,7 @@ export const updateDebugTree = (tree: DebugTreeNode, key: string, updateData: De
       node.children.splice(node.children.indexOf(child), 1)
   })
 
-  node.title = `${node.textA}${node.textB.length > 0 ? ` (${node.textB})` : ""}`
+  node.title = <>{node.textA}{(node.textB?.toString().length ? <> ({node.textB})</> : "")}</>
   node.icon = node.isLoading ? <LoadingOutlined /> : node.origIcon
 
   return newTree
