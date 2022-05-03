@@ -95,7 +95,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     })
 
     setScrapeQueries(newScrapeQueries)
-  }, [debugTree, searchQuery.departureDate, servingCarriers])
+  }, [debugTree, servingCarriers])       // will need searchQuery.departureDate in the future
 
   // Run the scrapers
   const searchQueries = ReactQuery.useQueries({ queries:
