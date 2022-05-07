@@ -1,34 +1,48 @@
-import { Page } from "playwright"
-import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
-import { Trip, UnitedFetchFlights } from "./united-types"
+// @ts-check
 
-exports.run = async (page: Page, query: ScraperQuery): Promise<ScraperResults> => {
+/**
+ * @param {Object} options
+ * @param {import("puppeteer").Page} options.page
+ * @param {{origin: string, destination: string, departureDate: string}} options.context
+ */
+module.exports = async ({ page, context }) => {
   console.log("Going to search page...")
 
-  page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
+  page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
   const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
-  const raw = await response.json() as UnitedFetchFlights
+  /** @type {import("./united").UnitedFetchFlights} */
+  const raw = await response.json()
 
   console.log("Received flights, parsing")
-  const flightsWithFares: FlightWithFares[] = []
+  /** @type {import("../types/scrapers").FlightWithFares[]} */
+  const flightsWithFares = []
   if (raw.data.Trips !== null && raw.data.Trips.length > 0) {
     const flights = standardizeResults(raw.data.Trips[0])
     flightsWithFares.push(...flights)
   }
 
-  const warnings: string[] = []
+  /** @type {string[]} */
+  const warnings = []
   if (raw.Error)
     warnings.push(raw.Error[0])
 
   console.log("Done.")
 
-  return { flightsWithFares, warnings }
+  return {
+    data: { flightsWithFares, warnings },
+    type: "application/json"
+  }
 }
 
-const standardizeResults = (unitedTrip: Trip) => {
-  const results: FlightWithFares[] = []
+/**
+ * @param {import("./united").Trip} unitedTrip
+ */
+const standardizeResults = (unitedTrip) => {
+  /** @type {import("../types/scrapers").FlightWithFares[]} */
+  const results = []
   unitedTrip.Flights.forEach((flight) => {
-    const result: FlightWithFares = {
+    /** @type {import("../types/scrapers").FlightWithFares} */
+    const result = {
       departureDateTime: flight.DepartDateTime,
       arrivalDateTime: flight.DestinationDateTime,
       origin: flight.Origin,
@@ -50,15 +64,15 @@ const standardizeResults = (unitedTrip: Trip) => {
 
       const miles = product.Prices[0].Amount
       const cash = product.Prices.length >= 2 ? product.Prices[1].Amount : 0
-      const currencyOfCash = product.Prices.length >= 2 ? (product.Prices[1].Currency ?? "") : ""
+      const currencyOfCash = product.Prices.length >= 2 ? product.Prices[1].Currency : ""
       const isSaverFare = product.AwardType === "Saver"
 
-      const cabin = ["economy", "business", "first"].find((checkCabin) => product.Description?.toLowerCase().includes(checkCabin))
+      const cabin = ["economy", "business", "first"].find((checkCabin) => product.Description.toLowerCase().includes(checkCabin))
       if (cabin === undefined)
         return
 
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
-      if (existingFare !== undefined) {
+      if (existingFare) {
         if (miles < existingFare.miles)
           existingFare = { ...{ cabin, miles, cash, currencyOfCash, isSaverFare } }
       } else {
