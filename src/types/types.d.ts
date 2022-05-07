@@ -1,3 +1,20 @@
+import { ScraperResults } from "./scrapers"
+
+export type LambdaRequest = {
+  code: string,
+  context: ScraperQuery,
+  browser: "firefox" | "chromium" | "webkit"
+  browserArgs: string[]
+}
+
+export type LambdaResponse = {
+  scraperResults: ScraperResults
+}
+
+export type ScraperModule = {
+  run: (page: Page, query: ScraperQuery) => Promise<ScraperResults>
+}
+
 export type SearchQuery = {
   origins: string[]
   destinations: string[]

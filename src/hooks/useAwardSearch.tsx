@@ -5,14 +5,15 @@ import axios from "axios"
 import useDeepCompareEffect from "use-deep-compare-effect"
 import moment from "moment"
 import { DebugTreeNode, genNewDebugTreeNode, useDebugTree } from "../components/DebugTree"
-import type { SearchQuery } from "../types/types"
+import type { LambdaRequest, LambdaResponse, SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
 import PhAirplaneTilt from "~icons/ph/airplane-tilt"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import scrapers from "../scrapers/scrapers.json"
 import Text from "antd/lib/typography/Text"
-const scraperCode = import.meta.glob("../scrapers/*.js", { as: "raw" })
+import * as ts from "typescript"
+const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 type QueryPairing = {origin: string, destination: string, departureDate: string}
 type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
@@ -109,15 +110,29 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: "Searching...", isLoading: true } } })
 
-          const path = Object.keys(scraperCode).find((key) => key.indexOf(`${scraperQuery.scraper}.js`) > -1)
+          const path = Object.keys(scraperCode).find((key) => key.indexOf(`${scraperQuery.scraper}.ts`) > -1)
           if (!path)
             throw new Error(`Could not find scraper ${scraperQuery.scraper}`)
-          const code = scraperCode[path]
+          const code = scraperCode[path] as unknown as string
 
-          const postData = { code, context: scraperQuery }
-          const scraperResults = (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
+          const transpileOptions: ts.CompilerOptions = {
+            target: ts.ScriptTarget.ESNext,
+            lib: ["esnext"],
+            esModuleInterop: false,
+            allowSyntheticDefaultImports: true,
+            module: ts.ModuleKind.CommonJS,
+            moduleResolution: ts.ModuleResolutionKind.NodeJs,
+            resolveJsonModule: true,
+            isolatedModules: true,
+            types: []
+          }
+
+          const out = ts.transpile(code, transpileOptions)
+
+          const postData: LambdaRequest = { code: out, context: scraperQuery, browser: "chromium", browserArgs: [] }
+          const lambdaResponse = (await axios.post<LambdaResponse>("http://localhost:9000/2015-03-31/functions/function/invocations", postData, { signal })).data
           debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Success after ${Date.now() - startTime}ms`, isLoading: false } } })
-          return scraperResults.flightsWithFares
+          return lambdaResponse.scraperResults.flightsWithFares
         },
         onError: (err: Error) => debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Error: ${err.message}`, isLoading: false } } })
       } as ReactQuery.UseQueryOptions<FlightWithFares[]>
