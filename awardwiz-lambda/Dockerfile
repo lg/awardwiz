@@ -1,4 +1,7 @@
+ARG FUNCTION_DIR="/function"
+
 FROM mcr.microsoft.com/playwright:focal as build-image
+ARG FUNCTION_DIR
 
 # aws-lambda-ric build dependencies
 RUN apt-get update && apt-get install -y \
@@ -8,28 +11,25 @@ RUN apt-get update && apt-get install -y \
   unzip \
   libcurl4-openssl-dev \
   autoconf \
-  libtool \
-  build-essential \
-  golang-go
+  libtool
 
-RUN mkdir -p /function
-WORKDIR /function
+RUN mkdir -p ${FUNCTION_DIR}
+WORKDIR ${FUNCTION_DIR}
 
-COPY add-cors.patch /root/add-cors.patch
-RUN cd ~ \
-  && git clone https://github.com/aws/aws-lambda-runtime-interface-emulator.git \
-  && cd aws-lambda-runtime-interface-emulator \
-  && patch -l cmd/aws-lambda-rie/http.go /root/add-cors.patch \
-  && make compile-lambda-linux-all \
-  && cp bin/aws-lambda-rie /usr/local/bin/aws-lambda-rie \
-  && cd /function \
-  && rm -rf ~/aws-lambda-runtime-interface-emulator
-
-COPY function/package.json /function
+# install playwright and amazon's layer
+COPY package.json .
 RUN npm install
-RUN npm install aws-lambda-ric
-COPY ./function /function
 
+COPY function/ ${FUNCTION_DIR}
+
+FROM mcr.microsoft.com/playwright:focal
+ARG FUNCTION_DIR
+
+WORKDIR ${FUNCTION_DIR}
+COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
+
+# Add Lambda Runtime Interface Emulator and use a script in the ENTRYPOINT for simpler local runs
+ADD https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie /usr/local/bin/aws-lambda-rie
 RUN chmod 755 /usr/local/bin/aws-lambda-rie
 COPY entrypoint.sh /
 RUN chmod 755 /entrypoint.sh
