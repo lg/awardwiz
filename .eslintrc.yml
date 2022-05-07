@@ -74,3 +74,5 @@ rules:
   react-hooks/rules-of-hooks: "error"
   "react-hooks/exhaustive-deps": "warn"
   spaced-comment: off
+
+  import/no-import-module-exports: off    # so i can embed the scrapers in the main codebase

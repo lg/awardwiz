@@ -12,7 +12,8 @@ import PhAirplaneTilt from "~icons/ph/airplane-tilt"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import scrapers from "../scrapers/scrapers.json"
 import Text from "antd/lib/typography/Text"
-const scraperCode = import.meta.glob("../scrapers/*.js", { as: "raw" })
+import * as ts from "typescript"
+const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 type QueryPairing = {origin: string, destination: string, departureDate: string}
 type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
@@ -109,12 +110,13 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: "Searching...", isLoading: true } } })
 
-          const path = Object.keys(scraperCode).find((key) => key.indexOf(`${scraperQuery.scraper}.js`) > -1)
+          const path = Object.keys(scraperCode).find((key) => key.indexOf(`${scraperQuery.scraper}.ts`) > -1)
           if (!path)
             throw new Error(`Could not find scraper ${scraperQuery.scraper}`)
-          const code = scraperCode[path]
+          const tsCode = scraperCode[path] as unknown as string
+          const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
-          const postData = { code, context: scraperQuery }
+          const postData = { code: jsCode, context: scraperQuery }
           const scraperResults = (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
           debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Success after ${Date.now() - startTime}ms`, isLoading: false } } })
           return scraperResults.flightsWithFares
