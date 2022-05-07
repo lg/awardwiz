@@ -1,12 +1,22 @@
 version: '3'
 services:
-  awardwiz-lambda:
-    build:
-      context: awardwiz-lambda
-      dockerfile: Dockerfile
-      labels:
-        - awardwiz-lambda
-    container_name: awardwiz-lambda
+  browserless:
+    image: browserless/chrome:latest
+    environment:
+      - DEBUG=browserless:*
+      - MAX_CONCURRENT_SESSIONS=10
+      - CONNECTION_TIMEOUT=60000
+      - MAX_QUEUE_LENGTH=20
+      - DEMO_MODE=false
+      - ENABLE_DEBUGGER=true
+      - ENABLE_CORS=true
+      - PORT=4000
+      - WORKSPACE_DELETE_EXPIRED=true
+
+      - DEFAULT_HEADLESS=false
+      - DEFAULT_BLOCK_ADS=true
+      - DEFAULT_STEALTH=true
+    container_name: "browserless"
     restart: always
     ports:
-      - "9000:8080"
+      - "4000:4000"

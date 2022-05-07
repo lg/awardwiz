@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "playwright": "^1.21.1",
-    "aws-lambda-ric": "^2.0.0"
-  }
-}
