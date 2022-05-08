@@ -42,11 +42,8 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: "Requesting serving carriers...", isLoading: true } } })
 
-          const postData = {
-            code: "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c);const d=await a.content();const innerText = await a.evaluate(() => document.body.innerText);return{data:JSON.parse(innerText),type:\"application/json\"}};",
-            context: { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }
-          }
-          const { data } = await axios.post<FR24SearchResult>("http://localhost:4000/function", postData /*, { signal }*/)
+          const dataHtml = (await axios.post<string>("http://localhost:4000/content", { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` })).data
+          const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
 
           if (data.errors)
             throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)

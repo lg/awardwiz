@@ -4,7 +4,6 @@ import { Trip, UnitedFetchFlights } from "./united-types"
 
 type BrowserlessQuery = { page: Page, context: ScraperQuery, browser: Browser, timeout: number }
 module.exports = async ({ page, context }: BrowserlessQuery): Promise<{ data: ScraperResults }> => {
-  console.log(Object.keys(page))
   console.log("Going to search page...")
 
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
