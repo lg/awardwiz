@@ -1,9 +1,6 @@
-import React from "react"
 import * as ReactQuery from "react-query"
-import { NodeIndexOutlined } from "@ant-design/icons"
 import axios from "axios"
 import moment from "moment"
-import { genNewDebugTreeNode, useDebugTree } from "../components/DebugTree"
 import type { SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
@@ -15,29 +12,15 @@ type QueryPairing = {origin: string, destination: string, departureDate: string}
 type ServingCarrier = { origin: string, destination: string, airlineCode: string, airlineName: string }
 
 export const useAwardSearch = (searchQuery: SearchQuery) => {
-  const debugTree = useDebugTree()
-
   // Take all origins and destinations and create a list of all possible pairs
-  const [queryPairings, setQueryPairings] = React.useState<QueryPairing[]>([])  // 1-to-1 mappings of origin/destination (ex. SFO-HNL, OAK-HNL, SJC-HNL)
-  React.useEffect(() => {
-    const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
-    const debugChildren = pairings.map((pairing) => genNewDebugTreeNode({
-      key: `${pairing.origin}${pairing.destination}`, textA: `${pairing.origin} → ${pairing.destination}`, origIcon: <NodeIndexOutlined />
-    }))
-
-    debugTree({ type: "update", payload: { key: "root", updateData: { textA: `Search for ${searchQuery.origins.join(",")} → ${searchQuery.destinations.join(",")} on ${searchQuery.departureDate}`, children: debugChildren } } })
-    setQueryPairings(pairings)
-  }, [searchQuery, debugTree])
+  const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
 
   // Return the list of carriers that fly the given pairings
   const servingCarriersQueries = ReactQuery.useQueries({ queries:
-    queryPairings.map((pairing) => {
+    pairings.map((pairing) => {
       return {
         queryKey: ["servingCarriers", pairing.origin, pairing.destination],
         queryFn: async ({ signal }) => {
-          const startTime = Date.now()
-          debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: "Requesting serving carriers...", isLoading: true } } })
-
           const dataHtml = (await axios.post<string>("http://localhost:4000/content", { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { signal })).data
           const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
 
@@ -51,11 +34,8 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
             .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
             .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
             .filter((item) => !["1I", "FX", "KH", "5X", "8C"].includes(item.airlineCode!))
-
-          debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: `Success after ${Date.now() - startTime}ms`, isLoading: false } } })
           return carriers
         },
-        onError: (err: Error) => debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: `Error: ${err.message}`, isLoading: false } } })
       } as ReactQuery.UseQueryOptions<ServingCarrier[]>
     })
   })
@@ -64,10 +44,6 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .filter((item) => item.data)
     .map((item) => item.data)
     .flat() as ServingCarrier[]
-
-  // // Figure out which scrapers are compatible for the given pairings
-  // const [scrapeQueries, setScrapeQueries] = React.useState<ScraperQuery[]>([])
-  // useDeepCompareEffect(() => {
 
   // Group route+scraper and find which airline fits under which scraper
   const scrapersForRoutes: {[key: string]: { origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }} = {}
