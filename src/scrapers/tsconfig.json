@@ -5,17 +5,15 @@
   "exclude": [
     "./node_modules"
   ],
+  "extends": "../../tsconfig.json",
+
   "compilerOptions": {
     "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "Node",
 
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-
+    "noEmit": false,
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
   }
 }

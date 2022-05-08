@@ -13,15 +13,11 @@
       ],
       "program": "${workspaceFolder}/src/scrapers/debug.ts",
       "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
+      "postDebugTask": "Delete scraper dist directory",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
-      "cwd": "${workspaceFolder}/src/scrapers",
-      "env": {
-        "NODE_PATH": "${workspaceFolder}/node_modules",
-      },
       "internalConsoleOptions": "openOnSessionStart",
-      "postDebugTask": "Delete scraper dist directory"
     }
   ]
 }
