@@ -40,6 +40,6 @@
     "puppeteer": "^13.7.0",
     "unplugin-icons": "=0.14.1",
     "vite": "^2.9.5",
-    "vitest": "^0.10.1"
+    "vitest": "^0.11.0"
   }
 }

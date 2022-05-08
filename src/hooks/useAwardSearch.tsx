@@ -2,21 +2,17 @@ import React from "react"
 import * as ReactQuery from "react-query"
 import { NodeIndexOutlined } from "@ant-design/icons"
 import axios from "axios"
-import useDeepCompareEffect from "use-deep-compare-effect"
 import moment from "moment"
-import { DebugTreeNode, genNewDebugTreeNode, useDebugTree } from "../components/DebugTree"
+import { genNewDebugTreeNode, useDebugTree } from "../components/DebugTree"
 import type { SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
-import PhAirplaneTilt from "~icons/ph/airplane-tilt"
-import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import scrapers from "../scrapers/scrapers.json"
-import Text from "antd/lib/typography/Text"
 import * as ts from "typescript"
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 type QueryPairing = {origin: string, destination: string, departureDate: string}
-type ServingCarrier = { origin: string, destination: string, airlineCode?: string, airlineName?: string }
+type ServingCarrier = { origin: string, destination: string, airlineCode: string, airlineName: string }
 
 export const useAwardSearch = (searchQuery: SearchQuery) => {
   const debugTree = useDebugTree()
@@ -38,11 +34,11 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     queryPairings.map((pairing) => {
       return {
         queryKey: ["servingCarriers", pairing.origin, pairing.destination],
-        queryFn: async () => {
+        queryFn: async ({ signal }) => {
           const startTime = Date.now()
           debugTree({ type: "update", payload: { key: `${pairing.origin}${pairing.destination}`, updateData: { textB: "Requesting serving carriers...", isLoading: true } } })
 
-          const dataHtml = (await axios.post<string>("http://localhost:4000/content", { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` })).data
+          const dataHtml = (await axios.post<string>("http://localhost:4000/content", { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { signal })).data
           const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
 
           if (data.errors)
@@ -69,56 +65,43 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as ServingCarrier[]
 
-  // Figure out which scrapers are compatible for the given pairings
-  const [scrapeQueries, setScrapeQueries] = React.useState<ScraperQuery[]>([])
-  useDeepCompareEffect(() => {
-    const origDestCarriers = servingCarriers.reduce((result, servingCarrier: ServingCarrier) => {
-      const scrapedBy = scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).map((scraper) => scraper.name)
-      const debugChild = genNewDebugTreeNode({ key: `${servingCarrier.origin}${servingCarrier.destination}${servingCarrier.airlineCode}`, textA: `${servingCarrier.airlineName}`, textB: scrapedBy.length > 0 ? <Text code>{scrapedBy.join(", ")}</Text> : "", origIcon: <PhAirplaneTilt /> })
-      const origDest = `${servingCarrier.origin}${servingCarrier.destination}`
+  // // Figure out which scrapers are compatible for the given pairings
+  // const [scrapeQueries, setScrapeQueries] = React.useState<ScraperQuery[]>([])
+  // useDeepCompareEffect(() => {
 
-      result[origDest] ||= { debugChildren: [], scrapers: [], origin: servingCarrier.origin, destination: servingCarrier.destination }
-      result[origDest].debugChildren.push(debugChild)
-      result[origDest].scrapers.push(...scrapedBy)
-      return result
-    }, {} as { [key: string]: { debugChildren: DebugTreeNode[], scrapers: string[], origin: string, destination: string } })
+  // Group route+scraper and find which airline fits under which scraper
+  const scrapersForRoutes: {[key: string]: { origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }} = {}
+  servingCarriers.forEach((servingCarrier) => {
+    scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).forEach((scraper) => {
+      const key = `${servingCarrier.origin}${servingCarrier.destination}${scraper.name}`
+      if (!scrapersForRoutes[key]) {
+        scrapersForRoutes[key] = { origin: servingCarrier.origin, destination: servingCarrier.destination, scraper: scraper.name, matchedAirlines: [servingCarrier.airlineName], departureDate: searchQuery.departureDate }
 
-    // Loop over flight pairings and create queries to run scraper (and also add to debug tree)
-    const newScrapeQueries = Object.entries(origDestCarriers).flatMap(([origDestKey, carrierItem]): ScraperQuery[] => {
-      const uniqueScrapers = [...new Set(carrierItem.scrapers)]
-      const uniqueScraperNodes = uniqueScrapers.map((scraper) => genNewDebugTreeNode({ key: `${origDestKey}${scraper}`, textA: <>Scraper: <Text code>{scraper}</Text></>, origIcon: <CarbonPaintBrush /> }))
-      debugTree({ type: "update", payload: { key: origDestKey, updateData: { children: carrierItem.debugChildren.concat(uniqueScraperNodes) } } })
-
-      return uniqueScrapers.map((scraper) => ({ scraper, origin: carrierItem.origin, destination: carrierItem.destination, departureDate: searchQuery.departureDate }))
+      } else if (!scrapersForRoutes[key].matchedAirlines.includes(servingCarrier.airlineName)) {
+        scrapersForRoutes[key].matchedAirlines.push(servingCarrier.airlineName)
+      }
     })
-
-    setScrapeQueries(newScrapeQueries)
-  }, [debugTree, servingCarriers])       // will need searchQuery.departureDate in the future
+  })
 
   // Run the scrapers
   const searchQueries = ReactQuery.useQueries({ queries:
-    scrapeQueries.map((scraperQuery) => {
+    Object.values(scrapersForRoutes).map((scraperQuery) => {
       return {
         queryKey: ["awardAvailability", scraperQuery],
         staleTime: 1000 * 60 * 5,
         cacheTime: 1000 * 60 * 15,
         retry: 1,
         queryFn: async ({ signal }) => {
-          const startTime = Date.now()
-          debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: "Searching...", isLoading: true } } })
-
           const path = Object.keys(scraperCode).find((key) => key.indexOf(`${scraperQuery.scraper}.ts`) > -1)
           if (!path)
             throw new Error(`Could not find scraper ${scraperQuery.scraper}`)
           const tsCode = scraperCode[path] as unknown as string
           const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
-          const postData = { code: jsCode, context: scraperQuery }
+          const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
           const scraperResults = (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
-          debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Success after ${Date.now() - startTime}ms`, isLoading: false } } })
           return scraperResults.flightsWithFares
         },
-        onError: (err: Error) => debugTree({ type: "update", payload: { key: `${scraperQuery.origin}${scraperQuery.destination}${scraperQuery.scraper}`, updateData: { textB: `Error: ${err.message}`, isLoading: false } } })
       } as ReactQuery.UseQueryOptions<FlightWithFares[]>
     })
   })
