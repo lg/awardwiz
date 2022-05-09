@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react"
+import React from "react"
 import * as ReactQuery from "react-query"
 import axios from "axios"
 import type { SearchQuery } from "../types/types"
@@ -6,9 +6,9 @@ import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
 import * as ts from "typescript"
-import { LoadingOutlined, NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { Alert, Tree } from "antd"
+import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
+import { DebugTreeNode } from "../components/DebugTree"
 import Text from "antd/lib/typography/Text"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { useQueryClient } from "react-query"
@@ -96,16 +96,6 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   //////////////////////////////////////////////////
   //////////////////////////////////////////////////
 
-  const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
-    if (item.children)
-      collectedKeys.push(item.key)
-    item.children.forEach((child) => allKeys(child as {key: string, children: unknown[]}, collectedKeys))
-    return collectedKeys
-  }
-
-  type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactNode, isLoading: boolean, text: ReactNode, error: Error | undefined }
-  type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: ReactNode, children: DebugTreeNodeComputed[] }
-
   const debugTree: DebugTreeNode[] = []
   const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).join("-")
 
@@ -153,38 +143,5 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     }
   })
 
-  //////////////////////////
-
-  const [nodeMeta, setNodeMeta] = React.useState<{[ key: string ]: { startTime: number, endTime: number } | undefined}>({})
-  const defaultNodeMeta = { startTime: 0, endTime: 0 }
-  const computeNode = (node: DebugTreeNode): DebugTreeNodeComputed => {
-    const meta = nodeMeta[node.key]
-    if (!meta)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: defaultNodeMeta }))
-    if (node.isLoading && !meta?.startTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { startTime: Date.now(), endTime: 0 } }))
-    if (!node.isLoading && meta?.startTime && !meta.endTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, endTime: Date.now() } }))
-    if (node.isLoading && meta?.endTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, startTime: Date.now(), endTime: 0 } }))
-
-    let title = <>{node.text}</>
-    if (node.error) {
-      title = <>{title} <Alert showIcon message={node.error.message} type="error" /></>
-    } else if (meta?.startTime && meta.endTime) {
-      title = <>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></>
-    }
-
-    return {
-      key: node.key,
-      title,
-      icon: node.isLoading ? <LoadingOutlined /> : node.stableIcon,
-      children: debugTree.filter((checkNode) => checkNode.parentKey === node.key).map((childNode) => computeNode(childNode))
-    }
-  }
-
-  const debugTreeRootNode = computeNode(debugTree.find((node) => node.key === debugTreeRootKey)!)
-  const debugTreeMarkup = <Tree style={{ marginTop: 10 }} showIcon showLine={{ showLeafIcon: false }} expandedKeys={allKeys(debugTreeRootNode, [])} treeData={[debugTreeRootNode]} />
-
-  return { searchResults: scraperResults, isLoading: loading, error: error && error?.error as Error, debugTreeMarkup }
+  return { searchResults: scraperResults, isLoading: loading, error: error && error?.error as Error, debugTree, debugTreeRootKey }
 }

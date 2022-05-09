@@ -1,6 +1,3 @@
-// TODO:
-//   - make sure requests are cancelable
-
 import * as React from "react"
 import moment from "moment"
 import { LeftOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
@@ -9,13 +6,14 @@ import type { SearchQuery } from "../types/types"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
 import { useAwardSearch } from "../hooks/useAwardSearch"
+import { DebugTree } from "./DebugTree"
 
 export const FlightSearch = () => {
   console.log("render")
 
   const defaultSearchQuery: SearchQuery = { origins: ["HNL", "LIH"], destinations: ["SFO"], departureDate: moment().add("1", "day").format("YYYY-MM-DD"), program: "united" }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(defaultSearchQuery)
-  const { searchResults, isLoading, error, debugTreeMarkup } = useAwardSearch(searchQuery)
+  const { searchResults, isLoading, error, debugTree, debugTreeRootKey } = useAwardSearch(searchQuery)
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   const [form] = Form.useForm()
@@ -33,7 +31,7 @@ export const FlightSearch = () => {
 
       {error && <Alert message={error.message} type="error" />}
       <SearchResults results={searchResults} isLoading={false} />
-      {debugTreeMarkup}
+      <DebugTree debugTree={debugTree} rootKey={debugTreeRootKey} />
     </>
   )
 }
