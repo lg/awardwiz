@@ -15,7 +15,7 @@ export const FlightSearch = () => {
 
   const defaultSearchQuery: SearchQuery = { origins: ["HNL", "LIH"], destinations: ["SFO"], departureDate: moment().add("1", "day").format("YYYY-MM-DD"), program: "united" }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(defaultSearchQuery)
-  const { searchResults, isLoading, error } = useAwardSearch(searchQuery)
+  const { searchResults, isLoading, error, debugTreeMarkup } = useAwardSearch(searchQuery)
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   const [form] = Form.useForm()
@@ -33,6 +33,7 @@ export const FlightSearch = () => {
 
       {error && <Alert message={error.message} type="error" />}
       <SearchResults results={searchResults} isLoading={false} />
+      {debugTreeMarkup}
     </>
   )
 }
