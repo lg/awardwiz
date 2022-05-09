@@ -7,13 +7,15 @@ import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
 import { useAwardSearch } from "../hooks/useAwardSearch"
 import { DebugTree } from "./DebugTree"
+import { useAwardSearchDebugTree } from "../hooks/useAwardSearchDebugTree"
 
 export const FlightSearch = () => {
   console.log("render")
 
   const defaultSearchQuery: SearchQuery = { origins: ["HNL", "LIH"], destinations: ["SFO"], departureDate: moment().add("1", "day").format("YYYY-MM-DD"), program: "united" }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(defaultSearchQuery)
-  const { searchResults, isLoading, error, debugTree, debugTreeRootKey } = useAwardSearch(searchQuery)
+  const { searchResults, isLoading, error, pairings, servingCarriers, scrapersForRoutes } = useAwardSearch(searchQuery)
+  const { debugTree, debugTreeRootKey } = useAwardSearchDebugTree({ searchQuery, pairings, servingCarriers, scrapersForRoutes, isLoading })
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }
   const [form] = Form.useForm()
