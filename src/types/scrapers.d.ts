@@ -2,7 +2,6 @@ export type ScraperQuery = {
   origin: string
   destination: string
   departureDate: string
-  scraper: string
 }
 
 export type ScraperResults = {
@@ -10,21 +9,27 @@ export type ScraperResults = {
   warnings: string[]
 }
 
+// the "| undefined" piece makes these require to explicitly be defined
 export type FlightWithFares = {
-  departureDateTime: string   // "2022-04-01 15:12"
-  arrivalDateTime: string     // "2022-04-01 15:12"
-  origin: string              // "SFO"
-  destination: string         // "LHR"
-  flightNo: string            // "UA 123"
-  airline: string             // "United Airlines"
-  duration: number            // 62
+  flightNo: string                       // "UA 123"
+  departureDateTime: string              // "2022-04-01 15:12"
+  arrivalDateTime: string                // "2022-04-01 15:12"
+  origin: string                         // "SFO"
+  destination: string                    // "LHR"
+  airline: string | undefined            // "United Airlines"
+  duration: number | undefined           // 62
   fares: FlightFare[]
 }
 
+export type ScraperCapabilities = {
+  supportsConnections: false                      // To implement
+  missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined
+}
+
 export type FlightFare = {
-  cabin: string               // "economy" | "business" | "first"
+  cabin: string                           // "economy" | "business" | "first"
   miles: number
-  isSaverFare?: boolean
+  isSaverFare: boolean | undefined
   cash: number
-  currencyOfCash?: string
+  currencyOfCash: string
 }

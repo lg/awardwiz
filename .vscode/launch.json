@@ -20,11 +20,21 @@
       ],
       "program": "${workspaceFolder}/src/scrapers/debug.ts",
       "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
-      "postDebugTask": "Delete scraper dist directory",
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
       "internalConsoleOptions": "openOnSessionStart",
+    },
+    {
+      "type": "pwa-node",
+      "request": "launch",
+      "name": "Debug Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal"
     }
   ]
 }
