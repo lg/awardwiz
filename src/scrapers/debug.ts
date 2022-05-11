@@ -5,7 +5,7 @@ import puppeteer = require("puppeteer")
   const browser = await puppeteer.connect({ browserWSEndpoint: "ws://localhost:4000" })
   const page = await browser.newPage()
 
-  const alaska = await import("./alaska")
+  const alaska = await import("./united")
   const results = await alaska.scraper({ page, context: { origin: "SFO", destination: "JFK", departureDate: "2022-07-25" } })
 
   console.log(results)

@@ -5,17 +5,14 @@
 // - proper next-day hour arrival calculation
 // - some airlines have different columns for premium plus awards
 
-import { Page } from "puppeteer"    // eslint-disable-line import/no-extraneous-dependencies
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperQuery, ScraperResults } from "../types/scrapers"
-
-type BrowserlessQuery = { page: Page, context: ScraperQuery }
+import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const capabilities: ScraperCapabilities = {
   supportsConnections: false,
   missingAttributes: ["airline", "duration"]
 }
 
-export const scraper = async ({ page, context: query }: BrowserlessQuery): Promise<{ data: ScraperResults }> => {
+export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const warnings: string[] = []
 
   // warm the browser up
@@ -41,7 +38,7 @@ export const scraper = async ({ page, context: query }: BrowserlessQuery): Promi
   }, query)
 
   await page.setContent(htmlResponse)
-  const res = await page.$$eval(".optionList > li", (elements) => {
+  const res = await page.$$eval(".optionList > li", (elements: Element[]) => {
     // @ts-ignore
     const queryEl = (rootEl: Element | Document, selector: string, getAttrib: string): string | undefined => rootEl.querySelector(selector)?.[getAttrib]
     const queryElMatch = (rootEl: Element | Document, selector: string, getAttrib: string, match: RegExp): RegExpMatchArray | undefined => queryEl(rootEl, selector, getAttrib)?.match(match) || undefined

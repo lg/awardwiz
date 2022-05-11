@@ -1,3 +1,15 @@
+export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResults }>
+export type ScraperCapabilities = {
+  supportsConnections: false                      // To implement
+  missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined
+}
+export type BrowserlessQuery = {
+  page: Page,
+  context: ScraperQuery,
+  browser?: Browser,
+  timeout?: number
+}
+
 export type ScraperQuery = {
   origin: string
   destination: string
@@ -19,11 +31,6 @@ export type FlightWithFares = {
   airline: string | undefined            // "United Airlines"
   duration: number | undefined           // 62
   fares: FlightFare[]
-}
-
-export type ScraperCapabilities = {
-  supportsConnections: false                      // To implement
-  missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined
 }
 
 export type FlightFare = {

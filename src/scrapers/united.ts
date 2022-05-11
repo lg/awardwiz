@@ -1,16 +1,16 @@
-import { Browser, Page } from "puppeteer"    // eslint-disable-line import/no-extraneous-dependencies
-import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
+import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
 import { Trip, UnitedFetchFlights } from "./united-types"
 
-type BrowserlessQuery = { page: Page, context: ScraperQuery, browser: Browser, timeout: number }
-module.exports = async ({ page, context }: BrowserlessQuery): Promise<{ data: ScraperResults }> => {
-  console.log("Going to search page...")
+export const capabilities: ScraperCapabilities = {
+  supportsConnections: false,
+  missingAttributes: []
+}
 
+export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
   const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
   const raw = await response.json() as UnitedFetchFlights
 
-  console.log("Received flights, parsing")
   const flightsWithFares: FlightWithFares[] = []
   if (raw.data.Trips !== null && raw.data.Trips.length > 0) {
     const flights = standardizeResults(raw.data.Trips[0])
@@ -20,8 +20,6 @@ module.exports = async ({ page, context }: BrowserlessQuery): Promise<{ data: Sc
   const warnings: string[] = []
   if (raw.Error)
     warnings.push(raw.Error[0])
-
-  console.log("Done.")
 
   return { data: { flightsWithFares, warnings } }
 }
