@@ -70,3 +70,5 @@ const standardizeResults = (unitedTrip: Trip) => {
 
   return results
 }
+
+module.exports = scraper

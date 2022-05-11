@@ -17,6 +17,8 @@ const scrapers: ScraperConfig[] = [
   { scraperName: "united", popularRoute: { origin: "SFO", destination: "JFK" } },
 ]
 
+// TODO: add partner test (ex SFO NRT on JAL via Alaska)
+
 describe.each(scrapers)("%s scraper", ({ scraperName, popularRoute }) => {
   let browser: puppeteer.Browser
   let context: puppeteer.BrowserContext

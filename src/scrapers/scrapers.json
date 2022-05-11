@@ -1,10 +1,16 @@
 [
   {
+    "name": "alaska",
+    "supportedAirlines": [
+      "AS",
+      "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"
+    ]
+  },
+  {
     "name": "united",
     "supportedAirlines": [
       "star alliance",
       "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA",
-
       "partners",
       "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"
     ]

@@ -94,3 +94,5 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   return { data: { flightsWithFares: res, warnings } }
 }
+
+module.exports = scraper
