@@ -1,4 +1,4 @@
-import React from "react"
+import React, { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
@@ -6,6 +6,7 @@ import { persistQueryClient } from "react-query/persistQueryClient"
 import { createWebStoragePersister } from "react-query/createWebStoragePersister"
 import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
+import { QueryClientProvider } from "react-query"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -29,8 +30,10 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <ReactQuery.QueryClientProvider client={queryClient}>
-    <FlightSearch />
-    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
-  </ReactQuery.QueryClientProvider>
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <FlightSearch />
+      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
+  </StrictMode>
 )

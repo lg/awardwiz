@@ -13,7 +13,7 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
   const queryClient = useQueryClient()
 
   const debugTree: DebugTreeNode[] = []
-  const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).join("-")
+  const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).concat(searchQuery.departureDate).join("-")
 
   debugTree.push({
     key: debugTreeRootKey,

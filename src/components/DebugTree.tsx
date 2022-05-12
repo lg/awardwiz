@@ -1,5 +1,5 @@
 import { Alert, Tree } from "antd"
-import React, { ReactNode } from "react"
+import React, { ReactNode, useEffect } from "react"
 import Text from "antd/lib/typography/Text"
 import { LoadingOutlined } from "@ant-design/icons"
 
@@ -15,6 +15,7 @@ const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string
 
 export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], rootKey: string }) => {
   const [nodeMeta, setNodeMeta] = React.useState<{[ key: string ]: { startTime: number, endTime: number } | undefined}>({})
+  useEffect(() => setNodeMeta({}), [rootKey])   // reset metadata of keys when root key changes to avoid showing stale data
 
   const defaultNodeMeta = { startTime: 0, endTime: 0 }
   const computeNode = (node: DebugTreeNode): DebugTreeNodeComputed => {
