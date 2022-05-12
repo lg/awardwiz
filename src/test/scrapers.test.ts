@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable global-require */
-/* eslint-disable import/no-extraneous-dependencies */
-
 import { beforeEach, describe, expect, it } from "vitest"
-import puppeteer = require("puppeteer")
-import moment = require("moment")
+import puppeteer from "puppeteer"
+import moment from "moment"
 import { FlightWithFares } from "../types/scrapers"
 
 type ScraperConfig = {
@@ -30,7 +26,7 @@ describe.each(scrapers)("%s scraper", ({ scraperName, popularRoute }) => {
   afterAll(async () => { await setTimeout(() => { browser.close() }, 1000) })
 
   it("can do a basic popular search", async () => {
-    const scraperModule: typeof import("./alaska") = await import(`./${scraperName}`)
+    const scraperModule: typeof import("../scrapers/alaska") = await import(`../scrapers/${scraperName}`)
     const results = await scraperModule.scraper({ page, context: { origin: popularRoute.origin, destination: popularRoute.destination, departureDate: moment().add(2, "months").format("YYYY-MM-DD") } })
 
     expect(results.data.flightsWithFares.length).toBeGreaterThanOrEqual(1)
