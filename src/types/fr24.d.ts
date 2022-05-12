@@ -119,12 +119,12 @@ export interface Timezone {
 export interface Identification {
   id: null | string
   row: number
-  number: Number
+  number: NumberField
   callsign: null | string
   codeshare: null
 }
 
-export interface Number {
+export interface NumberField {
   default: null | string
   alternative: null
 }

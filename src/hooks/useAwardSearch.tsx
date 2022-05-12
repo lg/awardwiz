@@ -1,8 +1,7 @@
 import * as ReactQuery from "react-query"
 import axios from "axios"
-import type { SearchQuery } from "../types/types"
 import { FR24SearchResult } from "../types/fr24"
-import { FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
+import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
 import * as ts from "typescript"
 

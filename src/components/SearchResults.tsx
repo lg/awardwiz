@@ -76,6 +76,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       loading={isLoading}
       showSorterTooltip={false}
       pagination={false}
+      className="search-results"
     />
   )
 }

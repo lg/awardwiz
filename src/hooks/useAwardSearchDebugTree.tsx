@@ -6,7 +6,7 @@ import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
 import { QueryPairing, ScrapersForRoutes, ServingCarrier } from "./useAwardSearch"
-import { SearchQuery } from "../types/types"
+import { SearchQuery } from "../types/scrapers"
 
 export type AwardSearchDebugTreeInput = { searchQuery: SearchQuery, scrapersForRoutes: ScrapersForRoutes, isLoading: boolean, pairings: QueryPairing[], servingCarriers: ServingCarrier[] }
 export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scrapersForRoutes, servingCarriers }: AwardSearchDebugTreeInput) => {

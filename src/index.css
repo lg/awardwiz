@@ -3,3 +3,8 @@
 .ant-form-item-explain {
   display: none;
 }
+
+.search-results table {
+  width: auto;
+  margin-top: 10px;
+}
