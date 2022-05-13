@@ -31,7 +31,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
         .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name } as ServingCarrier))
         .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
         .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
-        .filter((item) => !["1I", "FX", "KH", "5X", "8C", "KZ", "5Y"].includes(item.airlineCode!))
+        .filter((item) => !["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO"].includes(item.airlineCode!))
       return carriers
     },
   }) as ReactQuery.UseQueryOptions<ServingCarrier[]>)

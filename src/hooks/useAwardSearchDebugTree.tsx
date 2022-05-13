@@ -7,6 +7,7 @@ import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
 import { QueryPairing, ScrapersForRoutes, ServingCarrier } from "./useAwardSearch"
 import { SearchQuery } from "../types/scrapers"
+import CarbonWarningAlt from "~icons/carbon/warning-alt"
 
 export type AwardSearchDebugTreeInput = { searchQuery: SearchQuery, scrapersForRoutes: ScrapersForRoutes, isLoading: boolean, pairings: QueryPairing[], servingCarriers: ServingCarrier[] }
 export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scrapersForRoutes, servingCarriers }: AwardSearchDebugTreeInput) => {
@@ -51,8 +52,18 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
       debugTree.push({
         key: `${pairing.origin}${pairing.destination}-no-scraper`,
         parentKey: `${pairing.origin}${pairing.destination}`,
-        text: <>Missing: {noScrapersForAirlines.map((servingCarrier) => servingCarrier.airlineName).join(", ")}</>,
+        text: <>Missing: {noScrapersForAirlines.map((servingCarrier) => `${servingCarrier.airlineName} (${servingCarrier.airlineCode})`).join(", ")}</>,
         stableIcon: <CarbonCircleDash />,
+        isLoading: false,
+        error: undefined
+      })
+
+    } else if (!servingCarriers.some((servingCarrier) => servingCarrier.origin === pairing.origin && servingCarrier.destination === pairing.destination)) {
+      debugTree.push({
+        key: `${pairing.origin}${pairing.destination}-no-carriers`,
+        parentKey: `${pairing.origin}${pairing.destination}`,
+        text: <>(No carriers serving this route)</>,
+        stableIcon: <CarbonWarningAlt />,
         isLoading: false,
         error: undefined
       })
