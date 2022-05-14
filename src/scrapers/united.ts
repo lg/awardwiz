@@ -2,8 +2,8 @@ import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scra
 import { Trip, UnitedFetchFlights } from "./united-types"
 
 export const capabilities: ScraperCapabilities = {
-  supportsConnections: false,
-  missingAttributes: ["hasWifi"]
+  missingAttributes: ["hasWifi"],
+  missingFareAttributes: []
 }
 
 export const scraper: ScraperFunc = async ({ page, context }) => {

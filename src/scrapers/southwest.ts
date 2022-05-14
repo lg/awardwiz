@@ -5,10 +5,11 @@
 
 import { Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
+import SouthwestTypes from "./southwest-types"
 
 export const capabilities: ScraperCapabilities = {
-  supportsConnections: false,
-  missingAttributes: []
+  missingAttributes: [],
+  missingFareAttributes: ["isSaverFare"]
 }
 
 export type ScraperFlowRule = {
@@ -26,8 +27,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const rules: ScraperFlowRule[] = [
     { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, done: true }] },
     { find: "input#originationAirportCode", type: query.origin, andThen: [{ find: `button[aria-label~=${query.origin}]`, done: true }] },
-    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`,
-      andThen: [{ find: `button[id*='${query.departureDate}']`, done: true }] },
+    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, done: true }] },
     { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']" },
     { find: "input[value='POINTS']", andWaitFor: "input:checked[value='POINTS']" },
     { find: "#form-mixin--submit-button", done: true },
@@ -35,19 +35,20 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   await processScraperFlowRules(page, rules)
 
-  const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: Response) => response.json())
+  const raw: SouthwestTypes.Result = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: Response) => response.json())
+
   if (raw.notifications && raw.notifications.formErrors && raw.notifications.formErrors[0] && raw.notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
     return { data: { flightsWithFares: [] } }
 
   const rawResults = raw.data.searchResults.airProducts[0].details
 
-  const flights: FlightWithFares[] = rawResults.map((result: any) => {
+  const flights: FlightWithFares[] = rawResults.map((result) => {
     if (result.flightNumbers.length > 1)
       return undefined
 
     const flight: FlightWithFares = {
-      departureDateTime: result.departureDateTime.substr(0, 19).replace("T", " "),
-      arrivalDateTime: result.arrivalDateTime.substr(0, 19).replace("T", " "),
+      departureDateTime: result.departureDateTime.substring(0, 19).replace("T", " "),
+      arrivalDateTime: result.arrivalDateTime.substring(0, 19).replace("T", " "),
       origin: result.originationAirportCode,
       destination: result.destinationAirportCode,
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
@@ -55,8 +56,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       hasWifi: result.segments[0].wifiOnBoard,
       fares: []
     }
-
-    const bestFare: FlightFare | undefined = Object.values(result.fareProducts.ADULT).reduce((lowestFare: FlightFare | undefined, product: any) => {
+    const bestFare: FlightFare | undefined = (Object.values(result.fareProducts.ADULT) as SouthwestTypes.Red[]).reduce((lowestFare: FlightFare | undefined, product) => {
       if (product.availabilityStatus !== "AVAILABLE")
         return lowestFare
       const fare: FlightFare = {
@@ -76,7 +76,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       flight.fares.push(bestFare)
 
     return bestFare ? flight : undefined
-  }).filter((flight: FlightWithFares | undefined) => flight !== undefined)
+  }).filter((flight: FlightWithFares | undefined) => flight !== undefined).map((x) => x as FlightWithFares)
 
   return { data: { flightsWithFares: flights } }
 }

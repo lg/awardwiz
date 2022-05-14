@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import puppeteer from "puppeteer"
 import moment from "moment"
-import { FlightWithFares } from "../types/scrapers"
+import { FlightFare, FlightWithFares } from "../types/scrapers"
 
 type ScraperConfig = { [key: string]: { popularRoute: { origin: string; destination: string }} }
 const scrapers: ScraperConfig = {
@@ -35,6 +35,16 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
       return Object.keys(expectedKeys).every((key) => {
         const val = Object.entries(flight).find(([k, v]) => k === key)?.[1]
         return val !== undefined || (val === undefined && scraperModule.capabilities.missingAttributes.includes(key as keyof FlightWithFares))
+      })
+    })).toBe(true)
+
+    const expectedFareKeys: KeysEnum<FlightFare> = { cabin: true, miles: true, isSaverFare: true, cash: true, currencyOfCash: true }
+    expect(results.data.flightsWithFares.every((flight) => {
+      return flight.fares.every((fare) => {
+        return Object.keys(expectedFareKeys).every((key) => {
+          const val = Object.entries(fare).find(([k, v]) => k === key)?.[1]
+          return val !== undefined || (val === undefined && scraperModule.capabilities.missingFareAttributes.includes(key as keyof FlightFare))
+        })
       })
     })).toBe(true)
   }, 20000)

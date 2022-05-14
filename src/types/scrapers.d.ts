@@ -1,7 +1,7 @@
 export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResults }>
 export type ScraperCapabilities = {
-  supportsConnections: false                      // To implement
   missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined
+  missingFareAttributes: (keyof FlightFare)[]    // Only these fields are expected to be undefined
 }
 export type BrowserlessQuery = {
   page: Page,

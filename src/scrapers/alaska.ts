@@ -3,8 +3,8 @@
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const capabilities: ScraperCapabilities = {
-  supportsConnections: false,
-  missingAttributes: ["duration", "hasWifi"]
+  missingAttributes: ["duration", "hasWifi"],
+  missingFareAttributes: ["isSaverFare"]
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
