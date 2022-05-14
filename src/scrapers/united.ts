@@ -3,7 +3,7 @@ import { Trip, UnitedFetchFlights } from "./united-types"
 
 export const capabilities: ScraperCapabilities = {
   supportsConnections: false,
-  missingAttributes: []
+  missingAttributes: ["hasWifi"]
 }
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
@@ -17,11 +17,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
     flightsWithFares.push(...flights)
   }
 
-  const warnings: string[] = []
-  if (raw.Error)
-    warnings.push(raw.Error[0])
-
-  return { data: { flightsWithFares, warnings } }
+  return { data: { flightsWithFares } }
 }
 
 const standardizeResults = (unitedTrip: Trip) => {
@@ -33,8 +29,8 @@ const standardizeResults = (unitedTrip: Trip) => {
       origin: flight.Origin,
       destination: flight.Destination,
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,
-      airline: flight.MarketingCarrierDescription,
       duration: flight.TravelMinutes,
+      hasWifi: undefined,
       fares: []
     }
 

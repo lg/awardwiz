@@ -7,6 +7,12 @@
     ]
   },
   {
+    "name": "southwest",
+    "supportedAirlines": [
+      "WN"
+    ]
+  },
+  {
     "name": "united",
     "supportedAirlines": [
       "star alliance",

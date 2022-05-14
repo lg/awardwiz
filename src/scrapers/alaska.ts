@@ -1,20 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-// Things to test:
-// - award on a partner airline
-// - proper next-day hour arrival calculation
-// - some airlines have different columns for premium plus awards
-
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const capabilities: ScraperCapabilities = {
   supportsConnections: false,
-  missingAttributes: ["airline", "duration"]
+  missingAttributes: ["duration", "hasWifi"]
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  const warnings: string[] = []
-
   // warm the browser up
   await page.goto("https://m.alaskaair.com/shopping/?timeout=true")
 
@@ -69,8 +62,8 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         destination,
         departureDateTime: `${departureDate} ${time12to24(departureTime[0])}`,
         arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}`,
-        airline: undefined,
         duration: undefined,    // missing if a partner flies it (ex. Operated by SkyWest Airlines as AlaskaSkyWest)
+        hasWifi: undefined,
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
           const milesAndCash = queryElMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\s\S]*\$(.+)/)
           const cabin = queryElMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
@@ -92,7 +85,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     return flights
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
-  return { data: { flightsWithFares: res, warnings } }
+  return { data: { flightsWithFares: res } }
 }
 
 module.exports = scraper

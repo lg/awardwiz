@@ -3,19 +3,14 @@ import puppeteer from "puppeteer"
 import moment from "moment"
 import { FlightWithFares } from "../types/scrapers"
 
-type ScraperConfig = {
-  scraperName: string,
-  popularRoute: { origin: string; destination: string }   // route should have award available all the time
+type ScraperConfig = { [key: string]: { popularRoute: { origin: string; destination: string }} }
+const scrapers: ScraperConfig = {
+  alaska: { popularRoute: { origin: "SFO", destination: "JFK" } },
+  united: { popularRoute: { origin: "SFO", destination: "JFK" } },
+  southwest: { popularRoute: { origin: "SFO", destination: "LAX" } },
 }
 
-const scrapers: ScraperConfig[] = [
-  { scraperName: "alaska", popularRoute: { origin: "SFO", destination: "JFK" } },
-  { scraperName: "united", popularRoute: { origin: "SFO", destination: "JFK" } },
-]
-
-// TODO: add partner test (ex SFO NRT on JAL via Alaska)
-
-describe.each(scrapers)("%s scraper", ({ scraperName, popularRoute }) => {
+describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
   let browser: puppeteer.Browser
   let context: puppeteer.BrowserContext
   let page: puppeteer.Page
@@ -27,7 +22,7 @@ describe.each(scrapers)("%s scraper", ({ scraperName, popularRoute }) => {
 
   it("can do a basic popular search", async () => {
     const scraperModule: typeof import("../scrapers/alaska") = await import(`../scrapers/${scraperName}`)
-    const results = await scraperModule.scraper({ page, context: { origin: popularRoute.origin, destination: popularRoute.destination, departureDate: moment().add(2, "months").format("YYYY-MM-DD") } })
+    const results = await scraperModule.scraper({ page, context: { origin: scrapers[scraperName].popularRoute.origin, destination: scrapers[scraperName].popularRoute.destination, departureDate: moment().add(2, "months").format("YYYY-MM-DD") } })
 
     expect(results.data.flightsWithFares.length).toBeGreaterThanOrEqual(1)
     expect(results.data.flightsWithFares.every((flight) => flight.fares.length > 0)).toBe(true)
@@ -42,6 +37,9 @@ describe.each(scrapers)("%s scraper", ({ scraperName, popularRoute }) => {
         return val !== undefined || (val === undefined && scraperModule.capabilities.missingAttributes.includes(key as keyof FlightWithFares))
       })
     })).toBe(true)
-
   }, 20000)
+
+  it.todo("can search partner availability", async () => {})
+  it.todo("can properly deal with day +1 arrival", async () => {})
+  it.todo("supports zero results", async () => {})
 })

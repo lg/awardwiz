@@ -18,7 +18,6 @@ export type ScraperQuery = {
 
 export type ScraperResults = {
   flightsWithFares: FlightWithFares[]
-  warnings: string[]
 }
 
 // the "| undefined" piece makes these require to explicitly be defined
@@ -28,8 +27,8 @@ export type FlightWithFares = {
   arrivalDateTime: string                // "2022-04-01 15:12"
   origin: string                         // "SFO"
   destination: string                    // "LHR"
-  airline: string | undefined            // "United Airlines"
   duration: number | undefined           // 62
+  hasWifi: boolean | undefined           // true
   fares: FlightFare[]
 }
 
