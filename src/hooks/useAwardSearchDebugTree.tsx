@@ -58,7 +58,8 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
         error: undefined
       })
 
-    } else if (!servingCarriers.some((servingCarrier) => servingCarrier.origin === pairing.origin && servingCarrier.destination === pairing.destination)) {
+    } else if (!servingCarriers.some((servingCarrier) => servingCarrier.origin === pairing.origin && servingCarrier.destination === pairing.destination)
+        && queryClient.getQueryState(["servingCarriers", pairing.origin, pairing.destination])?.status !== "loading") {
       debugTree.push({
         key: `${pairing.origin}${pairing.destination}-no-carriers`,
         parentKey: `${pairing.origin}${pairing.destination}`,
