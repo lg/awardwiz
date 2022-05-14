@@ -30,7 +30,7 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
     parentKey: debugTreeRootKey,
     text: <>{pairing.origin} → {pairing.destination}</>,
     stableIcon: <NodeIndexOutlined />,
-    isLoading: queryClient.getQueryState(["servingCarriers", pairing.origin, pairing.destination])?.status === "loading",
+    isLoading: queryClient.isFetching(["servingCarriers", pairing.origin, pairing.destination]) > 0,
     error: queryClient.getQueryState(["servingCarriers", pairing.origin, pairing.destination])?.error || undefined,
   })))
 
@@ -39,7 +39,7 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
     parentKey: `${scraperForRoute.origin}${scraperForRoute.destination}`,
     text: <><Text code>{scraperForRoute.scraper}</Text>: {scraperForRoute.matchedAirlines.join(", ")}</>,
     stableIcon: <CarbonPaintBrush />,
-    isLoading: queryClient.getQueryState(["awardAvailability", key, scraperForRoute.departureDate])?.status === "loading",
+    isLoading: queryClient.isFetching(["awardAvailability", key, scraperForRoute.departureDate]) > 0,
     error: queryClient.getQueryState(["awardAvailability", key, scraperForRoute.departureDate])?.error || undefined,
   })))
 
@@ -59,7 +59,7 @@ export const useAwardSearchDebugTree = ({ searchQuery, isLoading, pairings, scra
       })
 
     } else if (!servingCarriers.some((servingCarrier) => servingCarrier.origin === pairing.origin && servingCarrier.destination === pairing.destination)
-        && queryClient.getQueryState(["servingCarriers", pairing.origin, pairing.destination])?.status !== "loading") {
+        && queryClient.isFetching(["servingCarriers", pairing.origin, pairing.destination]) === 0) {
       debugTree.push({
         key: `${pairing.origin}${pairing.destination}-no-carriers`,
         parentKey: `${pairing.origin}${pairing.destination}`,
