@@ -39,8 +39,6 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   if (raw.notifications && raw.notifications.formErrors && raw.notifications.formErrors[0] && raw.notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
     return { data: { flightsWithFares: [] } }
 
-  //debugger
-
   const rawResults = raw.data.searchResults.airProducts[0].details
 
   const flights: FlightWithFares[] = rawResults.map((result: any) => {
@@ -55,23 +53,29 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
       duration: result.totalDuration,
       hasWifi: result.segments[0].wifiOnBoard,
-      fares: [Object.values(result.fareProducts.ADULT).reduce((lowestFare: any, product: any) => {
-        if (product.availabilityStatus !== "AVAILABLE")
-          return undefined
-        const fare: FlightFare = {
-          cabin: "economy",
-          miles: parseInt(product.fare.totalFare.value, 10),
-          isSaverFare: false,
-          cash: parseFloat(product.fare.totalTaxesAndFees.value),
-          currencyOfCash: product.fare.totalTaxesAndFees.currencyCode
-        }
-
-        if (!lowestFare || fare.miles < lowestFare.miles)
-          return fare
-        return lowestFare
-      }, undefined)] as FlightFare[]
+      fares: []
     }
-    return flight
+
+    const bestFare: FlightFare | undefined = Object.values(result.fareProducts.ADULT).reduce((lowestFare: FlightFare | undefined, product: any) => {
+      if (product.availabilityStatus !== "AVAILABLE")
+        return lowestFare
+      const fare: FlightFare = {
+        cabin: "economy",
+        miles: parseInt(product.fare.totalFare.value, 10),
+        isSaverFare: false,
+        cash: parseFloat(product.fare.totalTaxesAndFees.value),
+        currencyOfCash: product.fare.totalTaxesAndFees.currencyCode
+      }
+
+      if (!lowestFare || fare.miles < lowestFare.miles)
+        return fare
+      return lowestFare
+    }, undefined as FlightFare | undefined)
+
+    if (bestFare)
+      flight.fares.push(bestFare)
+
+    return bestFare ? flight : undefined
   }).filter((flight: FlightWithFares | undefined) => flight !== undefined)
 
   return { data: { flightsWithFares: flights } }
@@ -86,7 +90,6 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       return undefined
     const matchAll = async () => {
       const startTime = Date.now()
-      console.log(`on skiplist: ${skipIndexes.join(",")}`)
 
       while (true) {
         for (let i = 0; i < rules.length; i += 1) {
@@ -110,38 +113,28 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
   }
 
   while (true) {
-    console.log("Waiting for next match")
     const matchedRule = await matchNextRule()
     if (!matchedRule)
       throw new Error("No matches")
 
-    console.log(`Matched rule '${matchedRule.rule.find}')`)
     await matchedRule.element.click()
 
     if (matchedRule.rule.type) {
-      console.log(`  Typing '${matchedRule.rule.type}'`)
       await matchedRule.element.focus()
       await matchedRule.element.type(matchedRule.rule.type)
     }
 
-    if (matchedRule.rule.andWaitFor) {
-      console.log(`  Waiting for '${matchedRule.rule.andWaitFor}'`)
+    if (matchedRule.rule.andWaitFor)
       await page.waitForSelector(matchedRule.rule.andWaitFor)
-    }
 
-    if (matchedRule.rule.andThen) {
-      console.log(`  Processing more rules (${matchedRule.rule.andThen.length})`)
+    if (matchedRule.rule.andThen)
       await processScraperFlowRules(page, matchedRule.rule.andThen)
-    }
 
-    if (matchedRule.rule.andDebugger) {
+    if (matchedRule.rule.andDebugger)
       debugger
-    }
 
-    if (matchedRule.rule.done) {
-      console.log("  Done")
+    if (matchedRule.rule.done)
       break
-    }
   }
 }
 

@@ -28,7 +28,7 @@
     {
       "type": "pwa-node",
       "request": "launch",
-      "name": "Debug Current Test File",
+      "name": "Tests",
       "autoAttachChildProcesses": true,
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
