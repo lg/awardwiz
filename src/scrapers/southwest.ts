@@ -22,7 +22,8 @@ export type ScraperFlowRule = {
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  await page.goto("https://www.southwest.com/air/booking/")
+  page.goto("https://www.southwest.com/air/booking/")
+  await page.waitForNavigation({ waitUntil: "networkidle0" })
 
   const rules: ScraperFlowRule[] = [
     { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, done: true }] },

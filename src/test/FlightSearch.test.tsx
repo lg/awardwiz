@@ -29,7 +29,7 @@ describe("basic operations", () => {
   it.only("completes an initial render", () => {
     const node = wrapper({ children: <FlightSearch /> })
     const rendered = render(node).container
-    expect(rendered.querySelectorAll(".ant-tree-title").length).toEqual(3)
+    expect(rendered.querySelectorAll(".ant-tree-title").length).toBeGreaterThanOrEqual(3)
     expect(rendered.querySelectorAll(".ant-tree-title")[0].textContent).toMatch(/Search for .*? → .*? on .*?-.*?-.*/)
   })
 })
