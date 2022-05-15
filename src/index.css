@@ -8,3 +8,7 @@
   width: auto;
   margin-top: 10px;
 }
+
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}
