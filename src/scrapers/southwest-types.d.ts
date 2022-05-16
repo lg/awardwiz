@@ -3,6 +3,7 @@ export interface Result {
   success: boolean
   notifications: Notifications | null
   uiMetadata: UiMetadata
+  code?: number
 }
 
 interface Notifications {

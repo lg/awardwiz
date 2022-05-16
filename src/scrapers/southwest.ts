@@ -26,17 +26,30 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   await page.waitForNavigation({ waitUntil: "networkidle0" })
 
   const rules: ScraperFlowRule[] = [
-    { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, done: true }] },
-    { find: "input#originationAirportCode", type: query.origin, andThen: [{ find: `button[aria-label~=${query.origin}]`, done: true }] },
-    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, done: true }] },
     { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']" },
     { find: "input[value='POINTS']", andWaitFor: "input:checked[value='POINTS']" },
+    { find: "input#originationAirportCode", type: query.origin, andThen: [{ find: `button[aria-label~=${query.origin}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
+    { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
+    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, andWaitFor: ".overlay-background[style='']", done: true }] },
     { find: "#form-mixin--submit-button", done: true },
   ]
 
   await processScraperFlowRules(page, rules)
 
-  const raw: SouthwestTypes.Result = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: Response) => response.json())
+  let raw: SouthwestTypes.Result
+  let tries = 0
+  do {
+    raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: Response) => response.json())
+    if (raw.success)
+      break
+
+    tries += 1
+    if (tries === 5)
+      throw new Error("Failed after trying 5 times to load southwest searches")
+    console.log("waiting 5 seconds and trying again")
+    await sleep(5000)
+    page.click("#form-mixin--submit-button")
+  } while (raw.code === 403050700)
 
   if (raw.notifications && raw.notifications.formErrors && raw.notifications.formErrors[0] && raw.notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
     return { data: { flightsWithFares: [] } }
@@ -118,7 +131,11 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     if (!matchedRule)
       throw new Error("No matches")
 
-    await matchedRule.element.click()
+    console.log("matched rule", matchedRule.rule.find)
+    await sleep(1000)
+    const clickEvent = matchedRule.element.click()
+    if (!matchedRule.rule.done)
+      await clickEvent
 
     if (matchedRule.rule.type) {
       await matchedRule.element.focus()
