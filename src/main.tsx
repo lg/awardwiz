@@ -2,8 +2,8 @@ import React, { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
-import { persistQueryClient } from "react-query/persistQueryClient"
-import { createWebStoragePersister } from "react-query/createWebStoragePersister"
+import { persistQueryClient } from "react-query/persistQueryClient-experimental"
+import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
 import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
 import { QueryClientProvider } from "react-query"
@@ -23,8 +23,8 @@ const queryClient = new ReactQuery.QueryClient({
 
 if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
-  const localStoragePersister = createWebStoragePersister({ storage: window.localStorage })
-  persistQueryClient({ queryClient, persister: localStoragePersister })
+  const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
+  persistQueryClient({ queryClient, persistor: localStoragePersistor })
 } else {
   console.debug("Not using persistent cache")
 }

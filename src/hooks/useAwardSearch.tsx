@@ -35,7 +35,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       return carriers
     },
   }) as ReactQuery.UseQueryOptions<ServingCarrier[]>)
-  const servingCarriersQueries = ReactQuery.useQueries({ queries: servingCarriersObjs })
+  const servingCarriersQueries = ReactQuery.useQueries(servingCarriersObjs)
 
   const servingCarriers = servingCarriersQueries
     .filter((item) => item.data)
@@ -70,11 +70,11 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
       const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
-      const scraperResults = (await axios.post<ScraperResults>("http://localhost:4000/function", postData, { signal })).data
+      const scraperResults = (await axios.post<ScraperResults>(`http://localhost:4000/function?key=${key}`, postData, { signal })).data
       return scraperResults.flightsWithFares
     }
   }) as ReactQuery.UseQueryOptions<FlightWithFares[]>)
-  const searchQueries = ReactQuery.useQueries({ queries: searchQueryObjs })
+  const searchQueries = ReactQuery.useQueries(searchQueryObjs)
 
   const scraperResults = searchQueries
     .filter((item) => item.data)
