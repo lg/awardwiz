@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import puppeteer from "puppeteer"
-import moment from "moment"
+import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
+const moment = moment_
 
 type ScraperConfig = { [key: string]: { popularRoute: { origin: string; destination: string }} }
 const scrapers: ScraperConfig = {

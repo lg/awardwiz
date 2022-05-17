@@ -1,8 +1,9 @@
 import * as React from "react"
 import { Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
-import * as moment from "moment"
+import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
+const moment = moment_
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {

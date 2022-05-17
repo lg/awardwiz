@@ -1,5 +1,5 @@
 import * as React from "react"
-import moment from "moment"
+import moment_ from "moment"
 import { LeftOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
 import { Alert, Button, DatePicker, Form } from "antd"
 import { SearchResults } from "./SearchResults"
@@ -8,6 +8,7 @@ import { useAwardSearch } from "../hooks/useAwardSearch"
 import { DebugTree } from "./DebugTree"
 import { useAwardSearchDebugTree } from "../hooks/useAwardSearchDebugTree"
 import { SearchQuery } from "../types/scrapers"
+const moment = moment_
 
 export const FlightSearch = () => {
   console.log("render")

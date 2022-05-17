@@ -1,4 +1,4 @@
-import puppeteer = require("puppeteer")
+import puppeteer from "puppeteer";
 
 (async () => {
   const browser = await puppeteer.launch({ headless: false, devtools: false, defaultViewport: { width: 1300, height: 800 } })
