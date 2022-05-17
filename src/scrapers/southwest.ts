@@ -132,7 +132,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       throw new Error("No matches")
 
     console.log("matched rule", matchedRule.rule.find)
-    await sleep(1000)
+    await sleep(400)
     const clickEvent = matchedRule.element.click()
     if (!matchedRule.rule.done)
       await clickEvent
