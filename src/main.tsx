@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react"
+import React from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"
@@ -29,11 +29,10 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Not using persistent cache")
 }
 
+// enabling strict mode will cause problems with reactquery canceling queries when components unmount
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <FlightSearch />
-      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
-  </StrictMode>
+  <QueryClientProvider client={queryClient}>
+    <FlightSearch />
+    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+  </QueryClientProvider>
 )
