@@ -18,6 +18,8 @@
     "axios": "^0.27.2",
     "mapbox-gl": "^2.8.2",
     "moment": "^2.29.3",
+    "playwright-aws-lambda": "^0.7.0",
+    "playwright-core": "^1.22.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-map-gl": "^7.0.12",
@@ -45,6 +47,7 @@
     "puppeteer": "^14.1.0",
     "unplugin-icons": "^0.14.3",
     "vite": "^2.9.9",
-    "vitest": "^0.12.6"
+    "vitest": "^0.12.6",
+    "@vercel/node": "^1.15.2"
   }
 }
