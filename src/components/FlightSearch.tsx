@@ -14,7 +14,12 @@ export const FlightSearch = () => {
   console.log("render")
 
   const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: moment().add("1", "day").format("YYYY-MM-DD") }
-  const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => JSON.parse(localStorage.getItem("searchQuery") || JSON.stringify(defaultSearchQuery)))
+  const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => {
+    const receivedDate = JSON.parse(localStorage.getItem("searchQuery") || JSON.stringify(defaultSearchQuery))
+    if (moment(receivedDate.departureDate).isBefore(moment()))
+      receivedDate.departureDate = defaultSearchQuery.departureDate
+    return receivedDate
+  })
   const { searchResults, isLoading, error, pairings, servingCarriers, scrapersForRoutes } = useAwardSearch(searchQuery)
   const { debugTree, debugTreeRootKey } = useAwardSearchDebugTree({ searchQuery, pairings, servingCarriers, scrapersForRoutes, isLoading })
 

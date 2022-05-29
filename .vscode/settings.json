@@ -6,6 +6,7 @@
     "src/scrapers/dist": true,
     "old": true,
     "**/*_sample.json": true,
-    "src/scrapers/*-types.d.ts": true
+    "src/scrapers/*-types.d.ts": true,
+    "dist": true
   }
 }

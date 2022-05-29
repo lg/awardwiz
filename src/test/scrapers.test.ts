@@ -53,4 +53,5 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
   it.todo("can search partner availability", async () => {})
   it.todo("can properly deal with day +1 arrival", async () => {})
   it.todo("supports zero results", async () => {})
+  it.todo("fails gracefully with historic searches", async () => {})
 })
