@@ -77,7 +77,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
   const searchQueries = ReactQuery.useQueries<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
     queryKey: ["awardAvailability", key, scraperQuery.departureDate],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
     retry: 1,
     queryFn: fetchAwardAvailability,
