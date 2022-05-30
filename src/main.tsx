@@ -7,7 +7,6 @@ import { createWebStoragePersistor } from "react-query/createWebStoragePersistor
 import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
 import { QueryClientProvider } from "react-query"
-import { GoogleOAuthProvider } from "@react-oauth/google"
 import { LoginScreen } from "./components/LoginScreen"
 
 const queryClient = new ReactQuery.QueryClient({
@@ -33,13 +32,11 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
 
 // enabling strict mode will cause problems with reactquery canceling queries when components unmount
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-    <QueryClientProvider client={queryClient}>
-      <LoginScreen>
-        <FlightSearch />
-      </LoginScreen>
+  <QueryClientProvider client={queryClient}>
+    <LoginScreen>
+      <FlightSearch />
+    </LoginScreen>
 
-      {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
-  </GoogleOAuthProvider>
+    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+  </QueryClientProvider>
 )

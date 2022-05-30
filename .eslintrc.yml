@@ -78,3 +78,4 @@ rules:
   import/no-import-module-exports: off    # so i can embed the scrapers in the main codebase
   padded-blocks: off
   "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
+  "@typescript-eslint/ban-ts-comment": off
