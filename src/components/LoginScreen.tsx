@@ -1,9 +1,9 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
 import * as React from "react"
 import { SupabaseClient } from "@supabase/supabase-js"
-import { Col, Row, Typography, Alert, AlertProps } from "antd"
+import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown, Menu } from "antd"
 import awardwizImageUrl from "../wizard.png"
-const { Title } = Typography
+import CarbonLogout from "~icons/carbon/logout"
 
 const supabase = new SupabaseClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
@@ -32,9 +32,29 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
     supabase.auth._saveSession(data); supabase.auth._notifyAllSubscribers("SIGNED_IN")
   }
 
-  if (supabaseSession)
-    return children
+  // Logged in view
+  if (supabaseSession) {
+    const avatarMenu = (
+      <Menu items={[
+        { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => supabase.auth.signOut() }
+      ]} />
+    )
 
+    return (
+      <>
+        <Row style={{ float: "right", margin: 10 }}>
+          <Dropdown overlay={avatarMenu} trigger={["click"]}>
+            <Avatar src={supabaseSession.user?.user_metadata?.picture} style={{ cursor: "pointer" }}>
+              {`${supabaseSession.user?.user_metadata?.given_name?.toString()[0]}${supabaseSession.user?.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
+            </Avatar>
+          </Dropdown>
+        </Row>
+        <Row>{children}</Row>
+      </>
+    )
+  }
+
+  // Logged out view
   return (
     <Row justify="center" align="middle" style={{ minHeight: "100vh" }}>
       <Col>
@@ -42,7 +62,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
           <img alt="AwardWiz logo" src={awardwizImageUrl} style={{ width: 100 }} />
         </Row>
         <Row justify="center">
-          <Title level={2}>AwardWiz</Title>
+          <Typography.Title level={2}>AwardWiz</Typography.Title>
         </Row>
         <Row justify="center">
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
