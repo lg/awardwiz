@@ -8,7 +8,7 @@ extends:
   - plugin:react/recommended
   - plugin:promise/recommended
   - plugin:react-hooks/recommended
-parser: '@typescript-eslint/parser'
+parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
     jsx: true
