@@ -20,7 +20,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Return the list of carriers that fly the given pairings
   const fetchServingCarriers = async ({ signal, meta }: QueryFunctionContext) => {
     const pairing = meta as QueryPairing
-    const dataHtml = (await axios.post<string>("http://localhost:4000/content", { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { signal })).data
+    const dataHtml = (await axios.post<string>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`, { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
     const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
 
     if (data.errors)
@@ -71,7 +71,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
-    const scraperResults = (await axios.post<ScraperResults>(`http://localhost:4000/function?key=${queryKey}`, postData, { signal })).data
+    const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
     return scraperResults.flightsWithFares
   }
 

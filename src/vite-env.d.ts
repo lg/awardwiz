@@ -15,6 +15,12 @@ interface ImportMetaEnv {
 
   /** Google client id for oauth (ex. "123123123213-jgjkhewfgj23hgjkhgfk3.apps.googleusercontent.com") */
   readonly VITE_GOOGLE_CLIENT_ID: string
+
+  /** The URL to the Browserless instance that's behind aws api gateway (to run scrapers, ex. "https://xxxxyyyzz.execute-api.us-east-1.amazonaws.com/main/browserless") */
+  readonly VITE_BROWSERLESS_AWS_PROXY_URL: string
+
+  /** The x-api-key to pass through to Browserless calls (for aws api gateway) */
+  readonly VITE_BROWSERLESS_AWS_PROXY_API_KEY: string
 }
 
 interface ImportMeta {
