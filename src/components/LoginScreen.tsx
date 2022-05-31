@@ -42,14 +42,12 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
 
     return (
       <>
-        <Row style={{ float: "right", margin: 10 }}>
-          <Dropdown overlay={avatarMenu} trigger={["click"]}>
-            <Avatar src={supabaseSession.user?.user_metadata?.picture} style={{ cursor: "pointer" }}>
-              {`${supabaseSession.user?.user_metadata?.given_name?.toString()[0]}${supabaseSession.user?.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
-            </Avatar>
-          </Dropdown>
-        </Row>
-        <Row>{children}</Row>
+        <Dropdown overlay={avatarMenu} trigger={["click"]}>
+          <Avatar src={supabaseSession.user?.user_metadata?.picture} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>
+            {`${supabaseSession.user?.user_metadata?.given_name?.toString()[0]}${supabaseSession.user?.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
+          </Avatar>
+        </Dropdown>
+        {children}
       </>
     )
   }
