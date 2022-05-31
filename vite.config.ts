@@ -1,10 +1,9 @@
 /// <reference types="vitest" />
 
-/* eslint-disable import/no-extraneous-dependencies */
-
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 import Icons from "unplugin-icons/vite"
+import { visualizer } from "rollup-plugin-visualizer"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,6 +14,7 @@ export default defineConfig({
       jsx: "react",
       defaultStyle: "vertical-align: text-bottom;"
     }),
+    visualizer({ open: true })
   ],
 
   test: {

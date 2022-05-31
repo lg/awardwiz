@@ -3,7 +3,6 @@ import axios from "axios"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
-import * as ts from "typescript"
 import { QueryFunctionContext } from "react-query"
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
@@ -67,7 +66,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     const path = Object.keys(scraperCode).find((scraperKey) => scraperKey.indexOf(`${scraperQuery.scraper}.ts`) > -1)
     if (!path)
       throw new Error(`Could not find scraper ${scraperQuery.scraper}`)
+
     const tsCode = scraperCode[path] as unknown as string
+    const ts = await import("typescript")
     const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
