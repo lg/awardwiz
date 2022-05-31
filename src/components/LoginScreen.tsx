@@ -15,9 +15,10 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
     supabase.auth.onAuthStateChange((event, session) => { setSupabaseSession(session) })
   }, [])
 
+  const sessionEmail = supabaseSession?.user?.email
   React.useEffect(() => {
-    console.log(`Logged in as ${supabaseSession?.user?.email || "(not logged in)"}`)
-  }, [supabaseSession])
+    console.log(`Current user logged in: ${sessionEmail || "(not logged in)"}`)
+  }, [sessionEmail])
 
   const onGoogleCredential = async (credentialResponse: CredentialResponse) => {
     console.log("Google credential received, logging into Supabase...")
