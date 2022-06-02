@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Table, Tag } from "antd"
+import { Table, Tag, Tooltip } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
@@ -57,7 +57,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const milesStr = smallestFare.miles.toLocaleString()
         const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "" })
 
-        return <Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{smallestFare.cash > 0 ? ` + ${cashStr}` : ""}</Tag>
+        return <Tooltip title={record.scraper}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{smallestFare.cash > 0 ? ` + ${cashStr}` : ""}</Tag></Tooltip>
       },
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
