@@ -6,6 +6,7 @@ const moment = moment_
 
 type ScraperConfig = { [key: string]: { popularRoute: { origin: string; destination: string }} }
 const scrapers: ScraperConfig = {
+  aeroplan: { popularRoute: { origin: "YOW", destination: "YYZ" } },
   alaska: { popularRoute: { origin: "SFO", destination: "JFK" } },
   united: { popularRoute: { origin: "SFO", destination: "JFK" } },
   southwest: { popularRoute: { origin: "SFO", destination: "LAX" } },
@@ -16,7 +17,7 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
   let context: puppeteer.BrowserContext
   let page: puppeteer.Page
 
-  beforeAll(async () => { browser = await puppeteer.connect({ browserWSEndpoint: "ws://localhost:4000" }) })
+  beforeAll(async () => { browser = await puppeteer.connect({ browserWSEndpoint: "ws://10.0.1.17:4000" }) })
   beforeEach(async () => { context = await browser.createIncognitoBrowserContext(); page = await context.newPage() })
   afterEach(async () => { await page.close(); await context.close() })
   afterAll(async () => { await setTimeout(() => { browser.close() }, 1000) })
@@ -55,3 +56,5 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
   it.todo("supports zero results", async () => {})
   it.todo("fails gracefully with historic searches", async () => {})
 })
+
+export {}

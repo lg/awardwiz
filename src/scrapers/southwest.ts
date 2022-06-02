@@ -46,7 +46,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     tries += 1
     if (tries === 5)
       throw new Error("Failed after trying 5 times to load southwest searches")
-    console.log("waiting 5 seconds and trying again")
+    // console.log("waiting 5 seconds and trying again")
     await sleep(5000)
     page.click("#form-mixin--submit-button")
   } while (raw.code === 403050700)
@@ -68,6 +68,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
       duration: result.totalDuration,
       hasWifi: result.segments[0].wifiOnBoard,
+      scraper: "southwest",
       fares: []
     }
     const bestFare: FlightFare | undefined = (Object.values(result.fareProducts.ADULT) as SouthwestTypes.Red[]).reduce((lowestFare: FlightFare | undefined, product) => {
@@ -131,7 +132,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     if (!matchedRule)
       throw new Error("No matches")
 
-    console.log("matched rule", matchedRule.rule.find)
+    // console.log("matched rule", matchedRule.rule.find)
     await sleep(400)
     const clickEvent = matchedRule.element.click()
     if (!matchedRule.rule.done)

@@ -9,6 +9,14 @@ const SelectAirportTag = ({ ...props }) => <Tag style={{ marginRight: 3 }} {...p
 export const SelectAirport = ({ ...props }) => {
   const airportsDb = useAirportsDb()
 
+  const menu = (menuElement: ReactElement) => (
+    <>
+      {menuElement}
+      <Divider style={{ margin: "8px 0" }} />
+      <AirportMap airports={props.value} />
+    </>
+  )
+
   return (
     <>
       <Select
@@ -17,11 +25,7 @@ export const SelectAirport = ({ ...props }) => {
         tokenSeparators={[",", " ", "/"]}
         options={airportsDb.options}
         optionFilterProp="value"
-        dropdownRender={(menu: ReactElement) => (<>
-          {menu}
-          <Divider style={{ margin: "8px 0" }} />
-          <AirportMap airports={props.value} />
-        </>)}
+        dropdownRender={menu}
         {...props}
       />
     </>

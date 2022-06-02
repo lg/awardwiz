@@ -72,7 +72,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     <Table<FlightWithFares>
       dataSource={results}
       columns={columns}
-      rowKey="flightNo"
+      rowKey={(record) => `${record.flightNo}-${record.scraper}`}
       size="small"
       loading={isLoading}
       showSorterTooltip={false}

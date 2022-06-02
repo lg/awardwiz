@@ -28,7 +28,7 @@ export const AirportMap = ({ airports }: { airports: string[] }) => {
   const minLatitude = airports.reduce((min, airport) => Math.min(min, airportsDb.airports[airport].latitude), 90)
   const maxLatitude = airports.reduce((max, airport) => Math.max(max, airportsDb.airports[airport].latitude), -90)
   const center = [(minLongitude + maxLongitude) / 2, (minLatitude + maxLatitude) / 2]
-  const distance = haversine({ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }, {unit: 'mile'})
+  const distance = haversine({ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }, { unit: "mile" })
 
   const zoom = Math.min(7, Math.max(0, 12 - Math.log2(distance)))       // bigger = more zoomed in
 

@@ -31,6 +31,7 @@ const standardizeResults = (unitedTrip: Trip) => {
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,
       duration: flight.TravelMinutes,
       hasWifi: undefined,
+      scraper: "united",
       fares: []
     }
 
