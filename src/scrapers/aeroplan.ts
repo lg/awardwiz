@@ -17,7 +17,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   const raw = await response.json() as AeroplanFetchFlights
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.data.airBoundGroups !== null && raw.data.airBoundGroups.length > 0) {
+  if (raw.data && raw.data.airBoundGroups !== null && raw.data.airBoundGroups.length > 0) {
     const flights = standardizeResults(raw)
     flightsWithFares.push(...flights)
   }
