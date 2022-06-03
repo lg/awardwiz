@@ -14,9 +14,17 @@
     ]
   },
   {
+    "name": "jetblue",
+    "supportedAirlines": [
+      "B6",
+      "partners dont seem to be searchable"
+    ]
+  },
+  {
     "name": "southwest",
     "supportedAirlines": [
-      "WN"
+      "WN",
+      "partners dont seem to be searchable"
     ]
   },
   {
