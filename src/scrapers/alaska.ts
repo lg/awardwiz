@@ -74,7 +74,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
           const flightFare: FlightFare = {
             cash: parseFloat(milesAndCash[2]),
             currencyOfCash: "USD",
-            cabin: { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
+            cabin: airlineCode === "AS" ? { Main: "economy", "First Class": "business" }[cabin]! : { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
             miles: parseFloat(milesAndCash[1]) * 1000,
             isSaverFare: undefined
           }
