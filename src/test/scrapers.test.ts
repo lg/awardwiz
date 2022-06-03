@@ -4,12 +4,16 @@ import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
 const moment = moment_
 
-type ScraperConfig = { [key: string]: { popularRoute: { origin: string; destination: string }} }
+type ScraperConfig = { [key: string]: {
+  popularRoute: { origin: string; destination: string },
+  partnerRoute?: { origin: string, destination: string, expectFlight: string }
+}}
 const scrapers: ScraperConfig = {
-  aeroplan: { popularRoute: { origin: "YOW", destination: "YYZ" } },
-  alaska: { popularRoute: { origin: "SFO", destination: "JFK" } },
-  united: { popularRoute: { origin: "SFO", destination: "JFK" } },
-  southwest: { popularRoute: { origin: "SFO", destination: "LAX" } },
+  aeroplan: { popularRoute: { origin: "YOW", destination: "YYZ" }, partnerRoute: { origin: "NRT", destination: "CGK", expectFlight: "NH 835" } },
+  alaska: { popularRoute: { origin: "SFO", destination: "JFK" }, partnerRoute: { origin: "HKG", destination: "KUL", expectFlight: "MH 79" } },
+  united: { popularRoute: { origin: "SFO", destination: "JFK" }, partnerRoute: { origin: "NRT", destination: "CGK", expectFlight: "NH 835" } },
+  southwest: { popularRoute: { origin: "SFO", destination: "LAX" }, partnerRoute: undefined },
+  jetblue: { popularRoute: { origin: "SFO", destination: "JFK" }, partnerRoute: undefined },
 }
 
 describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
@@ -51,10 +55,21 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
     })).toBe(true)
   }, 20000)
 
-  it.todo("can search partner availability", async () => {})
+  it.runIf(scrapers[scraperName].partnerRoute)("can search partner availability", async () => {
+    const scraperModule: typeof import("../scrapers/alaska") = await import(`../scrapers/${scraperName}`)
+    const checkDate = moment().add(3, "months").format("YYYY-MM-DD")
+    const results = await scraperModule.scraper({ page, context: { origin: scrapers[scraperName].partnerRoute!.origin, destination: scrapers[scraperName].partnerRoute!.destination, departureDate: checkDate } })
+
+    const expectFlightNo = scrapers[scraperName].partnerRoute!.expectFlight
+    expect(results.data.flightsWithFares.find((flight) => {
+      return flight.flightNo === expectFlightNo
+    }), `flight ${expectFlightNo} to have first availability on ${checkDate}`).toBeTruthy()
+  }, 20000)
+
   it.todo("can properly deal with day +1 arrival", async () => {})
   it.todo("supports zero results", async () => {})
   it.todo("fails gracefully with historic searches", async () => {})
+  it.todo("fails gracefully when no results", async () => {})
 })
 
 export {}
