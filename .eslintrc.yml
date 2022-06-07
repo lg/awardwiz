@@ -79,3 +79,4 @@ rules:
   padded-blocks: off
   "import/no-extraneous-dependencies": ["error", {"devDependencies": true}]
   "@typescript-eslint/ban-ts-comment": off
+  "@typescript-eslint/no-explicit-any": off
