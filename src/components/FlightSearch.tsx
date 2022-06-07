@@ -20,8 +20,8 @@ export const FlightSearch = () => {
       receivedDate.departureDate = defaultSearchQuery.departureDate
     return receivedDate
   })
-  const { searchResults, isLoading, error, pairings, servingCarriers, scrapersForRoutes } = useAwardSearch(searchQuery)
-  const { debugTree, debugTreeRootKey } = useAwardSearchDebugTree({ searchQuery, pairings, servingCarriers, scrapersForRoutes, isLoading })
+  const { searchResults, loadingQueries, errors, pairings, servingCarriers, scrapersForRoutes } = useAwardSearch(searchQuery)
+  const { debugTree, debugTreeRootKey } = useAwardSearchDebugTree({ searchQuery, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors })
 
   React.useEffect(() => {
     localStorage.setItem("searchQuery", JSON.stringify(searchQuery))
@@ -38,10 +38,10 @@ export const FlightSearch = () => {
         <Form.Item name="departureDate" style={{ marginRight: 5 }}><DatePicker disabledDate={(current) => current.isBefore(moment().subtract(1, "day"))} allowClear={false} /></Form.Item>
         <Button icon={<LeftOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => { form.setFieldsValue({ departureDate: moment(form.getFieldValue("departureDate")).subtract("1", "day") }) }} />
         <Button icon={<RightOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => { form.setFieldsValue({ departureDate: moment(form.getFieldValue("departureDate")).add("1", "day") }) }} />
-        <Form.Item wrapperCol={{ offset: 2, span: 3 }} style={{ marginLeft: 10 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={isLoading}>Search</Button></Form.Item>
+        <Form.Item wrapperCol={{ offset: 2, span: 3 }} style={{ marginLeft: 10 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={loadingQueries.length > 0}>Search</Button></Form.Item>
       </Form>
 
-      {error && <Alert message={error.message} type="error" />}
+      {errors.length > 0 && <Alert showIcon message={errors.map((error) => `${error.queryKey.join("-")}: ${error.error.message}`).join(", ")} type="error" />}
       <SearchResults results={searchResults} isLoading={false} />
       <DebugTree debugTree={debugTree} rootKey={debugTreeRootKey} />
     </>

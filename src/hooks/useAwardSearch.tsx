@@ -3,7 +3,6 @@ import axios from "axios"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
-import { QueryFunctionContext } from "react-query"
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
@@ -12,12 +11,16 @@ export type ServingCarrier = { origin: string, destination: string, airlineCode:
 type ScraperForRoute = { origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }
 export type ScrapersForRoutes = {[key: string]: ScraperForRoute}
 
+export const useQueriesWithKeys = <T extends any[]>(queries: readonly [...ReactQuery.QueriesOptions<T>]) => {
+  return ReactQuery.useQueries(queries).map((query, index) => ({ ...query, queryKey: queries[index].queryKey }))
+}
+
 export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Take all origins and destinations and create a list of all possible pairs
   const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
 
   // Return the list of carriers that fly the given pairings
-  const fetchServingCarriers = async ({ signal, meta }: QueryFunctionContext) => {
+  const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionContext) => {
     const pairing = meta as QueryPairing
     const dataHtml = (await axios.post<string>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`, { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
     const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
@@ -35,7 +38,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     return carriers
   }
 
-  const servingCarriersQueries = ReactQuery.useQueries(pairings.map((pairing) => ({
+  const servingCarriersQueries = useQueriesWithKeys<ServingCarrier[]>(pairings.map((pairing) => ({
     queryKey: ["servingCarriers", pairing.origin, pairing.destination],
     queryFn: fetchServingCarriers,
     meta: pairing
@@ -61,7 +64,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   })
 
   // Run the scrapers
-  const fetchAwardAvailability = async ({ signal, meta, queryKey }: QueryFunctionContext) => {
+  const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.QueryFunctionContext) => {
     const scraperQuery = meta as ScraperForRoute
     const path = Object.keys(scraperCode).find((scraperKey) => scraperKey.indexOf(`${scraperQuery.scraper}.ts`) > -1)
     if (!path)
@@ -76,7 +79,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     return scraperResults.flightsWithFares
   }
 
-  const searchQueries = ReactQuery.useQueries<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
+  const searchQueries = useQueriesWithKeys<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
     queryKey: ["awardAvailability", key, scraperQuery.departureDate],
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
@@ -90,8 +93,8 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as FlightWithFares[]
 
-  const loading = servingCarriersQueries.some((query) => query.isLoading) || searchQueries.some((query) => query.isLoading)
-  const error = servingCarriersQueries.find((query) => query.error) || searchQueries.find((query) => query.error)
+  const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string[])
+  const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey, error: item.error as Error }))
 
-  return { searchResults: scraperResults, error: error && error?.error as Error, pairings, servingCarriers, scrapersForRoutes, isLoading: loading }
+  return { searchResults: scraperResults, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors }
 }
