@@ -93,7 +93,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as FlightWithFares[]
 
-  const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string[])
+  const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])
   const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey, error: item.error as Error }))
 
   return { searchResults: scraperResults, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors }
