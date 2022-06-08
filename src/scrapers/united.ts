@@ -49,7 +49,11 @@ const standardizeResults = (unitedTrip: Trip) => {
       const currencyOfCash = product.Prices.length >= 2 ? (product.Prices[1].Currency ?? "") : ""
       const isSaverFare = product.AwardType === "Saver"
 
-      const cabin = ["economy", "business", "first"].find((checkCabin) => product.Description?.toLowerCase().includes(checkCabin))
+      let cabin = { "United First": "business", "United Economy": "economy", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
+
+      // Lieflat seats on these planes are considered First
+      if (cabin === undefined && flight.OperatingCarrierDescription === "United Airlines" && flight.EquipmentDisclosures.EquipmentDescription.match(/(777|757)/))
+        cabin = "first"
       if (cabin === undefined)
         return
 
