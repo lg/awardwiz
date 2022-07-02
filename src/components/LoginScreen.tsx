@@ -12,6 +12,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   const [supabaseSession, setSupabaseSession] = React.useState(supabase.auth.session())
 
   React.useEffect(() => {
+    setMessage({ type: "info", text: "Loading Google Login button" })
     supabase.auth.onAuthStateChange((event, session) => { setSupabaseSession(session) })
   }, [])
 
@@ -64,7 +65,11 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
           <Typography.Title level={2}>AwardWiz</Typography.Title>
         </Row>
         <Row justify="center">
-          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <GoogleOAuthProvider
+            clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+            onScriptLoadError={() => setMessage({ type: "error", text: "Couldn't load Google Login button" })}
+            onScriptLoadSuccess={() => setMessage({ type: undefined, text: "" })}
+          >
             <GoogleLogin
               onSuccess={onGoogleCredential}
               onError={() => setMessage({ type: "error", text: "Couldn't log into Google" })}
