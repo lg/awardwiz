@@ -35,6 +35,12 @@ const standardizeResults = (unitedTrip: Trip) => {
       fares: []
     }
 
+    // Make sure we're only getting the airports we requested
+    if (flight.Origin !== (unitedTrip.RequestedOrigin || unitedTrip.Origin))
+      return
+    if (flight.Destination !== (unitedTrip.RequestedDestination || unitedTrip.Destination))
+      return
+
     // United's API has a way of returning flights with more connections than asked
     if (flight.Connections.length > 0)
       return
