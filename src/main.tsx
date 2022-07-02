@@ -8,6 +8,7 @@ import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
 import { QueryClientProvider } from "react-query"
 import { LoginScreen } from "./components/LoginScreen"
+import { ScratchPad } from "./components/ScratchPad"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -39,6 +40,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       </LoginScreen>
 
       {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
+      <ScratchPad />
     </QueryClientProvider>
   </StrictMode>
 )
