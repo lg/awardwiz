@@ -8,6 +8,7 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
 import { AeroplanFetchFlights } from "./aeroplan-types"
+import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: ["hasWifi"],
@@ -28,14 +29,6 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   }
 
   return { data: { flightsWithFares } }
-}
-
-const hasPods = (aircraftName: string, carrierCode: string) => {
-  if (carrierCode === "AC")
-    return /A330|787|777/.test(aircraftName)
-  if (carrierCode === "UA")
-    return /777|757/.test(aircraftName)
-  return false
 }
 
 const standardizeResults = (raw: AeroplanFetchFlights) => {
@@ -71,7 +64,7 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
         cabin = "first"
 
       const { bookingClass } = fare.availabilityDetails[0]
-      const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O")
+      const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O") || (cabin === "first" && bookingClass === "I") // this last one is because we upgrade the class if its domestic business
 
       const fareToAdd: FlightFare = {
         cabin,

@@ -1,4 +1,5 @@
 import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
+import { hasPods } from "./common"
 import { Trip, UnitedFetchFlights } from "./united-types"
 
 export const capabilities: ScraperCapabilities = {
@@ -57,7 +58,7 @@ const standardizeResults = (unitedTrip: Trip) => {
       let cabin = { "United First": "business", "United Economy": "economy", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
 
       // Lieflat seats on these planes are considered First
-      if (cabin === undefined && flight.OperatingCarrierDescription === "United Airlines" && flight.EquipmentDisclosures.EquipmentDescription.match(/(777|757)/))
+      if ((cabin === undefined || cabin === "business") && hasPods(flight.EquipmentDisclosures.EquipmentDescription, flight.OperatingCarrier || flight.MarketingCarrier))
         cabin = "first"
       if (cabin === undefined)
         return

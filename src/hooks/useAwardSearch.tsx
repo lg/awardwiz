@@ -3,6 +3,7 @@ import axios from "axios"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
+import { tsToJs } from "../utils/esbuild"
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
@@ -66,13 +67,17 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Run the scrapers
   const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.QueryFunctionContext) => {
     const scraperQuery = meta as ScraperForRoute
-    const path = Object.keys(scraperCode).find((scraperKey) => scraperKey.indexOf(`${scraperQuery.scraper}.ts`) > -1)
-    if (!path)
-      throw new Error(`Could not find scraper ${scraperQuery.scraper}`)
+    const scraperPath = (name: string) => {
+      const localPath = Object.keys(scraperCode).find((scraperKey) => scraperKey.indexOf(`${name}.ts`) > -1)
+      if (!localPath) throw new Error(`Could not find scraper ${name}`)
+      return localPath
+    }
 
-    const tsCode = scraperCode[path] as unknown as string
-    const ts = await import("typescript")
-    const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
+    const start = Date.now()
+    const jsCode = await tsToJs({
+      "/index.ts": scraperCode[scraperPath(scraperQuery.scraper)] as unknown as string,
+      "/common.ts": scraperCode[scraperPath("common")] as unknown as string
+    })
 
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
     const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data

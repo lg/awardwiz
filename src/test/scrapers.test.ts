@@ -36,7 +36,7 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
 
     // eslint-disable-next-line no-unused-vars
     type KeysEnum<T> = { [P in keyof Required<T>]: true };
-    const expectedKeys: KeysEnum<FlightWithFares> = { flightNo: true, departureDateTime: true, arrivalDateTime: true, origin: true, destination: true, duration: true, hasWifi: true, fares: true, scraper: true }
+    const expectedKeys: KeysEnum<FlightWithFares> = { flightNo: true, departureDateTime: true, arrivalDateTime: true, origin: true, destination: true, duration: true, hasWifi: true, fares: true }
     expect(results.data.flightsWithFares.every((flight) => {
       return Object.keys(expectedKeys).every((key) => {
         const val = Object.entries(flight).find(([k, v]) => k === key)?.[1]
@@ -44,7 +44,7 @@ describe.each(Object.keys(scrapers))("%o scraper", (scraperName) => {
       })
     })).toBe(true)
 
-    const expectedFareKeys: KeysEnum<FlightFare> = { cabin: true, miles: true, isSaverFare: true, cash: true, currencyOfCash: true }
+    const expectedFareKeys: KeysEnum<FlightFare> = { cabin: true, miles: true, isSaverFare: true, cash: true, currencyOfCash: true, scraper: true }
     expect(results.data.flightsWithFares.every((flight) => {
       return flight.fares.every((fare) => {
         return Object.keys(expectedFareKeys).every((key) => {
