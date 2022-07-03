@@ -111,7 +111,7 @@ export interface Dictionaries {
   location: Location
   country: string
   airline: string
-  aircraft: string
+  aircraft: { [key: string]: string }
   flight: { [key: string]: SegAC }
   currency: Currency
   anonymousTraveler: AnonymousTraveler

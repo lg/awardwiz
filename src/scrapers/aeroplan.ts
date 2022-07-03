@@ -1,5 +1,10 @@
 // https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=SFO&dest0=YYZ&departureDate0=2022-06-04
 
+// Notes:
+// - domestic flights in "first" are actually business class
+// Test:
+// - A330|787|777 have pods in Business class (and no First class)
+
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
 import { AeroplanFetchFlights } from "./aeroplan-types"
@@ -25,6 +30,14 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   return { data: { flightsWithFares } }
 }
 
+const hasPods = (aircraftName: string, carrierCode: string) => {
+  if (carrierCode === "AC")
+    return /A330|787|777/.test(aircraftName)
+  if (carrierCode === "UA")
+    return /777|757/.test(aircraftName)
+  return false
+}
+
 const standardizeResults = (raw: AeroplanFetchFlights) => {
   const results: FlightWithFares[] = []
   raw.data.airBoundGroups.forEach((group) => {
@@ -46,23 +59,39 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
     if (group.boundDetails.segments.length > 1)
       return
 
-    const cabinLookup: { [ key: string ]: { cabinName: string, lowFareClass: string } } = {
-      eco: { cabinName: "economy", lowFareClass: "X" },
-      ecoPremium: { cabinName: "economy", lowFareClass: "X" },
-      business: { cabinName: "business", lowFareClass: "I" },
-      first: { cabinName: "first", lowFareClass: "" }   /////////////// TODO NEED CODE
-    }
+    const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode]
+    const businessHasPods = hasPods(aircraft, flightLookup.marketingAirlineCode || flightLookup.operatingAirlineCode || "")
 
     group.airBounds.forEach((fare) => {
+      const cabinShortToCabin: {[x: string]: string} = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
+      let cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
+      if (cabin === "first" && fare.availabilityDetails[0].bookingClass === "I")    // us domestic airlines claim business class is first
+        cabin = "business"
+      if (cabin === "business" && businessHasPods)    // danger for 3 class international flights
+        cabin = "first"
+
+      const { bookingClass } = fare.availabilityDetails[0]
+      const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O")
+
       const fareToAdd: FlightFare = {
-        cabin: cabinLookup[fare.availabilityDetails[0].cabin].cabinName,
-        isSaverFare: fare.availabilityDetails[0].bookingClass === cabinLookup[fare.availabilityDetails[0].cabin].lowFareClass,
+        cabin,
+        isSaverFare,
         miles: fare.prices.milesConversion.convertedMiles.base,
         currencyOfCash: fare.prices.milesConversion.remainingNonConverted.currencyCode,
         cash: Math.ceil(fare.prices.milesConversion.convertedMiles.totalTaxes / 100),
         scraper: "aeroplan"
       }
-      result.fares.push(fareToAdd)
+
+      // Only keep the lowest fare for each cabin
+      const existingForCabin = result.fares.find((f) => f.cabin === fareToAdd.cabin)
+      if (existingForCabin) {
+        if (fareToAdd.miles < existingForCabin.miles) {
+          result.fares = result.fares.filter((f) => f !== existingForCabin)
+          result.fares.push(fareToAdd)
+        }
+      } else {
+        result.fares.push(fareToAdd)
+      }
     })
 
     results.push(result)
