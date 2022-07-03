@@ -24,8 +24,8 @@ const standardizeResults = (unitedTrip: Trip) => {
   const results: FlightWithFares[] = []
   unitedTrip.Flights.forEach((flight) => {
     const result: FlightWithFares = {
-      departureDateTime: flight.DepartDateTime,
-      arrivalDateTime: flight.DestinationDateTime,
+      departureDateTime: `${flight.DepartDateTime}:00`,
+      arrivalDateTime: `${flight.DestinationDateTime}:00`,
       origin: flight.Origin,
       destination: flight.Destination,
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,

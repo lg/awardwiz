@@ -60,8 +60,8 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         flightNo: `${airlineCode} ${flightNo}`,
         origin,
         destination,
-        departureDateTime: `${departureDate} ${time12to24(departureTime[0])}`,
-        arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}`,
+        departureDateTime: `${departureDate} ${time12to24(departureTime[0])}:00`,
+        arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
         duration: undefined,    // missing if a partner flies it (ex. Operated by SkyWest Airlines as AlaskaSkyWest)
         hasWifi: undefined,
         scraper: "alaska",
