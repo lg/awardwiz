@@ -57,7 +57,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const milesStr = smallestFare.miles.toLocaleString()
         const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "" })
 
-        return <Tooltip title={record.scraper}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{smallestFare.cash > 0 ? ` + ${cashStr}` : ""}</Tag></Tooltip>
+        return <Tooltip title={smallestFare.scraper}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{smallestFare.cash > 0 ? ` + ${cashStr}` : ""}</Tag></Tooltip>
       },
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
@@ -72,7 +72,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     <Table<FlightWithFares>
       dataSource={results}
       columns={columns}
-      rowKey={(record) => `${record.flightNo}-${record.scraper}`}
+      rowKey={(record) => record.flightNo}
       size="small"
       loading={isLoading}
       showSorterTooltip={false}

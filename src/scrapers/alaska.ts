@@ -64,7 +64,6 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
         duration: undefined,    // missing if a partner flies it (ex. Operated by SkyWest Airlines as AlaskaSkyWest)
         hasWifi: undefined,
-        scraper: "alaska",
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
           const milesAndCash = queryElMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\s\S]*\$(.+)/)
           const cabin = queryElMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
@@ -76,7 +75,8 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
             currencyOfCash: "USD",
             cabin: airlineCode === "AS" ? { Main: "economy", "First Class": "business" }[cabin]! : { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
             miles: parseFloat(milesAndCash[1]) * 1000,
-            isSaverFare: undefined
+            isSaverFare: undefined,
+            scraper: "alaska"
           }
           return flightFare
         }).filter((fare) => fare)

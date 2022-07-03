@@ -68,7 +68,6 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
       duration: result.totalDuration,
       hasWifi: result.segments[0].wifiOnBoard,
-      scraper: "southwest",
       fares: []
     }
     const bestFare: FlightFare | undefined = (Object.values(result.fareProducts.ADULT) as SouthwestTypes.Red[]).reduce((lowestFare: FlightFare | undefined, product) => {
@@ -79,7 +78,8 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         miles: parseInt(product.fare.totalFare.value, 10),
         isSaverFare: false,
         cash: parseFloat(product.fare.totalTaxesAndFees.value),
-        currencyOfCash: product.fare.totalTaxesAndFees.currencyCode
+        currencyOfCash: product.fare.totalTaxesAndFees.currencyCode,
+        scraper: "southwest"
       }
 
       if (!lowestFare || fare.miles < lowestFare.miles)

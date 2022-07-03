@@ -40,8 +40,7 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
       flightNo: `${itinerary.segments[0].marketingAirlineCode} ${itinerary.segments[0].flightno}`,
       duration: undefined,    // requires some parsing
       hasWifi: undefined,
-      fares: [],
-      scraper: "jetblue"
+      fares: []
     }
 
     // Skip flights with connections
@@ -61,7 +60,8 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
           cash: parseFloat(bundle.fareTax),
           currencyOfCash: raw.currency,
           cabin: cabinClassToCabin[bundle.cabinclass],
-          isSaverFare: undefined
+          isSaverFare: undefined,
+          scraper: "jetblue"
         }
         result.fares.push(fare)
       })

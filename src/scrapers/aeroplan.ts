@@ -39,8 +39,7 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
       duration: flightLookup.duration / 60,
       hasWifi: undefined,
-      fares: [],
-      scraper: "aeroplan"
+      fares: []
     }
 
     // Skip flights with connections
@@ -60,7 +59,8 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
         isSaverFare: fare.availabilityDetails[0].bookingClass === cabinLookup[fare.availabilityDetails[0].cabin].lowFareClass,
         miles: fare.prices.milesConversion.convertedMiles.base,
         currencyOfCash: fare.prices.milesConversion.remainingNonConverted.currencyCode,
-        cash: Math.ceil(fare.prices.milesConversion.convertedMiles.totalTaxes / 100)
+        cash: Math.ceil(fare.prices.milesConversion.convertedMiles.totalTaxes / 100),
+        scraper: "aeroplan"
       }
       result.fares.push(fareToAdd)
     })

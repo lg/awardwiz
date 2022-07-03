@@ -93,8 +93,19 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as FlightWithFares[]
 
+  // Combine fares from all scrapers per flight
+  const flights = [] as FlightWithFares[]
+  scraperResults.forEach((scraperResult) => {
+    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
+    if (existingFlight) {
+      existingFlight.fares.push(...scraperResult.fares)
+    } else {
+      flights.push(scraperResult)
+    }
+  })
+
   const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])
   const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey, error: item.error as Error }))
 
-  return { searchResults: scraperResults, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors }
+  return { searchResults: flights, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors }
 }

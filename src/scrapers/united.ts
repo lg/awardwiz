@@ -31,7 +31,6 @@ const standardizeResults = (unitedTrip: Trip) => {
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,
       duration: flight.TravelMinutes,
       hasWifi: undefined,
-      scraper: "united",
       fares: []
     }
 
@@ -66,9 +65,9 @@ const standardizeResults = (unitedTrip: Trip) => {
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
       if (existingFare !== undefined) {
         if (miles < existingFare.miles)
-          existingFare = { ...{ cabin, miles, cash, currencyOfCash, isSaverFare } }
+          existingFare = { ...{ cabin, miles, cash, currencyOfCash, isSaverFare, scraper: "united" } }
       } else {
-        result.fares.push({ cabin, miles, cash, currencyOfCash, isSaverFare })
+        result.fares.push({ cabin, miles, cash, currencyOfCash, isSaverFare, scraper: "united" })
       }
     })
 

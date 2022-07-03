@@ -30,7 +30,6 @@ export type FlightWithFares = {
   duration: number | undefined           // 62
   hasWifi: boolean | undefined           // true
   fares: FlightFare[]
-  scraper: string
 }
 
 export type FlightFare = {
@@ -39,6 +38,7 @@ export type FlightFare = {
   isSaverFare: boolean | undefined
   cash: number
   currencyOfCash: string
+  scraper: string
 }
 
 export type SearchQuery = {
