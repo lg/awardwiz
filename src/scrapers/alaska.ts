@@ -3,7 +3,7 @@
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const capabilities: ScraperCapabilities = {
-  missingAttributes: ["duration", "hasWifi"],
+  missingAttributes: ["duration"],
   missingFareAttributes: ["isSaverFare"]
 }
 
@@ -47,13 +47,14 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       const airlineCode = queryElMatch(element, ".optionHeader > img", "src", /logos\/partners\/airlines\/mow\/(\S\S)/)?.[1]
       const origin = queryElMatch(element, ".optionDeparts .optionCityCode", "innerText", /(\S\S\S)/)?.[1]
       const destination = queryElMatch(element, ".left .optionCityCode", "innerText", /(\S\S\S)/)?.[1]
+      const detailsUrl = queryElMatch(element, ".right .optionLink", "href", /(\S+)/)?.[1]
 
       const departureDate = queryEl(element.ownerDocument, "input[name='SearchFields.DepartureDate']", "value")
       const departureTime = queryElMatch(element, ".optionDeparts .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
       const arrivalTime = queryElMatch(element, ".left .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
       const addDays = queryElMatch(element, ".left .optionTime .arrivalDaysDifferent", "innerText", /(\d+?) day/)
 
-      if (!airlineCode || !origin || !destination || !departureDate || !departureTime || !arrivalTime)
+      if (!airlineCode || !origin || !destination || !departureDate || !departureTime || !arrivalTime || !detailsUrl)
         throw new Error(`Invalid data for flight number ${flightNo}!`)
 
       const flight: FlightWithFares = {
@@ -63,7 +64,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         departureDateTime: `${departureDate} ${time12to24(departureTime[0])}:00`,
         arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
         duration: undefined,    // missing if a partner flies it (ex. Operated by SkyWest Airlines as AlaskaSkyWest)
-        hasWifi: undefined,
+        aircraft: detailsUrl,           // filled in properly in the next step
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
           const milesAndCash = queryElMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\s\S]*\$(.+)/)
           const cabin = queryElMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
@@ -86,7 +87,17 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     return flights
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
-  return { data: { flightsWithFares: res } }
+  // Get the aircraft type for each flight from the details page
+  const flights = await Promise.all(res.map(async (flight) => {
+    await page.goto(flight.aircraft)    // should be a URL at this point
+    const details = await page.$$eval(".detailinfo", (items: HTMLDivElement[]) => {
+      return items.map((item) => item.textContent)
+    })
+    const aircraft = details[1].replace(/\n|\t|\r/g, "")
+    return { ...flight, aircraft }
+  }))
+
+  return { data: { flightsWithFares: flights } }
 }
 
 module.exports = scraper

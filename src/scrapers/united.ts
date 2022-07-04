@@ -3,7 +3,7 @@ import { Trip, UnitedFetchFlights } from "./extra/united-types"
 import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
-  missingAttributes: ["hasWifi"],
+  missingAttributes: [],
   missingFareAttributes: []
 }
 
@@ -31,7 +31,7 @@ const standardizeResults = (unitedTrip: Trip) => {
       destination: flight.Destination,
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,
       duration: flight.TravelMinutes,
-      hasWifi: undefined,
+      aircraft: flight.EquipmentDisclosures.EquipmentDescription,
       fares: []
     }
 

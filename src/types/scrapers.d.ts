@@ -28,7 +28,7 @@ export type FlightWithFares = {
   origin: string                         // "SFO"
   destination: string                    // "LHR"
   duration: number | undefined           // 62
-  hasWifi: boolean | undefined           // true
+  aircraft: string | undefined           // "737"
   fares: FlightFare[]
 }
 

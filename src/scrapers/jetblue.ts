@@ -3,7 +3,7 @@ import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from ".
 import { JetBlueFetchFlights } from "./extra/jetblue-types"
 
 export const capabilities: ScraperCapabilities = {
-  missingAttributes: ["hasWifi", "duration"],
+  missingAttributes: [],
   missingFareAttributes: ["isSaverFare"]
 }
 
@@ -15,7 +15,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   const raw = await response.json() as JetBlueFetchFlights
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.itinerary !== null && raw.itinerary.length > 0) {
+  if (raw.itinerary && raw.itinerary.length > 0) {
     const flights = standardizeResults(raw)
     flightsWithFares.push(...flights)
   }
@@ -32,14 +32,18 @@ const cabinClassToCabin: {[ cabinClass: string ]: string} = {
 const standardizeResults = (raw: JetBlueFetchFlights) => {
   const results: FlightWithFares[] = []
   raw.itinerary.forEach((itinerary) => {
+    const durationText = itinerary.segments[0].duration.match(/.+?(\d+?)H(\d+?)M/)
+    if (!durationText)
+      throw new Error("Invalid duration for flight")
+
     const result: FlightWithFares = {
       departureDateTime: itinerary.depart.substring(0, 19).replace("T", " "),
       arrivalDateTime: itinerary.arrive.substring(0, 19).replace("T", " "),
       origin: itinerary.from,
       destination: itinerary.to,
       flightNo: `${itinerary.segments[0].marketingAirlineCode} ${itinerary.segments[0].flightno}`,
-      duration: undefined,    // requires some parsing
-      hasWifi: undefined,
+      duration: parseInt(durationText?.[1], 10) * 60 + parseInt(durationText?.[2], 10),
+      aircraft: itinerary.segments[0].aircraft,
       fares: []
     }
 
@@ -55,15 +59,24 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
         if (bundle.points === "N/A")
           return
 
+        const cabin = cabinClassToCabin[bundle.cabinclass]
+        const miles = parseInt(bundle.points, 10)
         const fare: FlightFare = {
-          miles: parseInt(bundle.points, 10),
+          miles,
           cash: parseFloat(bundle.fareTax),
           currencyOfCash: raw.currency,
-          cabin: cabinClassToCabin[bundle.cabinclass],
+          cabin,
           isSaverFare: undefined,
           scraper: "jetblue"
         }
-        result.fares.push(fare)
+
+        let existingFare = result.fares.find((prevFare) => prevFare.cabin === cabin)
+        if (existingFare !== undefined) {
+          if (miles < existingFare.miles)
+            existingFare = { ...fare }
+        } else {
+          result.fares.push(fare)
+        }
       })
     })
 

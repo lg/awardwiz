@@ -11,7 +11,7 @@ import { AeroplanFetchFlights } from "./extra/aeroplan-types"
 import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
-  missingAttributes: ["hasWifi"],
+  missingAttributes: [],
   missingFareAttributes: []
 }
 
@@ -44,7 +44,7 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
       destination: flightLookup.arrival.locationCode,
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
       duration: flightLookup.duration / 60,
-      hasWifi: undefined,
+      aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode],
       fares: []
     }
 
