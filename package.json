@@ -16,15 +16,14 @@
     "@supabase/supabase-js": "^1.35.3",
     "antd": "^4.20.5",
     "axios": "^0.27.2",
-    "esbuild-wasm": "^0.14.48",
     "haversine": "^1.1.1",
     "mapbox-gl": "^2.8.2",
     "moment": "^2.29.3",
-    "path-browserify": "^1.0.1",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-map-gl": "^7.0.12",
     "react-query": "^3.39.0",
+    "typescript": "^4.6.4",
     "use-deep-compare-effect": "^1.8.1"
   },
   "devDependencies": {
@@ -50,7 +49,6 @@
     "playwright-core": "^1.22.1",
     "puppeteer": "^14.1.2",
     "rollup-plugin-visualizer": "^5.6.0",
-    "typescript": "^4.6.4",
     "unplugin-icons": "^0.14.3",
     "vite": "^2.9.9",
     "vitest": "^0.12.6"

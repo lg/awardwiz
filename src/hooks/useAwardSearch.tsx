@@ -3,7 +3,6 @@ import axios from "axios"
 import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
-import { tsToJs } from "../utils/esbuild"
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
@@ -73,11 +72,11 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       return localPath
     }
 
-    const start = Date.now()
-    const jsCode = await tsToJs({
-      "/index.ts": scraperCode[scraperPath(scraperQuery.scraper)] as unknown as string,
-      "/common.ts": scraperCode[scraperPath("common")] as unknown as string
-    })
+    const tsCodeCommon = scraperCode[scraperPath("common")] as unknown as string
+    let tsCode = scraperCode[scraperPath(scraperQuery.scraper)] as unknown as string
+    tsCode = tsCode.replace(/import .* from "\.\/common"/, tsCodeCommon)
+    const ts = await import("typescript")
+    const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
     const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data

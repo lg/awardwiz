@@ -1,6 +1,6 @@
 import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
-import { hasPods } from "./common"
 import { Trip, UnitedFetchFlights } from "./united-types"
+import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: ["hasWifi"],
