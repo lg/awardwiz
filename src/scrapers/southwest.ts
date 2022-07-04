@@ -5,7 +5,7 @@
 
 import { Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
-import SouthwestTypes from "./southwest-types"
+import SouthwestTypes from "./extra/southwest-types"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],

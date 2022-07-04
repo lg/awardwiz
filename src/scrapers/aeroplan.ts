@@ -7,7 +7,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
-import { AeroplanFetchFlights } from "./aeroplan-types"
+import { AeroplanFetchFlights } from "./extra/aeroplan-types"
 import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {

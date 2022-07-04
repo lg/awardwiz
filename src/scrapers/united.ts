@@ -1,5 +1,5 @@
 import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
-import { Trip, UnitedFetchFlights } from "./united-types"
+import { Trip, UnitedFetchFlights } from "./extra/united-types"
 import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {

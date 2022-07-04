@@ -1,6 +1,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
-import { JetBlueFetchFlights } from "./jetblue-types"
+import { JetBlueFetchFlights } from "./extra/jetblue-types"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: ["hasWifi", "duration"],
