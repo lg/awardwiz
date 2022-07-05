@@ -61,12 +61,16 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
 
     group.airBounds.forEach((fare) => {
       const cabinShortToCabin: {[x: string]: string} = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
-      const cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
+      let cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
       if (!cabin)
         throw new Error(`Unknown cabin type: ${fare.availabilityDetails[0].cabin}`)
 
       const { bookingClass } = fare.availabilityDetails[0]
       const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O") || (cabin === "first" && bookingClass === "I") // this last one is because we upgrade the class if its domestic business
+
+      // Override for United marketing its Business class as First
+      if (bookingClass === "I" && flightLookup.marketingAirlineCode === "UA")
+        cabin = "economy"
 
       const fareToAdd: FlightFare = {
         cabin,
