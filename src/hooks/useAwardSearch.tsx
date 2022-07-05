@@ -52,7 +52,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Group route+scraper and find which airline fits under which scraper
   const scrapersForRoutes: ScrapersForRoutes = {}
   servingCarriers.forEach((servingCarrier) => {
-    scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).forEach((scraper) => {
+    scrapers.scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).forEach((scraper) => {
       const key = `${servingCarrier.origin}${servingCarrier.destination}${scraper.name}`
       if (!scrapersForRoutes[key]) {
         scrapersForRoutes[key] = { origin: servingCarrier.origin, destination: servingCarrier.destination, scraper: scraper.name, matchedAirlines: [servingCarrier.airlineName], departureDate: searchQuery.departureDate }
@@ -98,7 +98,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .flat() as FlightWithFares[]
 
   // Combine fares from all scrapers per flight
-  const flights = [] as FlightWithFares[]
+  let flights = [] as FlightWithFares[]
   scraperResults.forEach((scraperResult) => {
     const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
     if (existingFlight) {
@@ -106,6 +106,14 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     } else {
       flights.push(scraperResult)
     }
+  })
+
+  // Load amenities for all flights
+  flights = flights.map((flight) => {
+    const amenities = scrapers.airlineAmenities.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
+    const hasPods = amenities?.podsAircraft.some((checkStr) => flight.aircraft.indexOf(checkStr) > -1)
+    const flightAmenities = { hasPods: flight.amenities?.hasPods ?? hasPods }
+    return { ...flight, amenities: flightAmenities }
   })
 
   const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])

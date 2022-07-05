@@ -26,7 +26,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
 // note: they have an entire lookup call that's made for this for all their partners (which seem to not be searchable on points)
 const cabinClassToCabin: {[ cabinClass: string ]: string} = {
   Y: "economy",
-  C: "first"    // mint class on jetblue
+  C: "business"    // mint class on jetblue
 }
 
 const standardizeResults = (raw: JetBlueFetchFlights) => {
@@ -44,7 +44,8 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
       flightNo: `${itinerary.segments[0].marketingAirlineCode} ${itinerary.segments[0].flightno}`,
       duration: parseInt(durationText?.[1], 10) * 60 + parseInt(durationText?.[2], 10),
       aircraft: itinerary.segments[0].aircraft,
-      fares: []
+      fares: [],
+      amenities: {}
     }
 
     // Skip flights with connections

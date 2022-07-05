@@ -1,6 +1,5 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-constant-condition */
-/* eslint-disable no-loops/no-loops */
 /* eslint-disable no-await-in-loop */
 
 import { Page } from "puppeteer"
@@ -85,7 +84,8 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
       duration: result.totalDuration,
       aircraft: aircraftLookup[result.segments[0].aircraftEquipmentType],
-      fares: []
+      fares: [],
+      amenities: {}
     }
     const bestFare: FlightFare | undefined = (Object.values(result.fareProducts.ADULT) as SouthwestTypes.Red[]).reduce((lowestFare: FlightFare | undefined, product) => {
       if (product.availabilityStatus !== "AVAILABLE")

@@ -1,39 +1,64 @@
-[
-  {
-    "name": "aeroplan",
-    "supportedAirlines": [
-      "star alliance",
-      "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"
-    ]
-  },
-  {
-    "name": "alaska",
-    "supportedAirlines": [
-      "AS",
-      "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"
-    ]
-  },
-  {
-    "name": "jetblue",
-    "supportedAirlines": [
-      "B6",
-      "partners dont seem to be searchable"
-    ]
-  },
-  {
-    "name": "southwest",
-    "supportedAirlines": [
-      "WN",
-      "partners dont seem to be searchable"
-    ]
-  },
-  {
-    "name": "united",
-    "supportedAirlines": [
-      "star alliance",
-      "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK",
-      "partners",
-      "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"
-    ]
-  }
-]
+{
+  "airlineAmenities": [
+    {
+      "airlineCode": "AC",
+      "podsAircraft": ["A330", "787", "777"]
+    },
+    {
+      "airlineCode": "UA",
+      "podsAircraft": ["787", "777", "757-200", "767"]
+    },
+    {
+      "airlineCode": "B6",
+      "podsAircraft": ["Mint", "A321"]
+    },
+    {
+      "airlineCode": "WN",
+      "podsAircraft": []
+    },
+    {
+      "airlineCode": "AS",
+      "podsAircraft": []
+    }
+  ],
+
+  "scrapers": [
+    {
+      "name": "aeroplan",
+      "supportedAirlines": [
+        "star alliance",
+        "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"
+      ]
+    },
+    {
+      "name": "alaska",
+      "supportedAirlines": [
+        "AS",
+        "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"
+      ]
+    },
+    {
+      "name": "jetblue",
+      "supportedAirlines": [
+        "B6",
+        "partners dont seem to be searchable"
+      ]
+    },
+    {
+      "name": "southwest",
+      "supportedAirlines": [
+        "WN",
+        "partners dont seem to be searchable"
+      ]
+    },
+    {
+      "name": "united",
+      "supportedAirlines": [
+        "star alliance",
+        "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK",
+        "partners",
+        "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"
+      ]
+    }
+  ]
+}

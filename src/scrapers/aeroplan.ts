@@ -8,7 +8,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
 import { AeroplanFetchFlights } from "./extra/aeroplan-types"
-import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -24,14 +23,14 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
 
   const flightsWithFares: FlightWithFares[] = []
   if (raw.data && raw.data.airBoundGroups !== null && raw.data.airBoundGroups.length > 0) {
-    const flights = standardizeResults(raw)
+    const flights = standardizeResults(raw, context.origin, context.destination)
     flightsWithFares.push(...flights)
   }
 
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (raw: AeroplanFetchFlights) => {
+const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origDestination: string) => {
   const results: FlightWithFares[] = []
   raw.data.airBoundGroups.forEach((group) => {
     const { flightId } = group.boundDetails.segments[0]
@@ -45,23 +44,26 @@ const standardizeResults = (raw: AeroplanFetchFlights) => {
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
       duration: flightLookup.duration / 60,
       aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode],
-      fares: []
+      fares: [],
+      amenities: { hasPods: undefined }
     }
 
     // Skip flights with connections
     if (group.boundDetails.segments.length > 1)
       return
 
+    if (flightLookup.departure.locationCode !== origOrigin || flightLookup.arrival.locationCode !== origDestination)
+      return
+
     const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode]
-    const businessHasPods = hasPods(aircraft, flightLookup.marketingAirlineCode || flightLookup.operatingAirlineCode || "")
+    if (!aircraft)
+      throw new Error(`Unknown aircraft type: ${flightLookup.aircraftCode}`)
 
     group.airBounds.forEach((fare) => {
       const cabinShortToCabin: {[x: string]: string} = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
-      let cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
-      if (cabin === "first" && fare.availabilityDetails[0].bookingClass === "I")    // us domestic airlines claim business class is first
-        cabin = "business"
-      if (cabin === "business" && businessHasPods)    // danger for 3 class international flights
-        cabin = "first"
+      const cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
+      if (!cabin)
+        throw new Error(`Unknown cabin type: ${fare.availabilityDetails[0].cabin}`)
 
       const { bookingClass } = fare.availabilityDetails[0]
       const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O") || (cabin === "first" && bookingClass === "I") // this last one is because we upgrade the class if its domestic business

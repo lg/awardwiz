@@ -1,6 +1,5 @@
 import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
 import { Trip, UnitedFetchFlights } from "./extra/united-types"
-import { hasPods } from "./common"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -32,7 +31,8 @@ const standardizeResults = (unitedTrip: Trip) => {
       flightNo: `${flight.MarketingCarrier} ${flight.FlightNumber}`,
       duration: flight.TravelMinutes,
       aircraft: flight.EquipmentDisclosures.EquipmentDescription,
-      fares: []
+      fares: [],
+      amenities: {}
     }
 
     // Make sure we're only getting the airports we requested
@@ -55,13 +55,9 @@ const standardizeResults = (unitedTrip: Trip) => {
       const currencyOfCash = product.Prices.length >= 2 ? (product.Prices[1].Currency ?? "") : ""
       const isSaverFare = product.AwardType === "Saver"
 
-      let cabin = { "United First": "business", "United Economy": "economy", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
-
-      // Lieflat seats on these planes are considered First
-      if ((cabin === undefined || cabin === "business") && hasPods(flight.EquipmentDisclosures.EquipmentDescription, flight.OperatingCarrier || flight.MarketingCarrier))
-        cabin = "first"
+      const cabin = { "United First": "business", "United Economy": "economy", "United Business": "business", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
       if (cabin === undefined)
-        return
+        throw new Error(`Unknown cabin type: ${product.Description}`)
 
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
       if (existingFare !== undefined) {

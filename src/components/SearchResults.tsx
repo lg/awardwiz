@@ -3,7 +3,14 @@ import { Table, Tag, Tooltip } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
+import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 const moment = moment_
+
+const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
+  if (condition === undefined)
+    return undefinedVal
+  return condition ? trueVal : falseVal
+}
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
@@ -18,6 +25,15 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       title: "Flight",
       dataIndex: "flightNo",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.flightNo.localeCompare(recordB.flightNo),
+    },
+    { title: "Amenities",
+      render: (_text: string, record: FlightWithFares) => {
+        return (
+          <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")}>
+            <MaterialSymbolsAirlineSeatFlat style={{ color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} />
+          </Tooltip>
+        )
+      }
     },
     {
       title: "From",

@@ -28,8 +28,9 @@ export type FlightWithFares = {
   origin: string                         // "SFO"
   destination: string                    // "LHR"
   duration: number | undefined           // 62
-  aircraft: string | undefined           // "737"
+  aircraft: string                       // "737"
   fares: FlightFare[]
+  amenities: FlightAmenities
 }
 
 export type FlightFare = {
@@ -39,6 +40,10 @@ export type FlightFare = {
   cash: number
   currencyOfCash: string
   scraper: string
+}
+
+export type FlightAmenities = {
+  hasPods?: boolean | undefined
 }
 
 export type SearchQuery = {
