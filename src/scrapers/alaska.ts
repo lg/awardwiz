@@ -88,14 +88,15 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
   // Get the aircraft type for each flight from the details page
-  const flights = await Promise.all(res.map(async (flight) => {
+  const flights: FlightWithFares[] = []
+  for await (const flight of res) {
     await page.goto(flight.aircraft)    // should be a URL at this point
     const details = await page.$$eval(".detailinfo", (items: HTMLDivElement[]) => {
       return items.map((item) => item.textContent)
     })
     const aircraft = details[1].replace(/\n|\t|\r/g, "")
-    return { ...flight, aircraft }
-  }))
+    flights.push({ ...flight, aircraft })
+  }
 
   return { data: { flightsWithFares: flights } }
 }

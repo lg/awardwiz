@@ -18,10 +18,8 @@ plugins:
   - react
   - '@typescript-eslint'
   - promise
-  - no-loops
   - react-hooks
 rules:
-  "no-loops/no-loops": 2
   quotes: ["error", "double"]
   semi: ["error", "never", {"beforeStatementContinuationChars": "always"}]
   max-len: off
@@ -81,3 +79,4 @@ rules:
   "@typescript-eslint/ban-ts-comment": off
   "@typescript-eslint/no-explicit-any": off
   quote-props: off
+  no-restricted-syntax: off
