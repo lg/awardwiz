@@ -30,7 +30,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       render: (_text: string, record: FlightWithFares) => {
         return (
           <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")}>
-            <MaterialSymbolsAirlineSeatFlat style={{ color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} />
+            <span><MaterialSymbolsAirlineSeatFlat style={{ color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
           </Tooltip>
         )
       }
