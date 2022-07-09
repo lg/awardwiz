@@ -1,0 +1,5987 @@
+{
+  "result": {
+    "request": {
+      "query": "default",
+      "limit": 50,
+      "format": "json",
+      "origin": "SJC",
+      "destination": "HNL",
+      "fetchBy": "",
+      "callback": null,
+      "token": null,
+      "pk": null
+    },
+    "response": {
+      "flight": {
+        "item": {
+          "current": 50
+        },
+        "timestamp": 1657392709,
+        "data": [
+          {
+            "identification": {
+              "id": "2c7cf89f",
+              "row": 5231376542,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 16:05",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656813948,
+                  "local": 1656777948
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8761L",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656793800,
+                "arrival": 1656813600
+              },
+              "real": {
+                "departure": 1656795837,
+                "arrival": 1656813948
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656813948
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c7f1307",
+              "row": 5231849768,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 09:50",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656877850,
+                  "local": 1656841850
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8706W",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656858900,
+                "arrival": 1656878700
+              },
+              "real": {
+                "departure": 1656859163,
+                "arrival": 1656877850
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656877850
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c7f33ff",
+              "row": 5231806277,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:08",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656878913,
+                  "local": 1656842913
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N214HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656860400,
+                "arrival": 1656880500
+              },
+              "real": {
+                "departure": 1656860613,
+                "arrival": 1656878913
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656878913
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c7f78ec",
+              "row": 5231470917,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:31",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656883862,
+                  "local": 1656847862
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N457AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656865080,
+                "arrival": 1656884700
+              },
+              "real": {
+                "departure": 1656865628,
+                "arrival": 1656883862
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656883862
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c80133a",
+              "row": 5231846539,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 15:50",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656899456,
+                  "local": 1656863456
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8715Q",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656880200,
+                "arrival": 1656900000
+              },
+              "real": {
+                "departure": 1656880800,
+                "arrival": 1656899456
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656899456
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c823f92",
+              "row": 5232325610,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 09:54",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656964486,
+                  "local": 1656928486
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8742M",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656945300,
+                "arrival": 1656965100
+              },
+              "real": {
+                "departure": 1656945869,
+                "arrival": 1656964486
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656964486
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c824806",
+              "row": 5232212547,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:07",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656965231,
+                  "local": 1656929231
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N223HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656946800,
+                "arrival": 1656966900
+              },
+              "real": {
+                "departure": 1656946957,
+                "arrival": 1656965231
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656965231
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8284e3",
+              "row": 5232146728,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:32",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656970355,
+                  "local": 1656934355
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N457AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656951480,
+                "arrival": 1656971100
+              },
+              "real": {
+                "departure": 1656951809,
+                "arrival": 1656970355
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656970355
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8316e2",
+              "row": 5232322251,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 15:59",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1656986357,
+                  "local": 1656950357
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-8H4"
+              },
+              "registration": "N8309C",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1656966600,
+                "arrival": 1656986400
+              },
+              "real": {
+                "departure": 1656967660,
+                "arrival": 1656986357
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1656986357
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c85400f",
+              "row": 5232839995,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:11",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657051906,
+                  "local": 1657015906
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8732S",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657031700,
+                "arrival": 1657051500
+              },
+              "real": {
+                "departure": 1657032610,
+                "arrival": 1657051906
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657051906
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c85640d",
+              "row": 5232734719,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:26",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657052793,
+                  "local": 1657016793
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N205HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657033200,
+                "arrival": 1657053300
+              },
+              "real": {
+                "departure": 1657033561,
+                "arrival": 1657052793
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657052793
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c85a7bb",
+              "row": 5232661646,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:58",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657058295,
+                  "local": 1657022295
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N457AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657037880,
+                "arrival": 1657057500
+              },
+              "real": {
+                "departure": 1657039376,
+                "arrival": 1657058295
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657058295
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c864cd2",
+              "row": 5232836337,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 16:01",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657072914,
+                  "local": 1657036914
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8733M",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657053000,
+                "arrival": 1657072800
+              },
+              "real": {
+                "departure": 1657053785,
+                "arrival": 1657072914
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657072914
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c88a387",
+              "row": 5233341005,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:10",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657138207,
+                  "local": 1657102207
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8743K",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657118100,
+                "arrival": 1657137900
+              },
+              "real": {
+                "departure": 1657118918,
+                "arrival": 1657138207
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657138207
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c88c7fe",
+              "row": 5233291288,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:17",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657138675,
+                  "local": 1657102675
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N204HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657119600,
+                "arrival": 1657139700
+              },
+              "real": {
+                "departure": 1657119721,
+                "arrival": 1657138675
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657138675
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c891267",
+              "row": 5232943415,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:44",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657143857,
+                  "local": 1657107857
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N457AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657124280,
+                "arrival": 1657143900
+              },
+              "real": {
+                "departure": 1657124874,
+                "arrival": 1657143857
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657143857
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c89cf93",
+              "row": 5233337931,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 16:05",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657159559,
+                  "local": 1657123559
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8741L",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657139400,
+                "arrival": 1657159200
+              },
+              "real": {
+                "departure": 1657140227,
+                "arrival": 1657159559
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657159559
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8c19a4",
+              "row": 5233788616,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:18",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657225120,
+                  "local": 1657189120
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8715Q",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657204500,
+                "arrival": 1657224300
+              },
+              "real": {
+                "departure": 1657205804,
+                "arrival": 1657225120
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657225120
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8c43fd",
+              "row": 5233739243,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:26",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657225573,
+                  "local": 1657189573
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N220HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657206000,
+                "arrival": 1657226100
+              },
+              "real": {
+                "departure": 1657206482,
+                "arrival": 1657225573
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657225573
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8c8fa8",
+              "row": 5233412913,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:41",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657230085,
+                  "local": 1657194085
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N495AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657210680,
+                "arrival": 1657230300
+              },
+              "real": {
+                "departure": 1657211138,
+                "arrival": 1657230085
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657230085
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8d411b",
+              "row": 5233785519,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 15:54",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657245250,
+                  "local": 1657209250
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-8H4"
+              },
+              "registration": "N8328A",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657225800,
+                "arrival": 1657245600
+              },
+              "real": {
+                "departure": 1657226003,
+                "arrival": 1657245250
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657245250
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8fe3f0",
+              "row": 5238372634,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 12:48",
+              "icon": "red",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "red",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657320508,
+                  "local": 1657284508
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-8H4"
+              },
+              "registration": "N8318F",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657290900,
+                "arrival": 1657310700
+              },
+              "real": {
+                "departure": 1657301945,
+                "arrival": 1657320508
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657320508
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c8fd3b8",
+              "row": 5234202900,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 10:20",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657311650,
+                  "local": 1657275650
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N228HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657292400,
+                "arrival": 1657312500
+              },
+              "real": {
+                "departure": 1657292297,
+                "arrival": 1657311650
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657311650
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c901f46",
+              "row": 5233885752,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:32",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657315920,
+                  "local": 1657279920
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N495AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657297080,
+                "arrival": 1657316700
+              },
+              "real": {
+                "departure": 1657297272,
+                "arrival": 1657315920
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657315920
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c90d833",
+              "row": 5234251558,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 15:55",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657331737,
+                  "local": 1657295737
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-8H4"
+              },
+              "registration": "N8307K",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657312200,
+                "arrival": 1657332000
+              },
+              "real": {
+                "departure": 1657312957,
+                "arrival": 1657331737
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1657331737
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c932936",
+              "row": 5234720834,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated 09:50",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657396224,
+                  "local": 1657360224
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8750Q",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657377300,
+                "arrival": 1657397100
+              },
+              "real": {
+                "departure": 1657378074,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": 1657396224
+              },
+              "other": {
+                "eta": 1657396224
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c935c3a",
+              "row": 5234665511,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated 10:20",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657398016,
+                  "local": 1657362016
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "A21N",
+                "text": "Airbus A321-271N"
+              },
+              "registration": "N227HA",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657378800,
+                "arrival": 1657398900
+              },
+              "real": {
+                "departure": 1657380004,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": 1657398016
+              },
+              "other": {
+                "eta": 1657398016
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "2c9395f6",
+              "row": 5234327824,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated 11:24",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657401856,
+                  "local": 1657365856
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N471AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657383480,
+                "arrival": 1657403100
+              },
+              "real": {
+                "departure": 1657383903,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": 1657401856
+              },
+              "other": {
+                "eta": 1657401856
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5234718393,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": "SWA560",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated dep 13:30",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "departure",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657398600,
+                  "local": 1657373400
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8718Q",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657398600,
+                "arrival": 1657418400
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": 1657398600,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235386592,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": "SWA4713",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated dep 07:39",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "departure",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657463940,
+                  "local": 1657438740
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8724J",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657463700,
+                "arrival": 1657483500
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": 1657463940,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235335173,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": "HAL43",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated dep 08:05",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "departure",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657465500,
+                  "local": 1657440300
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657465200,
+                "arrival": 1657485300
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": 1657465500,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235306155,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": "ASA837",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated dep 09:26",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "departure",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657470360,
+                  "local": 1657445160
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N428AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657469880,
+                "arrival": 1657489500
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": 1657470360,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235383533,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8736J",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657485000,
+                "arrival": 1657504800
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235796562,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B38M",
+                "text": "Boeing 737 MAX 8"
+              },
+              "registration": "N8748Q",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657550100,
+                "arrival": 1657569900
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235698472,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657551600,
+                "arrival": 1657571700
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235638802,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Estimated dep 09:18",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "estimated",
+                  "type": "departure",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1657556280,
+                  "local": 1657531080
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B739",
+                "text": "Boeing 737-990(ER)"
+              },
+              "registration": "N428AS",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657556280,
+                "arrival": 1657575900
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": 1657556280,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5235793171,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657571400,
+                "arrival": 1657591200
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236232581,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657636500,
+                "arrival": 1657656300
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236117543,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657638000,
+                "arrival": 1657658100
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236050756,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657642680,
+                "arrival": 1657662300
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236229153,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657657800,
+                "arrival": 1657677600
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236709681,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657722900,
+                "arrival": 1657742700
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236644586,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657724400,
+                "arrival": 1657744500
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236336189,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657729080,
+                "arrival": 1657748700
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236706005,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657744200,
+                "arrival": 1657764000
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5237166962,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657809300,
+                "arrival": 1657829100
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5237104899,
+              "number": {
+                "default": "HA43",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Hawaiian Airlines",
+              "code": {
+                "iata": "HA",
+                "icao": "HAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657810800,
+                "arrival": 1657830900
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5236757725,
+              "number": {
+                "default": "AS837",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Alaska Airlines",
+              "code": {
+                "iata": "AS",
+                "icao": "ASA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657815480,
+                "arrival": 1657835100
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5237163491,
+              "number": {
+                "default": "WN560",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657830600,
+                "arrival": 1657850400
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": null,
+              "row": 5237638635,
+              "number": {
+                "default": "WN4713",
+                "alternative": null
+              },
+              "callsign": null,
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Scheduled",
+              "icon": null,
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "scheduled",
+                  "type": "departure",
+                  "color": "gray",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": null,
+                  "local": null
+                }
+              }
+            },
+            "aircraft": null,
+            "airline": {
+              "name": "Southwest Airlines",
+              "code": {
+                "iata": "WN",
+                "icao": "SWA"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Jose International Airport",
+                "code": {
+                  "iata": "SJC",
+                  "icao": "KSJC"
+                },
+                "position": {
+                  "latitude": 37.362659,
+                  "longitude": -121.929001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Jose"
+                  }
+                },
+                "timezone": {
+                  "name": "America\\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Honolulu International Airport",
+                "code": {
+                  "iata": "HNL",
+                  "icao": "PHNL"
+                },
+                "position": {
+                  "latitude": 21.31868,
+                  "longitude": -157.921997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Honolulu"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1657895700,
+                "arrival": 1657915500
+              },
+              "real": {
+                "departure": null,
+                "arrival": null
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": null
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "_api": {
+    "copyright": "Copyright (c) 2014-2022 Flightradar24 AB. All rights reserved.",
+    "legalNotice": "The contents of this file and all derived data are the property of Flightradar24 AB for use exclusively by its products and applications. Using, modifying or redistributing the data without the prior written permission of Flightradar24 AB is not allowed and may result in prosecutions."
+  }
+}

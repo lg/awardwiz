@@ -1,10 +1,11 @@
 import * as ReactQuery from "react-query"
 import axios from "axios"
-import { FR24SearchResult } from "../types/fr24"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapers from "../scrapers/scrapers.json"
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
+
+type FR24SearchResult = typeof import("../scrapers/extra/fr24_sample.json") & typeof import("../scrapers/extra/fr24_errors_sample.json")
 
 export type QueryPairing = {origin: string, destination: string, departureDate: string}
 export type ServingCarrier = { origin: string, destination: string, airlineCode: string, airlineName: string }
