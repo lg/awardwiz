@@ -12,11 +12,15 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST"
   }, { timeout: 20000 })
-  const raw = await response.json() as JetBlueFetchFlights
+
+  if (response.statusText() === "JB_INVALID_REQUEST")   // seasonal flights here and there
+    return { data: { flightsWithFares: [] } }
+
+  const json = await response.json() as JetBlueFetchFlights
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.itinerary && raw.itinerary.length > 0) {
-    const flights = standardizeResults(raw)
+  if (json.itinerary && json.itinerary.length > 0) {
+    const flights = standardizeResults(json)
     flightsWithFares.push(...flights)
   }
 
