@@ -52,7 +52,8 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Group route+scraper and find which airline fits under which scraper
   const scrapersForRoutes: ScrapersForRoutes = {}
   servingCarriers.forEach((servingCarrier) => {
-    scrapers.scrapers.filter((scraper) => scraper.supportedAirlines.includes(servingCarrier.airlineCode!)).forEach((scraper) => {
+    const expandSupportedAirlines = (airlines: string[]) => airlines.flatMap((airline) => scrapers.airlineGroups[airline as keyof typeof scrapers.airlineGroups] || airline)
+    scrapers.scrapers.filter((scraper) => expandSupportedAirlines(scraper.supportedAirlines).includes(servingCarrier.airlineCode!)).forEach((scraper) => {
       const key = `${servingCarrier.origin}${servingCarrier.destination}${scraper.name}`
       if (!scrapersForRoutes[key]) {
         scrapersForRoutes[key] = { origin: servingCarrier.origin, destination: servingCarrier.destination, scraper: scraper.name, matchedAirlines: [servingCarrier.airlineName], departureDate: searchQuery.departureDate }

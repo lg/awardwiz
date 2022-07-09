@@ -6,16 +6,64 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "airlineGroups": {
+          "type": "object",
+          "description": "Group name to array of airlines mapping (ex. for use with an airline alliance)",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
         "airlineAmenities": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/AirlineAmenity"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "airlineCode": {
+                "type": "string",
+                "description": "Airline IATA code (ex. 'UA')"
+              },
+              "podsAircraft": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Substrings of aircraft names to assume have lie-flat seats in Business (ex. 'A321')"
+              }
+            },
+            "required": [
+              "airlineCode",
+              "podsAircraft"
+            ],
+            "title": "AirlineAmenity"
           }
         },
         "scrapers": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Scraper"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of the scraper (ex. 'united')"
+              },
+              "supportedAirlines": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Codes of the airlines which this scraper searches (ex. 'UA')"
+              }
+            },
+            "required": [
+              "name",
+              "supportedAirlines"
+            ],
+            "title": "Scraper"
           }
         }
       },
@@ -24,50 +72,6 @@
         "scrapers"
       ],
       "title": "Scrapers"
-    },
-    "AirlineAmenity": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "airlineCode": {
-          "type": "string",
-          "description": "Airline IATA code (ex. 'UA')"
-        },
-        "podsAircraft": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Substrings of aircraft names to assume have lie-flat seats in Business (ex. 'A321')"
-        }
-      },
-      "required": [
-        "airlineCode",
-        "podsAircraft"
-      ],
-      "title": "AirlineAmenity"
-    },
-    "Scraper": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Name of the scraper (ex. 'united')"
-        },
-        "supportedAirlines": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Codes of the airlines which this scraper searches (ex. 'UA')"
-        }
-      },
-      "required": [
-        "name",
-        "supportedAirlines"
-      ],
-      "title": "Scraper"
     }
   }
 }
