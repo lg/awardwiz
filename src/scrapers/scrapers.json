@@ -21,44 +21,34 @@
       "podsAircraft": []
     }
   ],
-
+  "airlineGroups": {
+    "staralliance": ["AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"],
+    "skyteam": ["AR", "AM", "UX", "AF", "CI", "MU", "OK", "DL", "GA", "AZ", "KQ", "KL", "KE", "ME", "SV", "RO", "VN", "MF"]
+  },
   "scrapers": [
     {
       "name": "aeroplan",
-      "supportedAirlines": [
-        "star alliance",
-        "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"
-      ]
+      "supportedAirlines": ["staralliance"]
     },
     {
       "name": "alaska",
-      "supportedAirlines": [
-        "AS",
-        "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"
-      ]
+      "supportedAirlines": ["AS", "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"]
+    },
+    {
+      "name": "delta",
+      "supportedAirlines": ["skyteam"]
     },
     {
       "name": "jetblue",
-      "supportedAirlines": [
-        "B6",
-        "partners dont seem to be searchable"
-      ]
+      "supportedAirlines": ["B6"]
     },
     {
       "name": "southwest",
-      "supportedAirlines": [
-        "WN",
-        "partners dont seem to be searchable"
-      ]
+      "supportedAirlines": ["WN"]
     },
     {
       "name": "united",
-      "supportedAirlines": [
-        "star alliance",
-        "AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK",
-        "partners",
-        "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"
-      ]
+      "supportedAirlines": ["staralliance", "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"]
     }
   ]
 }
