@@ -1,3 +1,5 @@
+import type { Page } from "puppeteer"
+
 export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResults }>
 export type ScraperCapabilities = {
   missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined

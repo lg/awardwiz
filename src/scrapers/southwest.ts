@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
 
-import { Page } from "puppeteer"
+import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
 import SouthwestTypes from "./extra/southwest-types"
 
@@ -55,7 +55,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   let raw: SouthwestTypes.Result
   let tries = 0
   do {
-    raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: Response) => response.json())
+    raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: HTTPResponse) => response.json())
     if (raw.success)
       break
 

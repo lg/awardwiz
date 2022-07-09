@@ -92,10 +92,13 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const flights: FlightWithFares[] = []
   for await (const flight of res) {
     await page.goto(flight.aircraft)    // should be a URL at this point
-    const details = await page.$$eval(".detailinfo", (items: HTMLDivElement[]) => {
+    const details = await page.$$eval(".detailinfo", (items: Element[]) => {
       return items.map((item) => item.textContent)
     })
-    const aircraft = details[1].replace(/\n|\t|\r/g, "")
+    const aircraft = details[1]?.replace(/\n|\t|\r/g, "")
+    if (!aircraft)
+      throw new Error(`Invalid aircraft type for flight number ${flight.flightNo}!`)
+
     flights.push({ ...flight, aircraft })
   }
 
