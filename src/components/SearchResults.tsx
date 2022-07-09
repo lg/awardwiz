@@ -20,17 +20,27 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     return faresForClass.reduce((smallest, cur) => (cur.miles < smallest.miles ? cur : smallest))
   }
 
+  const airlineLogoUrl = (airlineCode: string) => {
+    return airlineCode === "WN" ? "https://www.southwest.com/favicon.ico" : `https://www.gstatic.com/flights/airline_logos/35px/${airlineCode}.png`
+  }
+
   const columns: ColumnsType<FlightWithFares> = [
     {
       title: "Flight",
       dataIndex: "flightNo",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.flightNo.localeCompare(recordB.flightNo),
+      render: (flightNo: string, flight: FlightWithFares) => (
+        <>
+          <img style={{ height: 16, marginBottom: 3, borderRadius: 3 }} src={airlineLogoUrl(flightNo.substring(0, 2))} alt={flightNo.substring(0, 2)} />
+          <span style={{ marginLeft: 8 }}>{flightNo}</span>
+        </>
+      )
     },
     { title: "Amenities",
       render: (_text: string, record: FlightWithFares) => {
         return (
           <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")}>
-            <span><MaterialSymbolsAirlineSeatFlat style={{ color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
+            <span><MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
           </Tooltip>
         )
       }
@@ -62,7 +72,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       dataIndex: "destination",
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.destination.localeCompare(recordB.destination),
     },
-    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].map((column): ColumnType<FlightWithFares> => ({
+    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col?.key))).map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
       render: (_text: string, record: FlightWithFares) => {
