@@ -25,7 +25,7 @@
     "staralliance": ["AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"],
     "skyteam": ["AR", "AM", "UX", "AF", "CI", "MU", "OK", "DL", "GA", "AZ", "KQ", "KL", "KE", "ME", "SV", "RO", "VN", "MF"]
   },
-  "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4"],
+  "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
   "scrapers": [
     {
       "name": "aeroplan",
