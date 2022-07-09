@@ -28,6 +28,10 @@
   "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
   "scrapers": [
     {
+      "name": "aa",
+      "supportedAirlines": ["AA", "UL", "S7", "RJ", "QR", "QF", "MH", "IB", "HA", "AY", "FJ", "9K", "BA", "AS", "TN", "CX"]
+    },
+    {
       "name": "aeroplan",
       "supportedAirlines": ["staralliance"]
     },

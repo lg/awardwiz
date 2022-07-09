@@ -46,6 +46,7 @@ export type FlightFare = {
 
 export type FlightAmenities = {
   hasPods?: boolean | undefined
+  hasWiFi?: boolean | undefined
 }
 
 export type SearchQuery = {
