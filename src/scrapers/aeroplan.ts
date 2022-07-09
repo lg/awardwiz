@@ -7,7 +7,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
-import { AeroplanFetchFlights } from "./extra/aeroplan-types"
+type AeroplanFetchFlights = typeof import("./extra/aeroplan_sample.json")
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -34,7 +34,7 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
   const results: FlightWithFares[] = []
   raw.data.airBoundGroups.forEach((group) => {
     const { flightId } = group.boundDetails.segments[0]
-    const flightLookup = raw.dictionaries.flight[flightId]
+    const flightLookup = raw.dictionaries.flight[flightId as keyof typeof raw.dictionaries.flight]
 
     const result: FlightWithFares = {
       departureDateTime: flightLookup.departure.dateTime.substring(0, 19).replace("T", " "),
@@ -43,7 +43,7 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
       destination: flightLookup.arrival.locationCode,
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
       duration: flightLookup.duration / 60,
-      aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode],
+      aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft],
       fares: [],
       amenities: { hasPods: undefined }
     }
@@ -55,7 +55,7 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
     if (flightLookup.departure.locationCode !== origOrigin || flightLookup.arrival.locationCode !== origDestination)
       return
 
-    const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode]
+    const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft]
     if (!aircraft)
       throw new Error(`Unknown aircraft type: ${flightLookup.aircraftCode}`)
 

@@ -1,6 +1,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
-import { JetBlueFetchFlights } from "./extra/jetblue-types"
+type JetBlueFetchFlights = typeof import("./extra/jetblue_sample.json")
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],

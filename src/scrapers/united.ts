@@ -1,5 +1,5 @@
 import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
-import { Trip, UnitedFetchFlights } from "./extra/united-types"
+type UnitedFetchFlights = typeof import("./extra/united_sample.json")
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -20,7 +20,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (unitedTrip: Trip) => {
+const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][number]) => {
   const results: FlightWithFares[] = []
   unitedTrip.Flights.forEach((flight) => {
     const result: FlightWithFares = {

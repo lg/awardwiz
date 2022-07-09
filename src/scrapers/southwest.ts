@@ -4,7 +4,8 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
-import SouthwestTypes from "./extra/southwest-types"
+type SouthwestTypes = typeof import("./extra/southwest_sample.json")
+type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: string }[] } }
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -52,7 +53,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   await processScraperFlowRules(page, rules)
 
-  let raw: SouthwestTypes.Result
+  let raw: SouthwestTypes
   let tries = 0
   do {
     raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: HTTPResponse) => response.json())
@@ -65,9 +66,10 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     // console.log("waiting 5 seconds and trying again")
     await sleep(5000)
     page.click("#form-mixin--submit-button")
-  } while (raw.code === 403050700)
+  } while ((raw as unknown as SouthwestErrorTypes).code === 403050700)
 
-  if (raw.notifications && raw.notifications.formErrors && raw.notifications.formErrors[0] && raw.notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
+  const { notifications } = (raw as unknown as SouthwestErrorTypes)
+  if (notifications && notifications.formErrors && notifications.formErrors[0] && notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
     return { data: { flightsWithFares: [] } }
 
   const rawResults = raw.data.searchResults.airProducts[0].details
@@ -87,7 +89,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       fares: [],
       amenities: {}
     }
-    const bestFare: FlightFare | undefined = (Object.values(result.fareProducts.ADULT) as SouthwestTypes.Red[]).reduce((lowestFare: FlightFare | undefined, product) => {
+    const bestFare: FlightFare | undefined = Object.values(result.fareProducts.ADULT).reduce((lowestFare: FlightFare | undefined, product) => {
       if (product.availabilityStatus !== "AVAILABLE")
         return lowestFare
       const fare: FlightFare = {
