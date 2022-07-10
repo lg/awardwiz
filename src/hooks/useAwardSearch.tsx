@@ -50,17 +50,17 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as ServingCarrier[]
 
+  const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
+    const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
+      .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
+      .flatMap((code) => scrapers.airlineGroups[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
+      .filter((code) => !scraper.excludeAirlines?.includes(code))  // remove specifically excluded airlines
+    return supported.includes(airlineCode)
+  }
+
   // Group route+scraper and find which airline fits under which scraper
   const scrapersForRoutes: ScrapersForRoutes = {}
   servingCarriers.forEach((servingCarrier) => {
-    const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
-      const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
-        .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
-        .flatMap((code) => scrapers.airlineGroups[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
-        .filter((code) => scraper.excludeAirlines?.includes(code) === false || true)  // remove specifically excluded airlines
-      return supported.includes(airlineCode)
-    }
-
     scrapers.scrapers.filter((scraper) => doesScraperSupportAirline(scraper, servingCarrier.airlineCode)).forEach((scraper) => {
       const key = `${servingCarrier.origin}${servingCarrier.destination}${scraper.name}`
       if (!scrapersForRoutes[key]) {
@@ -90,20 +90,23 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
     const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
 
-    // Convert only-cash scrapers to miles
-    let { flightsWithFares } = scraperResults
-    if (scrapers.scrapers.find((checkScraper) => checkScraper.name === scraperQuery.scraper)?.onlyCashFares) {
-      flightsWithFares = scraperResults.flightsWithFares.map((result) => {
-        const newFares = result.fares.map((fare) => {
-          if (fare.currencyOfCash !== "USD")
-            throw new Error("Only-cash scrapers should only have USD fares")
-          return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0, scraper: "chase" }
-        })
-        return { ...result, fares: newFares }
-      })
-    }
+    // Remove fares from airlines that should have been excluded
+    const scraper = scrapers.scrapers.find((chkScraper) => chkScraper.name === scraperQuery.scraper)!
+    return scraperResults.flightsWithFares.map((flight) => {
+      const airlineSupported = doesScraperSupportAirline(scraper, flight.flightNo.substring(0, 2))
+      return { ...flight, fares: airlineSupported ? flight.fares : [] }
 
-    return flightsWithFares
+    // Convert only-cash scrapers to miles
+    }).map((flight) => {
+      if (!scraper.onlyCashFares)
+        return flight
+      const newFares = flight.fares.map((fare) => {
+        if (fare.currencyOfCash !== "USD")
+          throw new Error("Only-cash scrapers should only have USD fares")
+        return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0 }
+      })
+      return { ...flight, fares: newFares }
+    })
   }
 
   const searchQueries = useQueriesWithKeys<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
@@ -120,23 +123,35 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => item.data)
     .flat() as FlightWithFares[]
 
-  // Combine fares from all scrapers per flight
+  // Combine flight metadata from all scrapers to one per actual flight number
   let flights = [] as FlightWithFares[]
   scraperResults.forEach((scraperResult) => {
-    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
+    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo) as Record<keyof FlightWithFares, any>
     if (existingFlight) {
+      // Copy in any missing properties that are present in the scraper result
+      (Object.keys(existingFlight) as (keyof FlightWithFares)[]).forEach((key) => {
+        if ((existingFlight[key] === undefined && scraperResult[key] !== undefined) || (existingFlight[key] === "" && scraperResult[key] !== ""))
+          existingFlight[key] = scraperResult[key];
+
+        // And amenities
+        (Object.keys(existingFlight.amenities) as (keyof FlightWithFares["amenities"])[]).forEach((amenityKey) => {
+          if (existingFlight.amenities[amenityKey] === undefined && scraperResult.amenities[amenityKey] !== undefined)
+            existingFlight.amenities[amenityKey] = scraperResult.amenities[amenityKey]
+        })
+      })
+
+      // Append in the fares
       existingFlight.fares.push(...scraperResult.fares)
     } else {
       flights.push(scraperResult)
     }
   })
 
-  // Load amenities for all flights
+  // Load amenities based on aircraft type for all flights where they're still uncertain
   flights = flights.map((flight) => {
     const amenities = scrapers.airlineAmenities.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
     const hasPods = amenities?.podsAircraft.some((checkStr) => flight.aircraft.indexOf(checkStr) > -1)
-    const flightAmenities = { hasPods: flight.amenities?.hasPods ?? hasPods }
-    return { ...flight, amenities: flightAmenities }
+    return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods } }
   })
 
   const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])
