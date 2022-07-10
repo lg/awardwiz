@@ -48,7 +48,7 @@
       "supportedAirlines": ["B6"]
     },
     {
-      "name": "chase",
+      "name": "skiplagged",
       "supportedAirlines": [],
       "excludeAirlines": ["WN"],
       "onlyCashFares": true

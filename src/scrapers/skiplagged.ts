@@ -4,7 +4,7 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
 
-type SkipLaggedResponse = typeof import("./extra/chase_sample.json")
+type SkipLaggedResponse = typeof import("./extra/skiplagged_sample.json")
 type FlightId = keyof SkipLaggedResponse["flights"]
 type Flights = Record<FlightId, SkipLaggedResponse["flights"][FlightId]>
 type Flight = Flights[FlightId]
@@ -44,7 +44,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
           currencyOfCash: "USD",
           miles: 0,
           cabin: "economy",
-          scraper: "chase",
+          scraper: "skiplagged",
           isSaverFare: false
         }))
         .reduce((acc, fare) => {
