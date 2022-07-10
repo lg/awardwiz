@@ -39,7 +39,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     { title: "Amenities",
       render: (_text: string, record: FlightWithFares) => {
         return (
-          <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")}>
+          <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")} mouseEnterDelay={0} mouseLeaveDelay={0}>
             <span><MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
           </Tooltip>
         )
@@ -80,17 +80,16 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         if (!smallestFare)
           return ""
 
-        const milesStr = smallestFare.miles.toLocaleString()
-        const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "" })
+        const milesStr = Math.round(smallestFare.miles).toLocaleString()
+        const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "", maximumFractionDigits: 0 })
 
-        return <Tooltip title={smallestFare.scraper}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{smallestFare.cash > 0 ? ` + ${cashStr}` : ""}</Tag></Tooltip>
+        return <Tooltip title={smallestFare.scraper} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
       },
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
         const fareBMiles = lowestFare(recordB.fares, column.key)?.miles ?? Number.MAX_VALUE
         return fareAMiles - fareBMiles
       },
-      align: "center",
     }))
   ]
 

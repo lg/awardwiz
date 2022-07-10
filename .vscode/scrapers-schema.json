@@ -70,6 +70,20 @@
                   "minLength": 2
                 },
                 "description": "Codes of the airlines which this scraper searches (ex. 'UA')"
+              },
+              "excludeAirlines": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 2
+                },
+                "description": "Codes of the airlines which this scraper should not search searches (ex. 'WN')"
+              },
+              "onlyCashFares": {
+                "type": "boolean",
+                "default": false,
+                "description": "Set this to true to have this scraper be called for all airlines and to convert all fares on a cents-per-mile basis"
               }
             },
             "required": [

@@ -48,6 +48,12 @@
       "supportedAirlines": ["B6"]
     },
     {
+      "name": "chase",
+      "supportedAirlines": [],
+      "excludeAirlines": ["WN"],
+      "onlyCashFares": true
+    },
+    {
       "name": "southwest",
       "supportedAirlines": ["WN"]
     },

@@ -53,8 +53,15 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Group route+scraper and find which airline fits under which scraper
   const scrapersForRoutes: ScrapersForRoutes = {}
   servingCarriers.forEach((servingCarrier) => {
-    const expandSupportedAirlines = (airlines: string[]) => airlines.flatMap((airline) => scrapers.airlineGroups[airline as keyof typeof scrapers.airlineGroups] || airline)
-    scrapers.scrapers.filter((scraper) => expandSupportedAirlines(scraper.supportedAirlines).includes(servingCarrier.airlineCode!)).forEach((scraper) => {
+    const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
+      const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
+        .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
+        .flatMap((code) => scrapers.airlineGroups[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
+        .filter((code) => scraper.excludeAirlines?.includes(code) === false || true)  // remove specifically excluded airlines
+      return supported.includes(airlineCode)
+    }
+
+    scrapers.scrapers.filter((scraper) => doesScraperSupportAirline(scraper, servingCarrier.airlineCode)).forEach((scraper) => {
       const key = `${servingCarrier.origin}${servingCarrier.destination}${scraper.name}`
       if (!scrapersForRoutes[key]) {
         scrapersForRoutes[key] = { origin: servingCarrier.origin, destination: servingCarrier.destination, scraper: scraper.name, matchedAirlines: [servingCarrier.airlineName], departureDate: searchQuery.departureDate }
@@ -82,7 +89,21 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
     const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
     const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
-    return scraperResults.flightsWithFares
+
+    // Convert only-cash scrapers to miles
+    let { flightsWithFares } = scraperResults
+    if (scrapers.scrapers.find((checkScraper) => checkScraper.name === scraperQuery.scraper)?.onlyCashFares) {
+      flightsWithFares = scraperResults.flightsWithFares.map((result) => {
+        const newFares = result.fares.map((fare) => {
+          if (fare.currencyOfCash !== "USD")
+            throw new Error("Only-cash scrapers should only have USD fares")
+          return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0, scraper: "chase" }
+        })
+        return { ...result, fares: newFares }
+      })
+    }
+
+    return flightsWithFares
   }
 
   const searchQueries = useQueriesWithKeys<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
