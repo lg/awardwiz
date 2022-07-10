@@ -83,7 +83,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const milesStr = Math.round(smallestFare.miles).toLocaleString()
         const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "", maximumFractionDigits: 0 })
 
-        return <Tooltip title={smallestFare.scraper} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={smallestFare.isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
+        return <Tooltip title={smallestFare.scraper} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={record.fares.some((checkFare) => checkFare.isSaverFare === true) ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
       },
       sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
