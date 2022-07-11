@@ -33,7 +33,7 @@
     },
     {
       "name": "aeroplan",
-      "supportedAirlines": ["staralliance"]
+      "supportedAirlines": ["staralliance", "GF", "EY", "JU", "CX", "G3", "OY", "UL", "UK"]
     },
     {
       "name": "alaska",
