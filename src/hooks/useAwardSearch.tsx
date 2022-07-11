@@ -47,7 +47,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
   const servingCarriers = servingCarriersQueries
     .filter((item) => item.data)
-    .map((item) => item.data)
+    .map((item) => JSON.parse(JSON.stringify(item.data)))   // copy the object to avoid mutating the original and saving to local storage
     .flat() as ServingCarrier[]
 
   const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
@@ -120,7 +120,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
   const scraperResults = searchQueries
     .filter((item) => item.data)
-    .map((item) => item.data)
+    .map((item) => JSON.parse(JSON.stringify(item.data)))   // copy the object to avoid mutating the original and saving to local storage
     .flat() as FlightWithFares[]
 
   // Combine flight metadata from all scrapers to one per actual flight number
