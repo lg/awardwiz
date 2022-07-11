@@ -12,7 +12,7 @@ type Segment = Flight["segments"][number]
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
-  missingFareAttributes: []
+  missingFareAttributes: ["bookingClass"]
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
@@ -39,13 +39,13 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       },
       fares: json.itineraries.outbound
         .filter((itinerary) => itinerary.flight === id)
-        .map((itinerary) => ({
+        .map((itinerary): FlightFare => ({
           cash: itinerary.one_way_price / 100,
           currencyOfCash: "USD",
           miles: 0,
           cabin: "economy",
           scraper: "skiplagged",
-          isSaverFare: false
+          bookingClass: undefined
         }))
         .reduce((acc, fare) => {
           const existing = acc.find((check) => check.cabin === fare.cabin)

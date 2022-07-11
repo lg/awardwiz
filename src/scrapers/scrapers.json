@@ -25,41 +25,55 @@
     "staralliance": ["AC", "JP", "A3", "CA", "AI", "NZ", "NH", "OZ", "OS", "AV", "SN", "CM", "OU", "MS", "ET", "BR", "HO", "LO", "LH", "SK", "ZH", "SQ", "SA", "LX", "TP", "TG", "TK", "UA", "QK"],
     "skyteam": ["AR", "AM", "UX", "AF", "CI", "MU", "OK", "DL", "GA", "AZ", "KQ", "KL", "KE", "ME", "SV", "RO", "VN", "MF"]
   },
+  "saverBookingClasses": {
+    "staralliance": ["X", "I", "O"],
+    "AA": ["T", "U", "X", "Z"],
+    "HA": ["T", "D"],
+    "B6": ["I", "P"]
+  },
   "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
   "scrapers": [
     {
       "name": "aa",
-      "supportedAirlines": ["AA", "UL", "S7", "RJ", "QR", "QF", "MH", "IB", "HA", "AY", "FJ", "9K", "BA", "AS", "TN", "CX"]
+      "supportedAirlines": ["AA", "UL", "S7", "RJ", "QR", "QF", "MH", "IB", "HA", "AY", "FJ", "9K", "BA", "AS", "TN", "CX"],
+      "nativeAirline": "AA"
     },
     {
       "name": "aeroplan",
-      "supportedAirlines": ["staralliance"]
+      "supportedAirlines": ["staralliance"],
+      "nativeAirline": "AC"
     },
     {
       "name": "alaska",
-      "supportedAirlines": ["AS", "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"]
+      "supportedAirlines": ["AS", "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"],
+      "nativeAirline": "AS"
     },
     {
       "name": "delta",
-      "supportedAirlines": ["skyteam"]
+      "supportedAirlines": ["skyteam"],
+      "nativeAirline": "DL"
     },
     {
       "name": "jetblue",
-      "supportedAirlines": ["B6"]
+      "supportedAirlines": ["B6"],
+      "nativeAirline": "B6"
     },
     {
       "name": "skiplagged",
       "supportedAirlines": [],
       "excludeAirlines": ["WN"],
-      "onlyCashFares": true
+      "onlyCashFares": true,
+      "nativeAirline": null
     },
     {
       "name": "southwest",
-      "supportedAirlines": ["WN"]
+      "supportedAirlines": ["WN"],
+      "nativeAirline": "WN"
     },
     {
       "name": "united",
-      "supportedAirlines": ["staralliance", "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"]
+      "supportedAirlines": ["staralliance", "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"],
+      "nativeAirline": "UA"
     }
   ]
 }

@@ -118,13 +118,13 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     meta: scraperQuery,
   })))
 
-  const scraperResults = searchQueries
+  const scraperResults: FlightWithFares[] = searchQueries
     .filter((item) => item.data)
     .map((item) => JSON.parse(JSON.stringify(item.data)))   // copy the object to avoid mutating the original and saving to local storage
-    .flat() as FlightWithFares[]
+    .flat()
 
   // Combine flight metadata from all scrapers to one per actual flight number
-  let flights = [] as FlightWithFares[]
+  let flights: FlightWithFares[] = []
   scraperResults.forEach((scraperResult) => {
     const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo) as Record<keyof FlightWithFares, any>
     if (existingFlight) {
@@ -152,6 +152,28 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     const amenities = scrapers.airlineAmenities.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
     const hasPods = amenities?.podsAircraft.some((checkStr) => flight.aircraft.indexOf(checkStr) > -1)
     return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods } }
+
+  // Calculate saver awards
+  }).map((flight) => {
+    const fares = flight.fares.map((fare) => {
+      let isSaver = fare.isSaverFare
+
+      // If the airline has partners that we know about in the JSON, use that as the fare's saver award true/false
+      const saverBookingClasses = Object.keys(scrapers.saverBookingClasses).map((key) => {
+        const keys = scrapers.airlineGroups[key as keyof typeof scrapers.airlineGroups] ?? [key]   // Combine in groups
+        return keys.some((checkKey) => checkKey === flight.flightNo.substring(0, 2)) ? scrapers.saverBookingClasses[key as keyof typeof scrapers.saverBookingClasses] : undefined
+      }).filter((bookingClasses): bookingClasses is string[] => !!bookingClasses).flat()    // join all matches
+      if (isSaver === undefined && saverBookingClasses.length > 0)
+        isSaver = saverBookingClasses.some((checkBookingClass) => fare.bookingClass === checkBookingClass)
+
+      // If the scraper returned an airline's availability and it's not the scraper's native airline, assume it's a saver award
+      const scraper = scrapers.scrapers.find((checkScraper) => checkScraper.name === fare.scraper)!
+      if (isSaver === undefined && scraper.nativeAirline && flight.flightNo.substring(0, 2) !== scraper.nativeAirline)
+        isSaver = true
+
+      return { ...fare, isSaverFare: isSaver }
+    })
+    return { ...flight, fares }
   })
 
   const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])

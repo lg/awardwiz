@@ -1,5 +1,5 @@
 import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { isSaver, pptrFetch } from "./common"
+import { pptrFetch } from "./common"
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
@@ -67,13 +67,13 @@ const standardizeResults = (slices: typeof import("./extra/aa_sample.json")["sli
       },
       fares: slice.pricingDetail
         .filter((product) => product.productAvailable)
-        .map((product) => ({
+        .map((product): FlightFare => ({
           cash: product.perPassengerTaxesAndFees.amount,
           currencyOfCash: product.perPassengerTaxesAndFees.currency,
           miles: product.perPassengerAwardPoints,
           cabin: { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "business", "BUSINESS": "business" }[product.productType]!,
           scraper: "aa",
-          isSaverFare: isSaver(segment.flight.carrierCode, product.extendedFareCode)
+          bookingClass: product.extendedFareCode?.[0]
         }))
         .reduce((acc, fare) => {
           if (fare.cabin === undefined)

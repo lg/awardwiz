@@ -105,19 +105,6 @@ export const pptrFetch = async (page: Page, url: string, init: RequestInit) => {
   }, url, init)
 }
 
-export const isSaver = (airlineCode: string, fareCode: string) => {
-  if (fareCode.length === 0)
-    return undefined
-
-  const table: {[airline: string]: string[]} = {
-    "AA": ["T", "U", "X", "Z"]
-  }
-
-  if (table[airlineCode])
-    return table[airlineCode].includes(fareCode[0])
-  return undefined
-}
-
 export {}
 
 // module.exports = hasPods

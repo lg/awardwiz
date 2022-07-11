@@ -54,7 +54,7 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
     })).toBe(true)
 
     // Ensure that there there are no unexpected missing fare attributes
-    const expectedFareKeys: KeysEnum<FlightFare> = { cabin: true, miles: true, isSaverFare: true, cash: true, currencyOfCash: true, scraper: true }
+    const expectedFareKeys: KeysEnum<FlightFare> = { cabin: true, miles: true, bookingClass: true, cash: true, currencyOfCash: true, scraper: true, isSaverFare: true }
     expect(results.data.flightsWithFares.every((flight) => {
       return flight.fares.every((fare) => {
         return Object.keys(expectedFareKeys).every((key) => {

@@ -73,9 +73,9 @@ const standardizeResults = (raw: DeltaSearchResults) => {
           cash: offer.totalPrice?.currency?.amount || -1,
           currencyOfCash: offer.totalPrice?.currency?.code || "USD",
           miles: offer.totalPrice?.miles?.miles || 0,
-          cabin: offer.brandInfoByFlightLegs[0].cos === "O" ? "business" : "economy",
+          cabin: offer.brandInfoByFlightLegs[0].cos[0] === "O" ? "business" : "economy",
           scraper: "delta",
-          isSaverFare: offer.brandInfoByFlightLegs[0].cos.match(/X|O/) ? true : undefined
+          bookingClass: offer.brandInfoByFlightLegs[0].cos
         }))
         .filter((fare) => fare.cash !== undefined && fare.cash !== -1 && fare.miles !== 0)
         .reduce((acc, fare) => {

@@ -38,10 +38,12 @@ export type FlightWithFares = {
 export type FlightFare = {
   cabin: string                           // "economy" | "business" | "first"
   miles: number
-  isSaverFare: boolean | undefined
   cash: number
   currencyOfCash: string
   scraper: string
+  bookingClass: string | undefined        // (ex "I")
+
+  isSaverFare?: boolean | undefined
 }
 
 export type FlightAmenities = {

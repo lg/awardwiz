@@ -66,7 +66,6 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
         throw new Error(`Unknown cabin type: ${fare.availabilityDetails[0].cabin}`)
 
       const { bookingClass } = fare.availabilityDetails[0]
-      const isSaverFare = (cabin === "business" && bookingClass === "I") || (cabin === "economy" && bookingClass === "X") || (cabin === "first" && bookingClass === "O") || (cabin === "first" && bookingClass === "I") // this last one is because we upgrade the class if its domestic business
 
       // Override for United marketing its Business class as First
       if (bookingClass === "I" && flightLookup.marketingAirlineCode === "UA")
@@ -74,7 +73,7 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
 
       const fareToAdd: FlightFare = {
         cabin,
-        isSaverFare,
+        bookingClass,
         miles: fare.prices.milesConversion.convertedMiles.base,
         currencyOfCash: fare.prices.milesConversion.remainingNonConverted.currencyCode,
         cash: Math.ceil(fare.prices.milesConversion.convertedMiles.totalTaxes / 100),

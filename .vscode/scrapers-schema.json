@@ -25,6 +25,18 @@
             }
           }
         },
+        "saverBookingClasses": {
+          "type": "object",
+          "description": "Booking classes list for each airline which should be considered saver fares (and bookable using partners' miles). Supports airlineGroups.",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2
+            }
+          }
+        },
         "airlineAmenities": {
           "type": "array",
           "uniqueItems": true,
@@ -79,6 +91,10 @@
                   "minLength": 2
                 },
                 "description": "Codes of the airlines which this scraper should not search searches (ex. 'WN')"
+              },
+              "nativeAirline": {
+                "type": ["string", "null"],
+                "description": "Code of the airline which this scraper naturally searches. Results with this ariline will not be assumed to be saver awards."
               },
               "onlyCashFares": {
                 "type": "boolean",

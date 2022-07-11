@@ -28,8 +28,8 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     {
       title: "Flight",
       dataIndex: "flightNo",
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.flightNo.localeCompare(recordB.flightNo),
-      render: (flightNo: string, flight: FlightWithFares) => (
+      sorter: (recordA, recordB) => recordA.flightNo.localeCompare(recordB.flightNo),
+      render: (flightNo: string, flight) => (
         <>
           <img style={{ height: 16, marginBottom: 3, borderRadius: 3 }} src={airlineLogoUrl(flightNo.substring(0, 2))} alt={flightNo.substring(0, 2)} />
           <span style={{ marginLeft: 8 }}>{flightNo}</span>
@@ -37,7 +37,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       )
     },
     { title: "Amenities",
-      render: (_text: string, record: FlightWithFares) => {
+      render: (_text: string, record) => {
         return (
           <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")} mouseEnterDelay={0} mouseLeaveDelay={0}>
             <span><MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
@@ -48,34 +48,34 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     {
       title: "From",
       dataIndex: "origin",
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.origin.localeCompare(recordB.origin),
+      sorter: (recordA, recordB) => recordA.origin.localeCompare(recordB.origin),
     },
     {
       key: "departure",
-      render: (_text: string, record: FlightWithFares) => moment(record.departureDateTime).format("M/D"),
+      render: (_text: string, record) => moment(record.departureDateTime).format("M/D"),
     },
     {
       title: "Departure",
       dataIndex: "departureDateTime",
       render: (text: string) => moment(text).format("h:mm A"),
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => moment(recordA.departureDateTime).diff(moment(recordB.departureDateTime)),
+      sorter: (recordA, recordB) => moment(recordA.departureDateTime).diff(moment(recordB.departureDateTime)),
       defaultSortOrder: "ascend",
     },
     {
       title: "Arrival",
       dataIndex: "arrivalDateTime",
-      render: (_text: string, record: FlightWithFares) => `${moment(record.arrivalDateTime).format("h:mm A")} ${moment(record.arrivalDateTime).isAfter(moment(record.departureDateTime), "day") ? " (+1)" : ""}`,
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => moment(recordA.arrivalDateTime).diff(moment(recordB.arrivalDateTime)),
+      render: (_text: string, record) => `${moment(record.arrivalDateTime).format("h:mm A")} ${moment(record.arrivalDateTime).isAfter(moment(record.departureDateTime), "day") ? " (+1)" : ""}`,
+      sorter: (recordA, recordB) => moment(recordA.arrivalDateTime).diff(moment(recordB.arrivalDateTime)),
     },
     {
       title: "Dest",
       dataIndex: "destination",
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => recordA.destination.localeCompare(recordB.destination),
+      sorter: (recordA, recordB) => recordA.destination.localeCompare(recordB.destination),
     },
     ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col?.key))).map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
-      render: (_text: string, record: FlightWithFares) => {
+      render: (_text: string, record) => {
         const smallestFare = lowestFare(record.fares, column.key)
         if (!smallestFare)
           return ""
@@ -83,9 +83,18 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const milesStr = Math.round(smallestFare.miles).toLocaleString()
         const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "", maximumFractionDigits: 0 })
 
-        return <Tooltip title={smallestFare.scraper} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={record.fares.some((checkFare) => checkFare.isSaverFare === true) ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
+        const tooltipContent = record.fares.sort((a, b) => a.miles - b.miles).map((fare) => {
+          if (fare.cabin === column.key) {
+            const fareMilesStr = Math.round(fare.miles).toLocaleString()
+            return <div key={`${record.flightNo}${fare.cabin}${fare.scraper}`}>{fare.scraper}: {fareMilesStr}{fare.isSaverFare && " (saver)"}</div>
+          }
+          return undefined
+        }).filter((x) => x !== undefined)
+
+        const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
+        return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
       },
-      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
+      sorter: (recordA, recordB) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
         const fareBMiles = lowestFare(recordB.fares, column.key)?.miles ?? Number.MAX_VALUE
         return fareAMiles - fareBMiles

@@ -53,7 +53,7 @@ const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][numb
       const miles = product.Prices[0].Amount
       const cash = product.Prices.length >= 2 ? product.Prices[1].Amount : 0
       const currencyOfCash = product.Prices.length >= 2 ? (product.Prices[1].Currency ?? "") : ""
-      const isSaverFare = product.AwardType === "Saver"
+      const bookingClass = product.BookingCode
 
       const cabin = { "United First": "business", "United Economy": "economy", "United Business": "business", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
       if (cabin === undefined)
@@ -62,9 +62,9 @@ const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][numb
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
       if (existingFare !== undefined) {
         if (miles < existingFare.miles)
-          existingFare = { ...{ cabin, miles, cash, currencyOfCash, isSaverFare, scraper: "united" } }
+          existingFare = { ...{ cabin, miles, cash, currencyOfCash, bookingClass, scraper: "united" } }
       } else {
-        result.fares.push({ cabin, miles, cash, currencyOfCash, isSaverFare, scraper: "united" })
+        result.fares.push({ cabin, miles, cash, currencyOfCash, bookingClass, scraper: "united" })
       }
     })
 

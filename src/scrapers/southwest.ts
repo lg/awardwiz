@@ -9,7 +9,7 @@ type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: 
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
-  missingFareAttributes: ["isSaverFare"]
+  missingFareAttributes: ["bookingClass"]
 }
 
 export type ScraperFlowRule = {
@@ -95,7 +95,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       const fare: FlightFare = {
         cabin: "economy",
         miles: parseInt(product.fare.totalFare.value, 10),
-        isSaverFare: false,
+        bookingClass: undefined,
         cash: parseFloat(product.fare.totalTaxesAndFees.value),
         currencyOfCash: product.fare.totalTaxesAndFees.currencyCode,
         scraper: "southwest"

@@ -4,7 +4,7 @@ import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQ
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: ["duration"],
-  missingFareAttributes: ["isSaverFare"]
+  missingFareAttributes: ["bookingClass"]
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
@@ -77,7 +77,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
             currencyOfCash: "USD",
             cabin: airlineCode === "AS" ? { Main: "economy", "First Class": "business" }[cabin]! : { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
             miles: parseFloat(milesAndCash[1]) * 1000,
-            isSaverFare: undefined,
+            bookingClass: undefined,
             scraper: "alaska"
           }
           return flightFare

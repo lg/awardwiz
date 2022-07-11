@@ -4,7 +4,7 @@ type JetBlueFetchFlights = typeof import("./extra/jetblue_sample.json")
 
 export const capabilities: ScraperCapabilities = {
   missingAttributes: [],
-  missingFareAttributes: ["isSaverFare"]
+  missingFareAttributes: []
 }
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
@@ -30,6 +30,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
 // note: they have an entire lookup call that's made for this for all their partners (which seem to not be searchable on points)
 const cabinClassToCabin: {[ cabinClass: string ]: string} = {
   Y: "economy",
+  J: "business",
   C: "business"    // mint class on jetblue
 }
 
@@ -71,7 +72,7 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
           cash: parseFloat(bundle.fareTax),
           currencyOfCash: raw.currency,
           cabin,
-          isSaverFare: undefined,
+          bookingClass: itinerary.segments[0].bookingclass,
           scraper: "jetblue"
         }
 
