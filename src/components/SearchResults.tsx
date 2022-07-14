@@ -83,13 +83,10 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const milesStr = Math.round(smallestFare.miles).toLocaleString()
         const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "", maximumFractionDigits: 0 })
 
-        const tooltipContent = record.fares.sort((a, b) => a.miles - b.miles).map((fare) => {
-          if (fare.cabin === column.key) {
-            const fareMilesStr = Math.round(fare.miles).toLocaleString()
-            return <div key={`${record.flightNo}${fare.cabin}${fare.scraper}`}>{fare.scraper}: {fareMilesStr}{fare.isSaverFare && " (saver)"}</div>
-          }
-          return undefined
-        }).filter((x) => x !== undefined)
+        const tooltipContent = record.fares
+          .filter((fare) => fare.cabin === column.key)
+          .sort((a, b) => a.miles - b.miles)
+          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? " (saver)" : ""}</div>)
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
         return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
