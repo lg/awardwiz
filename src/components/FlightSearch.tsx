@@ -8,6 +8,7 @@ import { useAwardSearch } from "../hooks/useAwardSearch"
 import { DebugTree } from "./DebugTree"
 import { useAwardSearchDebugTree } from "../hooks/useAwardSearchDebugTree"
 import { SearchQuery } from "../types/scrapers"
+import { supabase } from "./LoginScreen"
 const moment = moment_
 
 export const FlightSearch = () => {
@@ -25,6 +26,8 @@ export const FlightSearch = () => {
 
   React.useEffect(() => {
     localStorage.setItem("searchQuery", JSON.stringify(searchQuery))
+    const logSearch = async (query: object) => supabase.from("searches").insert([{ user_id: supabase.auth.session()?.user?.id, query }])
+    logSearch(searchQuery)
   }, [searchQuery])
 
   const initialValuesWithMoment = { ...searchQuery, departureDate: moment(searchQuery.departureDate) }

@@ -5,14 +5,14 @@ import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown, Menu } from 
 import awardwizImageUrl from "../wizard.png"
 import CarbonLogout from "~icons/carbon/logout"
 
-const supabase = new SupabaseClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+export const supabase = new SupabaseClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   const [message, setMessage] = React.useState<{type: AlertProps["type"], text: string}>({ type: undefined, text: "" })
   const [supabaseSession, setSupabaseSession] = React.useState(supabase.auth.session())
 
   React.useEffect(() => {
-    setMessage({ type: "info", text: "Loading Google Login button" })
+    setMessage({ type: "info", text: "Loading..." })
     supabase.auth.onAuthStateChange((event, session) => { setSupabaseSession(session) })
   }, [])
 
