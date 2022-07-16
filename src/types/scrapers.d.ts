@@ -1,10 +1,6 @@
 import type { Page } from "puppeteer"
 
 export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResults }>
-export type ScraperCapabilities = {
-  missingAttributes: (keyof FlightWithFares)[]    // Only these fields are expected to be undefined
-  missingFareAttributes: (keyof FlightFare)[]    // Only these fields are expected to be undefined
-}
 export type BrowserlessQuery = {
   page: Page,
   context: ScraperQuery,
@@ -29,7 +25,7 @@ export type FlightWithFares = {
   arrivalDateTime: string                // "2022-04-01 15:12"
   origin: string                         // "SFO"
   destination: string                    // "LHR"
-  duration: number | undefined           // 62
+  duration: number                       // 62 (in minutes)
   aircraft: string                       // "737"
   fares: FlightFare[]
   amenities: FlightAmenities
@@ -47,8 +43,8 @@ export type FlightFare = {
 }
 
 export type FlightAmenities = {
-  hasPods?: boolean | undefined
-  hasWiFi?: boolean | undefined
+  hasPods: boolean | undefined
+  hasWiFi: boolean | undefined
 }
 
 export type SearchQuery = {

@@ -6,13 +6,8 @@
 // - A330|787|777 have pods in Business class (and no First class)
 
 import { HTTPResponse } from "puppeteer"
-import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
+import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
 type AeroplanFetchFlights = typeof import("./extra/aeroplan_sample.json")
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: []
-}
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)
@@ -45,7 +40,7 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
       duration: flightLookup.duration / 60,
       aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft],
       fares: [],
-      amenities: { hasPods: undefined }
+      amenities: { hasPods: undefined, hasWiFi: undefined }
     }
 
     // Skip flights with connections

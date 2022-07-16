@@ -105,6 +105,22 @@ export const pptrFetch = async (page: Page, url: string, init: RequestInit) => {
   }, url, init)
 }
 
+export const equipmentTypeLookup: {[equipmentType: string]: string} = {
+  "717": "Boeing 717-200",
+  "733": "Boeing 737-300",
+  "735": "Boeing 737-500",
+  "738": "Boeing 737-800",
+  "7M7": "Boeing 737 MAX7",
+  "7M8": "Boeing 737 MAX8",
+  "73C": "Boeing 737-300",
+  "73G": "Boeing 737-700",
+  "73H": "Boeing 737-800",
+  "73R": "Boeing 737-700",
+  "7T7": "Boeing 737 MAX7",
+  "73W": "Boeing 737-700",
+  "7T8": "Boeing 737 MAX8"
+}
+
 export const randomUserAgent = () => {
   const userAgents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",

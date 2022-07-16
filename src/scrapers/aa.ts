@@ -1,10 +1,5 @@
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 import { pptrFetch } from "./common"
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: []
-}
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   await page.goto("https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false")

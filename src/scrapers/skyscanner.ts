@@ -1,13 +1,8 @@
 // this scraper is best run with a stealth-capable browser
 
 import { HTTPResponse, Page } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 import { randomUserAgent } from "./common"
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: ["bookingClass"]
-}
 
 type SkyScannerResponse = typeof import("./extra/skyscanner_sample.json")
 

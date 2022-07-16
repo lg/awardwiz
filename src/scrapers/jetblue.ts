@@ -1,11 +1,6 @@
 import { HTTPResponse } from "puppeteer"
-import { FlightWithFares, ScraperCapabilities, ScraperFunc, FlightFare } from "../types/scrapers"
+import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
 type JetBlueFetchFlights = typeof import("./extra/jetblue_sample.json")
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: []
-}
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)
@@ -50,7 +45,10 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
       duration: parseInt(durationText?.[1], 10) * 60 + parseInt(durationText?.[2], 10),
       aircraft: itinerary.segments[0].aircraft,
       fares: [],
-      amenities: {}
+      amenities: {
+        hasPods: undefined,
+        hasWiFi: undefined
+      }
     }
 
     // Skip flights with connections

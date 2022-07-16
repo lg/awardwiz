@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc, ScraperQuery } from "../types/scrapers"
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: ["duration"],
-  missingFareAttributes: ["bookingClass"]
-}
+import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   // warm the browser up
@@ -63,9 +58,12 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         destination,
         departureDateTime: `${departureDate} ${time12to24(departureTime[0])}:00`,
         arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
-        duration: undefined,    // missing if a partner flies it (ex. Operated by SkyWest Airlines as AlaskaSkyWest)
+        duration: 0,                    // filled in properly in the next step
         aircraft: detailsUrl,           // filled in properly in the next step
-        amenities: {},
+        amenities: {
+          hasWiFi: undefined,
+          hasPods: undefined,
+        },
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
           const milesAndCash = queryElMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\s\S]*\$(.+)/)
           const cabin = queryElMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
@@ -77,7 +75,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
             currencyOfCash: "USD",
             cabin: airlineCode === "AS" ? { Main: "economy", "First Class": "business" }[cabin]! : { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
             miles: parseFloat(milesAndCash[1]) * 1000,
-            bookingClass: undefined,
+            bookingClass: undefined,          // TODO: get it from somewhere, can't find it
             scraper: "alaska"
           }
           return flightFare
@@ -92,14 +90,19 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const flights: FlightWithFares[] = []
   for await (const flight of res) {
     await page.goto(flight.aircraft)    // should be a URL at this point
-    const details = await page.$$eval(".detailinfo", (items: Element[]) => {
-      return items.map((item) => item.textContent)
-    })
-    const aircraft = details[1]?.replace(/\n|\t|\r/g, "")
+
+    const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
+    const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)
+    if (!durationMatch)
+      throw new Error(`Invalid duration '${durationDetails[0]}' for flight number ${flight.flightNo}!`)
+    const duration = durationMatch.length === 3 ? parseInt(durationMatch[1], 10) * 60 + parseInt(durationMatch[2], 10) : parseInt(durationMatch[1], 10)
+
+    const aircraftDetails = await page.$$eval(".detailinfo", (items: Element[]) => items.map((item) => item.textContent))
+    const aircraft = aircraftDetails[1]?.replace(/\n|\t|\r/g, "")
     if (!aircraft)
       throw new Error(`Invalid aircraft type for flight number ${flight.flightNo}!`)
 
-    flights.push({ ...flight, aircraft })
+    flights.push({ ...flight, aircraft, duration })
   }
 
   return { data: { flightsWithFares: flights } }

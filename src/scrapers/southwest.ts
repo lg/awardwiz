@@ -2,15 +2,11 @@
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
 
-import { HTTPResponse, Page } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
+import { HTTPResponse } from "puppeteer"
+import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
+import { equipmentTypeLookup, processScraperFlowRules, sleep } from "./common"
 type SouthwestTypes = typeof import("./extra/southwest_sample.json")
 type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: string }[] } }
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: ["bookingClass"]
-}
 
 export type ScraperFlowRule = {
   find: string
@@ -19,23 +15,6 @@ export type ScraperFlowRule = {
   andWaitFor?: string
   andDebugger?: true
   andThen?: ScraperFlowRule[]
-}
-
-// from https://www.southwest.com/swa-ui/bootstrap/air-booking/1/data.js
-const aircraftLookup: {[equipmentType: string]: string} = {
-  "717": "Boeing 717-200",
-  "733": "Boeing 737-300",
-  "735": "Boeing 737-500",
-  "738": "Boeing 737-800",
-  "7M7": "Boeing 737 MAX7",
-  "7M8": "Boeing 737 MAX8",
-  "73C": "Boeing 737-300",
-  "73G": "Boeing 737-700",
-  "73H": "Boeing 737-800",
-  "73R": "Boeing 737-700",
-  "7T7": "Boeing 737 MAX7",
-  "73W": "Boeing 737-700",
-  "7T8": "Boeing 737 MAX8"
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
@@ -85,9 +64,12 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       destination: result.destinationAirportCode,
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
       duration: result.totalDuration,
-      aircraft: aircraftLookup[result.segments[0].aircraftEquipmentType],
+      aircraft: equipmentTypeLookup[result.segments[0].aircraftEquipmentType],
       fares: [],
-      amenities: {}
+      amenities: {
+        hasPods: undefined,
+        hasWiFi: result.segments[0].wifiOnBoard,
+      }
     }
     const bestFare: FlightFare | undefined = Object.values(result.fareProducts.ADULT).reduce((lowestFare: FlightFare | undefined, product) => {
       if (product.availabilityStatus !== "AVAILABLE")
@@ -95,7 +77,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       const fare: FlightFare = {
         cabin: "economy",
         miles: parseInt(product.fare.totalFare.value, 10),
-        bookingClass: undefined,
+        bookingClass: product.productId.split(",")[1],
         cash: parseFloat(product.fare.totalTaxesAndFees.value),
         currencyOfCash: product.fare.totalTaxesAndFees.currencyCode,
         scraper: "southwest"
@@ -113,67 +95,6 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   }).filter((flight: FlightWithFares | undefined) => flight !== undefined).map((x) => x as FlightWithFares)
 
   return { data: { flightsWithFares: flights } }
-}
-
-const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
-export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[]): Promise<void> => {
-  const skipIndexes: number[] = []
-
-  const matchNextRule = async () => {
-    if (skipIndexes.length === rules.length)
-      return undefined
-    const matchAll = async () => {
-      const startTime = Date.now()
-
-      while (true) {
-        for (let i = 0; i < rules.length; i += 1) {
-          if (skipIndexes.includes(i))
-            continue
-          const element = await page.$(rules[i].find)
-          if (!element)
-            continue
-          return { index: i, element }
-        }
-        await sleep(100)
-        if (Date.now() - startTime > 10000)
-          return undefined
-      }
-    }
-    const match = await matchAll()
-    if (!match)
-      return undefined
-    skipIndexes.push(match.index)
-    return { element: match.element!, rule: rules[match.index] }
-  }
-
-  while (true) {
-    const matchedRule = await matchNextRule()
-    if (!matchedRule)
-      throw new Error("No matches")
-
-    // console.log("matched rule", matchedRule.rule.find)
-    await sleep(400)
-    const clickEvent = matchedRule.element.click()
-    if (!matchedRule.rule.done)
-      await clickEvent
-
-    if (matchedRule.rule.type) {
-      await matchedRule.element.focus()
-      await matchedRule.element.type(matchedRule.rule.type)
-    }
-
-    if (matchedRule.rule.andWaitFor)
-      await page.waitForSelector(matchedRule.rule.andWaitFor)
-
-    if (matchedRule.rule.andThen)
-      await processScraperFlowRules(page, matchedRule.rule.andThen)
-
-    if (matchedRule.rule.andDebugger)
-      debugger
-
-    if (matchedRule.rule.done)
-      break
-  }
 }
 
 module.exports = scraper

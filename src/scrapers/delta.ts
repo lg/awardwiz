@@ -1,16 +1,11 @@
 // NOTE: you must run scraper in proper environment since Delta uses Akamai bot detection
 
 import { HTTPResponse } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
 import { processScraperFlowRules } from "./common"
 type DeltaSearchResults = typeof import("./extra/delta_sample.json")
 
 // Samples: AMS-DXB, JFK-AMS
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: []
-}
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   console.log("going to delta main page")
@@ -85,7 +80,8 @@ const standardizeResults = (raw: DeltaSearchResults) => {
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
         }, [] as FlightFare[]),
       amenities: {
-        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined
+        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined,
+        hasWiFi: undefined
       }
     }
 

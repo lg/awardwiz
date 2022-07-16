@@ -1,10 +1,5 @@
-import { FlightWithFares, ScraperCapabilities, ScraperFunc } from "../types/scrapers"
+import { FlightWithFares, ScraperFunc } from "../types/scrapers"
 type UnitedFetchFlights = typeof import("./extra/united_sample.json")
-
-export const capabilities: ScraperCapabilities = {
-  missingAttributes: [],
-  missingFareAttributes: []
-}
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
@@ -32,7 +27,10 @@ const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][numb
       duration: flight.TravelMinutes,
       aircraft: flight.EquipmentDisclosures.EquipmentDescription,
       fares: [],
-      amenities: {}
+      amenities: {
+        hasPods: undefined,
+        hasWiFi: undefined
+      }
     }
 
     // Make sure we're only getting the airports we requested
