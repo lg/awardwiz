@@ -37,7 +37,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   })
   const json = JSON.parse(raw) as typeof import("./extra/aa_sample.json")
 
-  if (json.error)
+  if (json.error && json.error !== "309")
     throw new Error(json.error)
 
   const flightsWithFares: FlightWithFares[] = []
