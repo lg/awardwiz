@@ -4,6 +4,8 @@ import { ColumnsType, ColumnType } from "antd/lib/table"
 import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
+import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
+import MdiAirplane from "~icons/mdi/airplane"
 const moment = moment_
 
 const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
@@ -37,13 +39,19 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       )
     },
     { title: "Amenities",
-      render: (_text: string, record) => {
-        return (
-          <Tooltip title={triState(record.amenities?.hasPods, "Has pods", "Does not have pods", "Unknown if there are pods")} mouseEnterDelay={0} mouseLeaveDelay={0}>
-            <span><MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(record.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} /></span>
+      render: (_text: string, flight) => (
+        <>
+          <Tooltip title={flight.aircraft || "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>
+            <MdiAirplane style={{ verticalAlign: "middle" }} />
           </Tooltip>
-        )
-      }
+          <Tooltip title={triState(flight.amenities?.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+            <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities?.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />
+          </Tooltip>
+          <Tooltip title={triState(flight.amenities?.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+            <MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(flight.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} />
+          </Tooltip>
+        </>
+      )
     },
     {
       title: "From",
@@ -109,6 +117,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       showSorterTooltip={false}
       pagination={false}
       className="search-results"
+      style={{ whiteSpace: "nowrap" }}
     />
   )
 }
