@@ -91,15 +91,18 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
     if (segment.marketing_carrier_id !== segment.operating_carrier_id)    // no codeshares
       return undefined
 
+    if (!itinerary.pricing_options[0].items[0].fares[0])        // pricing hasn't come in yet
+      return undefined
+
     const airlineCode = json.carriers.find((checkCarrier) => checkCarrier.id === segment.marketing_carrier_id)?.display_code
-    const fareFamily = itinerary.pricing_options[0].items[0].fares[0].fare_family
+    const fareFamily = itinerary.pricing_options[0].items[0].fares[0].fare_family || ""
 
     let actualCabin = cabin
-    if (cabin === "first" && fareFamily) {
+    if (cabin === "first") {
       if (fareFamily.match(/FIRSTORBUS|FIRSTBUSFR|BUSINESS-FIRST/)) {
         actualCabin = "business"
-      } else if (airlineCode === "AS") {
-        // Alaska doesn't have a real first class
+      } else if (airlineCode === "AS" || airlineCode === "HA") {
+        // Alaska/Hawaiian don't have a real first class
         actualCabin = "business"
       } else if (airlineCode === "AA" && !fareFamily.match(/FLAGSHIP/)) {
         // On true 'first' AA flights, it's marked as 'flagship first'
@@ -122,13 +125,14 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
         hasWiFi: undefined
       },
       fares: itinerary.pricing_options
+        .filter((pricingOption) => pricingOption.price.amount)
         .map((pricingOption): FlightFare => ({
           cash: pricingOption.price.amount,
           currencyOfCash: "USD",
           miles: 0,
           cabin: actualCabin,
           scraper: "skyscanner",
-          bookingClass: undefined
+          bookingClass: pricingOption.items[0].fares[0].booking_code
         }))
         .reduce((acc, fare) => {
           const existing = acc.find((check) => check.cabin === fare.cabin)
