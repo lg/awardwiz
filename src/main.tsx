@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react"
+import React from "react"
 import ReactDOM from "react-dom/client"
 import * as ReactQuery from "react-query"
 import { ReactQueryDevtools } from "react-query/devtools"

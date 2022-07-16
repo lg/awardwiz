@@ -59,7 +59,7 @@
       "nativeAirline": "B6"
     },
     {
-      "name": "skiplagged",
+      "name": "skyscanner",
       "supportedAirlines": [],
       "excludeAirlines": ["WN"],
       "onlyCashFares": true,
