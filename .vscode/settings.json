@@ -1,13 +1,5 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
-  "json.schemas": [
-    {
-      "fileMatch": [
-        "scrapers.json"
-      ],
-      "url": "./.vscode/scrapers-schema.json"
-    }
-  ],
   "files.exclude": {
     "node_modules": true,
     "coverage": true,

@@ -1,4 +1,5 @@
 {
+  "$schema": "./config.schema.json",
   "airlineAmenities": [
     {
       "airlineCode": "AC",

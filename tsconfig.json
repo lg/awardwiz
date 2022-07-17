@@ -14,7 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",
-    "resolveJsonModule": true,
+    "resolveJsonModule": true,             // allows for importing .json files (and creating the schema)
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",

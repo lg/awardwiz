@@ -1,7 +1,9 @@
 import * as ReactQuery from "react-query"
 import axios from "axios"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
-import scrapers from "../scrapers/scrapers.json"
+
+import scrapersRaw from "../scrapers/config.json?raw"
+const scrapers = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
@@ -35,7 +37,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name } as ServingCarrier))
       .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
       .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
-      .filter((item) => !scrapers.excludeAirlines.includes(item.airlineCode!))
+      .filter((item) => !scrapers.excludeAirlines?.includes(item.airlineCode!))
     return carriers
   }
 
@@ -53,7 +55,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
     const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
       .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
-      .flatMap((code) => scrapers.airlineGroups[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
+      .flatMap((code) => scrapers.airlineGroups?.[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
       .filter((code) => !scraper.excludeAirlines?.includes(code))  // remove specifically excluded airlines
     return supported.includes(airlineCode)
   }
@@ -149,7 +151,7 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
 
   // Load amenities based on aircraft type for all flights where they're still uncertain
   flights = flights.map((flight) => {
-    const amenities = scrapers.airlineAmenities.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
+    const amenities = scrapers.airlineAmenities?.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
     const hasPods = amenities?.podsAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
     const hasWifi = amenities?.wifiAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
     return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods, hasWiFi: flight.amenities.hasWiFi ?? hasWifi } }
@@ -160,9 +162,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       let isSaver = fare.isSaverFare
 
       // If the airline has partners that we know about in the JSON, use that as the fare's saver award true/false
-      const saverBookingClasses = Object.keys(scrapers.saverBookingClasses).map((key) => {
-        const keys = scrapers.airlineGroups[key as keyof typeof scrapers.airlineGroups] ?? [key]   // Combine in groups
-        return keys.some((checkKey) => checkKey === flight.flightNo.substring(0, 2)) ? scrapers.saverBookingClasses[key as keyof typeof scrapers.saverBookingClasses] : undefined
+      const saverBookingClasses = Object.keys(scrapers.saverBookingClasses ?? {}).map((key) => {
+        const keys = scrapers.airlineGroups?.[key as keyof typeof scrapers.airlineGroups] ?? [key]   // Combine in groups
+        return keys.some((checkKey) => checkKey === flight.flightNo.substring(0, 2)) ? scrapers.saverBookingClasses?.[key as keyof typeof scrapers.saverBookingClasses] : undefined
       }).filter((bookingClasses): bookingClasses is string[] => !!bookingClasses).flat()    // join all matches
       if (isSaver === undefined && saverBookingClasses.length > 0)
         isSaver = saverBookingClasses.some((checkBookingClass) => fare.bookingClass === checkBookingClass)

@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "excludeAirlines": {
+      "type": "array",
+      "description": "Airline codes for airlines which should not be processed (ex. cargo airlines like FX)",
+      "items": {
+        "type": "string",
+        "minLength": 2
+      },
+      "uniqueItems": true
+    },
+    "airlineGroups": {
+      "type": "object",
+      "description": "Group name to array of airlines mapping (ex. for use with an airline alliance)",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 2
+        }
+      }
+    },
+    "saverBookingClasses": {
+      "type": "object",
+      "description": "Booking classes list for each airline which should be considered saver fares (and bookable using partners' miles). Supports airlineGroups.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2
+        }
+      }
+    },
+    "airlineAmenities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "airlineCode": {
+            "type": "string",
+            "description": "Airline IATA code (ex. 'UA')"
+          },
+          "podsAircraft": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Substrings of aircraft names to assume have lie-flat seats in Business (ex. 'A321'). Use '*' to match all aircrafts by the carrier."
+          },
+          "wifiAircraft": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Substrings of aircraft names to assume have wifi (ex. 'A321'). Use '*' to match all aircrafts by the carrier."
+          }
+        },
+        "title": "AirlineAmenity"
+      }
+    },
+    "scrapers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the scraper (ex. 'united')"
+          },
+          "supportedAirlines": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 2
+            },
+            "description": "Codes of the airlines which this scraper searches (ex. 'UA')"
+          },
+          "excludeAirlines": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 2
+            },
+            "description": "Codes of the airlines which this scraper should not search searches (ex. 'WN')"
+          },
+          "nativeAirline": {
+            "type": ["string", "null"],
+            "description": "Code of the airline which this scraper naturally searches. Results with this ariline will not be assumed to be saver awards."
+          },
+          "onlyCashFares": {
+            "type": "boolean",
+            "default": false,
+            "description": "Set this to true to have this scraper be called for all airlines and to convert all fares on a cents-per-mile basis"
+          }
+        },
+        "required": [
+          "name",
+          "supportedAirlines",
+          "nativeAirline"
+        ],
+        "title": "Scraper"
+      }
+    }
+  },
+  "required": [
+    "scrapers"
+  ],
+  "title": "ScrapersConfig"
+}
