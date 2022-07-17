@@ -126,19 +126,19 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Combine flight metadata from all scrapers to one per actual flight number
   let flights: FlightWithFares[] = []
   scraperResults.forEach((scraperResult) => {
-    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo) as Record<keyof FlightWithFares, any>
+    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
     if (existingFlight) {
-      // Copy in any missing properties that are present in the scraper result
-      (Object.keys(existingFlight) as (keyof FlightWithFares)[]).forEach((key) => {
-        if ((existingFlight[key] === undefined && scraperResult[key] !== undefined) || (existingFlight[key] === "" && scraperResult[key] !== ""))
-          existingFlight[key] = scraperResult[key];
+      for (const key in scraperResult) {
+        if (existingFlight[key as keyof FlightWithFares] === undefined) {
+          // @ts-ignore
+          existingFlight[key] = scraperResult[key]
+        }
+      }
 
-        // And amenities
-        (Object.keys(existingFlight.amenities) as (keyof FlightWithFares["amenities"])[]).forEach((amenityKey) => {
-          if (existingFlight.amenities[amenityKey] === undefined && scraperResult.amenities[amenityKey] !== undefined)
-            existingFlight.amenities[amenityKey] = scraperResult.amenities[amenityKey]
-        })
-      })
+      for (const k in scraperResult.amenities) {
+        if (existingFlight.amenities[k as keyof FlightWithFares["amenities"]] === undefined)
+          existingFlight.amenities[k as keyof FlightWithFares["amenities"]] = scraperResult.amenities[k as keyof FlightWithFares["amenities"]]
+      }
 
       // Append in the fares
       existingFlight.fares.push(...scraperResult.fares)
@@ -150,8 +150,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
   // Load amenities based on aircraft type for all flights where they're still uncertain
   flights = flights.map((flight) => {
     const amenities = scrapers.airlineAmenities.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
-    const hasPods = amenities?.podsAircraft.some((checkStr) => flight.aircraft.indexOf(checkStr) > -1)
-    return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods } }
+    const hasPods = amenities?.podsAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
+    const hasWifi = amenities?.wifiAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
+    return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods, hasWiFi: flight.amenities.hasWiFi ?? hasWifi } }
 
   // Calculate saver awards
   }).map((flight) => {

@@ -53,7 +53,14 @@
                 "items": {
                   "type": "string"
                 },
-                "description": "Substrings of aircraft names to assume have lie-flat seats in Business (ex. 'A321')"
+                "description": "Substrings of aircraft names to assume have lie-flat seats in Business (ex. 'A321'). Use '*' to match all aircrafts by the carrier."
+              },
+              "wifiAircraft": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Substrings of aircraft names to assume have wifi (ex. 'A321'). Use '*' to match all aircrafts by the carrier."
               }
             },
             "required": [

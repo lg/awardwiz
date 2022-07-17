@@ -80,8 +80,8 @@ const standardizeResults = (raw: DeltaSearchResults) => {
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
         }, [] as FlightFare[]),
       amenities: {
-        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined,
-        hasWiFi: undefined
+        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
+        hasWiFi: trip.summarizedProducts.some((product) => product.productIconId === "wif") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
       }
     }
 

@@ -28,8 +28,8 @@ const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][numb
       aircraft: flight.EquipmentDisclosures.EquipmentDescription,
       fares: [],
       amenities: {
-        hasPods: undefined,
-        hasWiFi: undefined
+        hasPods: undefined,         // filled in the JSON
+        hasWiFi: undefined          // united doesnt return this in its API
       }
     }
 

@@ -94,7 +94,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         const tooltipContent = record.fares
           .filter((fare) => fare.cabin === column.key)
           .sort((a, b) => a.miles - b.miles)
-          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? " (saver)" : ""}</div>)
+          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass || "?"})` : ` (${fare.bookingClass || "?"})`}</div>)
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
         return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>

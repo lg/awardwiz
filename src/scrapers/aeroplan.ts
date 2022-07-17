@@ -40,7 +40,10 @@ const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origD
       duration: flightLookup.duration / 60,
       aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft],
       fares: [],
-      amenities: { hasPods: undefined, hasWiFi: undefined }
+      amenities: {
+        hasPods: undefined,
+        hasWiFi: undefined  // populated via json from https://www.aircanada.com/aeroplan/redeem/main-es2015.09be3572766daf3ffaa9.js from the aircraftWithWifi variable
+      },
     }
 
     // Skip flights with connections

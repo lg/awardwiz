@@ -2,27 +2,32 @@
   "airlineAmenities": [
     {
       "airlineCode": "AC",
-      "podsAircraft": ["A330", "787", "777"]
+      "podsAircraft": ["A330", "787", "777"],
+      "wifiAircraft": ["A321", "A319", "A320", "E175", "CRJ900", "E90", "777-300", "777-200", "220-300"]
     },
     {
       "airlineCode": "UA",
-      "podsAircraft": ["787", "777", "757-200", "767"]
+      "podsAircraft": ["787", "777", "757-200", "767"],
+      "wifiAircraft": ["170", "175", "700", "550", "A320", "767-300", "767-400", "777-200", "777-300", "787-8", "787-9", "787-10", "737-700", "737-800", "737-900", "737 MAX", "757-200"]
     },
     {
       "airlineCode": "B6",
-      "podsAircraft": ["Mint", "A321"]
+      "podsAircraft": ["Mint", "A321"],
+      "wifiAircraft": ["*"]
     },
     {
       "airlineCode": "WN",
-      "podsAircraft": []
+      "podsAircraft": [],
+      "wifiAircraft": ["*"]
     },
     {
       "airlineCode": "AS",
-      "podsAircraft": []
+      "podsAircraft": [],
+      "wifiAircraft": ["E175", "737-900", "A320", "A321", "737-800", "737-700"]
     },
     {
       "airlineCode": "HA",
-      "podsAircraft": ["A330"]
+      "podsAircraft": []
     }
   ],
   "airlineGroups": {
@@ -32,8 +37,7 @@
   "saverBookingClasses": {
     "staralliance": ["X", "I", "O"],
     "AA": ["T", "U", "X", "Z"],
-    "HA": ["T", "D"],
-    "B6": ["I", "P"]
+    "HA": ["T", "D"]
   },
   "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
   "scrapers": [

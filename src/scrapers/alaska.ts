@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
@@ -61,7 +59,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         duration: 0,                    // filled in properly in the next step
         aircraft: detailsUrl,           // filled in properly in the next step
         amenities: {
-          hasWiFi: undefined,
+          hasWiFi: undefined,         // TODO: switch to desktop version which does have the indicator (search LAX-LIH for an AA award with it)
           hasPods: undefined,
         },
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
@@ -89,7 +87,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   // Get the aircraft type for each flight from the details page
   const flights: FlightWithFares[] = []
   for await (const flight of res) {
-    await page.goto(flight.aircraft)    // should be a URL at this point
+    await page.goto(flight.aircraft!)    // should be a URL at this point
 
     const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
     const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)

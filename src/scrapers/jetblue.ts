@@ -46,8 +46,8 @@ const standardizeResults = (raw: JetBlueFetchFlights) => {
       aircraft: itinerary.segments[0].aircraft,
       fares: [],
       amenities: {
-        hasPods: undefined,
-        hasWiFi: undefined
+        hasPods: undefined,         // Covered in the JSON
+        hasWiFi: undefined          // All Jetblue flights have wifi and get covered in the JSON
       }
     }
 

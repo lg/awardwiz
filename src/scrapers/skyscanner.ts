@@ -114,7 +114,7 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
       destination: json.places.find((checkPlace) => checkPlace.id === segment.destination_place_id && checkPlace.type === "Airport")?.display_code,
       flightNo: `${airlineCode} ${segment.marketing_flight_number}`,
       duration: segment.duration,
-      aircraft: "",
+      aircraft: undefined,
       amenities: {
         hasPods: undefined,
         hasWiFi: undefined

@@ -26,7 +26,7 @@ export type FlightWithFares = {
   origin: string                         // "SFO"
   destination: string                    // "LHR"
   duration: number                       // 62 (in minutes)
-  aircraft: string                       // "737"
+  aircraft: string | undefined           // "737"
   fares: FlightFare[]
   amenities: FlightAmenities
 }
