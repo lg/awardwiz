@@ -41,6 +41,7 @@
     "HA": ["T", "D"]
   },
   "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
+  "chaseUnsupportedAirlines": ["WN"],
   "scrapers": [
     {
       "name": "aa",
@@ -71,16 +72,12 @@
       "name": "skyscanner",
       "disabled": true,
       "supportedAirlines": [],
-      "excludeAirlines": ["WN"],
-      "onlyCashFares": true,
-      "nativeAirline": null
+      "cashOnlyFares": true
     },
     {
       "name": "skiplagged",
       "supportedAirlines": [],
-      "excludeAirlines": ["WN"],
-      "onlyCashFares": true,
-      "nativeAirline": null
+      "cashOnlyFares": true
     },
     {
       "name": "southwest",

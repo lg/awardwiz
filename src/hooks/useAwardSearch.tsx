@@ -58,9 +58,9 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       return false
 
     const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
-      .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
+      .concat(scraper.cashOnlyFares! ? [airlineCode] : [])   // cash-only scrapers run for all airlines
       .flatMap((code) => scrapers.airlineGroups?.[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups
-      .filter((code) => !scraper.excludeAirlines?.includes(code))  // remove specifically excluded airlines
+      .filter((code) => (scraper.cashOnlyFares ? !scrapers.chaseUnsupportedAirlines?.includes(code) : true))  // if a cash-only scraper, remove unsupported airlines
     return supported.includes(airlineCode)
   }
 
@@ -102,13 +102,13 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
       const airlineSupported = doesScraperSupportAirline(scraper, flight.flightNo.substring(0, 2))
       return { ...flight, fares: airlineSupported ? flight.fares : [] }
 
-    // Convert only-cash scrapers to miles
+    // Convert cash-only scrapers to miles
     }).map((flight) => {
-      if (!scraper.onlyCashFares)
+      if (!scraper.cashOnlyFares)
         return flight
       const newFares = flight.fares.map((fare) => {
         if (fare.currencyOfCash !== "USD")
-          throw new Error("Only-cash scrapers should only have USD fares")
+          throw new Error("Cash-only scrapers should only have USD fares")
         return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0 }
       })
       return { ...flight, fares: newFares }

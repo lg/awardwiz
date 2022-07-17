@@ -12,8 +12,15 @@
       "items": {
         "type": "string",
         "minLength": 2
-      },
-      "uniqueItems": true
+      }
+    },
+    "chaseUnsupportedAirlines": {
+      "type": "array",
+      "description": "Chase Ultimate Rewards only supports some airlines for booking cash fares, list the ones it doesn't here (ex. WN)",
+      "items": {
+        "type": "string",
+        "minLength": 2
+      }
     },
     "airlineGroups": {
       "type": "object",
@@ -91,20 +98,11 @@
             },
             "description": "Codes of the airlines which this scraper searches (ex. 'UA')"
           },
-          "excludeAirlines": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "minLength": 2
-            },
-            "description": "Codes of the airlines which this scraper should not search searches (ex. 'WN')"
-          },
           "nativeAirline": {
             "type": ["string", "null"],
             "description": "Code of the airline which this scraper naturally searches. Results with this ariline will not be assumed to be saver awards."
           },
-          "onlyCashFares": {
+          "cashOnlyFares": {
             "type": "boolean",
             "default": false,
             "description": "Set this to true to have this scraper be called for all airlines and to convert all fares on a cents-per-mile basis"
@@ -112,8 +110,7 @@
         },
         "required": [
           "name",
-          "supportedAirlines",
-          "nativeAirline"
+          "supportedAirlines"
         ],
         "title": "Scraper"
       }
