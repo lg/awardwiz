@@ -69,6 +69,14 @@
     },
     {
       "name": "skyscanner",
+      "disabled": true,
+      "supportedAirlines": [],
+      "excludeAirlines": ["WN"],
+      "onlyCashFares": true,
+      "nativeAirline": null
+    },
+    {
+      "name": "skiplagged",
       "supportedAirlines": [],
       "excludeAirlines": ["WN"],
       "onlyCashFares": true,

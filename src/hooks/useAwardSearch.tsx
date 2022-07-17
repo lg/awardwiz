@@ -3,6 +3,7 @@ import axios from "axios"
 import { FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 
 import scrapersRaw from "../scrapers/config.json?raw"
+import { Scraper } from "../types/config.schema"
 const scrapers = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
@@ -52,7 +53,10 @@ export const useAwardSearch = (searchQuery: SearchQuery) => {
     .map((item) => JSON.parse(JSON.stringify(item.data)))   // copy the object to avoid mutating the original and saving to local storage
     .flat() as ServingCarrier[]
 
-  const doesScraperSupportAirline = (scraper: typeof scrapers.scrapers[number], airlineCode: string): boolean => {
+  const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string): boolean => {
+    if (scraper.disabled)
+      return false
+
     const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
       .concat(scraper.onlyCashFares! ? [airlineCode] : [])   // only-cash scrapers run for all airlines
       .flatMap((code) => scrapers.airlineGroups?.[code as keyof typeof scrapers.airlineGroups] || code)  // expand groups

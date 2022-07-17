@@ -78,6 +78,10 @@
             "type": "string",
             "description": "Name of the scraper (ex. 'united')"
           },
+          "disabled": {
+            "type": "boolean",
+            "description": "Disables the scraper from being selected"
+          },
           "supportedAirlines": {
             "type": "array",
             "uniqueItems": true,
