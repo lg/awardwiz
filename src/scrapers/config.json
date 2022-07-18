@@ -81,6 +81,7 @@
     },
     {
       "name": "southwest",
+      "disabled": true,
       "supportedAirlines": ["WN"],
       "nativeAirline": "WN"
     },
