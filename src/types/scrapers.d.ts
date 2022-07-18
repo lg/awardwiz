@@ -19,7 +19,7 @@ export type ScraperResults = {
 }
 
 // the "| undefined" piece makes these require to explicitly be defined
-export type FlightWithFares = {
+export type FlightWithFares = ExpandRecursively<{
   flightNo: string                       // "UA 123"
   departureDateTime: string              // "2022-04-01 15:12"
   arrivalDateTime: string                // "2022-04-01 15:12"
@@ -29,7 +29,7 @@ export type FlightWithFares = {
   aircraft: string | undefined           // "737"
   fares: FlightFare[]
   amenities: FlightAmenities
-}
+}>
 
 export type FlightFare = {
   cabin: string                           // "economy" | "business" | "first"
@@ -66,3 +66,18 @@ declare type Airport = {
 }
 
 declare type AirportWithDistance = Airport & { distance: number }
+
+// These two are here to help hack VSCode to give the full definition when hovering over a type
+export type Expand<T> = T extends (...args: infer A) => infer R
+  ? (...args: Expand<A>) => Expand<R>
+  : T extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never;
+
+export type ExpandRecursively<T> = T extends (...args: infer A) => infer R
+  ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
+  : T extends object
+  ? T extends infer O
+    ? { [K in keyof O]: ExpandRecursively<O[K]> }
+    : never
+  : T;
