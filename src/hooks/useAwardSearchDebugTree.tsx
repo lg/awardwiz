@@ -32,8 +32,6 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
     error: errors.find((item) => item.queryKey === `servingCarriers-${pairing.origin}-${pairing.destination}`)?.error
   })))
 
-  console.log(loadingQueriesKeys)
-
   debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]) => {
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperForRoute.scraper)?.cashOnlyFares
     return {
