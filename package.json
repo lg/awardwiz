@@ -6,7 +6,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "dev": "vite",
-    "build": "tsc && npm run schemas && vite build",
+    "build": "npm run schemas && tsc && vite build",
     "preview": "vite preview",
     "start": "npm run schemas && vite",
     "depcheck": "depcheck",
