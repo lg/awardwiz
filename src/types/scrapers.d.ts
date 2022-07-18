@@ -14,9 +14,9 @@ export type ScraperQuery = {
   departureDate: string
 }
 
-export type ScraperResults = {
+export type ScraperResults = ExpandRecursively<{
   flightsWithFares: FlightWithFares[]
-}
+}>
 
 // the "| undefined" piece makes these require to explicitly be defined
 export type FlightWithFares = ExpandRecursively<{

@@ -5,23 +5,23 @@ import scrapersRaw from "../scrapers/config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueriesWithKeys } from "../helpers/common"
-const scraperConfig = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
+export const scraperConfig = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 type FR24SearchResult = typeof import("../scrapers/extra/fr24_sample.json") & typeof import("../scrapers/extra/fr24_errors_sample.json")
 
 export type QueryPairing = ExpandRecursively<{origin: string, destination: string, departureDate: string}>
-export type ServingCarrier = { origin: string, destination: string, airlineCode: string, airlineName: string }
+export type ServingCarrier = ExpandRecursively<{ origin: string, destination: string, airlineCode: string, airlineName: string }>
 type ScraperForRoute = ExpandRecursively<{ origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }>
-export type ScrapersForRoutes = {[key: string]: ScraperForRoute}
+export type ScrapersForRoutes = ExpandRecursively<{[scraperOrigDestKey: string]: ScraperForRoute}>
 export type AwardSearchProgress = {
   searchResults: FlightWithFares[],
   pairings: QueryPairing[],
   servingCarriers: ServingCarrier[],
   scrapersForRoutes: ScrapersForRoutes,
-  loadingQueries: string[][],
-  errors: { queryKey: string[], error: Error }[]
+  loadingQueriesKeys: string[],
+  errors: { queryKey: string, error: Error }[]
 }
 
 export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress => {
@@ -30,7 +30,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Returns the airlines flying a route as: [{origin, destination, airlineCode, airlineName}, ...]
   const { queries: servingCarriersQueries, data: servingCarriers } = useQueriesWithKeys<ServingCarrier[]>(pairings.map((pairing) => ({
-    queryKey: ["servingCarriers", pairing.origin, pairing.destination],
+    queryKey: `servingCarriers-${pairing.origin}-${pairing.destination}`,
     queryFn: fetchServingCarriers,
     meta: pairing
   })))
@@ -38,12 +38,12 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   // Group the above by "scraper-orig-dest" -> {matchedAirlines[], origin, destination, scraper, departureDate}
   const scrapersForRoutes = React.useMemo(() => {
     return servingCarriers.reduce((result, curCarrier) => {
-      const compatibleScrapers = scraperConfig.scrapers.filter((checkScraper) => doesScraperSupportAirline(checkScraper, curCarrier.airlineCode))
+      const compatibleScrapers = scraperConfig.scrapers.filter((checkScraper) => doesScraperSupportAirlineInclCashOnly(checkScraper, curCarrier.airlineCode))
       compatibleScrapers.forEach((scraper) => {
         const key = `${scraper.name}-${curCarrier.origin}-${curCarrier.destination}`
         result[key] ??= { ...curCarrier, scraper: scraper.name, matchedAirlines: [], departureDate: searchQuery.departureDate }
-        if (!result[key].matchedAirlines.includes(curCarrier.airlineName))
-          result[key].matchedAirlines.push(curCarrier.airlineName)
+        if (!result[key].matchedAirlines.includes(curCarrier.airlineCode))
+          result[key].matchedAirlines.push(curCarrier.airlineCode)
       })
       return result
     }, {} as ScrapersForRoutes)
@@ -51,7 +51,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Returns the scraper results from all scrapers: [{ flightNo, origin, amenities, ... }]
   const { queries: searchQueries, data: scraperResults } = useQueriesWithKeys<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
-    queryKey: ["awardAvailability", key, scraperQuery.departureDate],
+    queryKey: `awardAvailability-${key}-${scraperQuery.departureDate}`,
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
     retry: 1,
@@ -63,15 +63,19 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   const flights = React.useMemo(() => {
     const curFlights: FlightWithFares[] = JSON.parse(JSON.stringify(scraperResults))   // clone the object to guarantee it won't be written back to the request
     return mergeFlightsByFlightNo(curFlights)
+      .map((flight) => removeCashFaresFromUnsupportedAirlines(flight))
+      .map((flight) => convertCashToMilesForCashOnlyScrapers(flight))
       .map((flight) => calculateAmenities(flight))
       .map((flight) => calculateSaverAwards(flight))
   }, [scraperResults])
 
-  const loadingQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isLoading).map((item) => item.queryKey as string[])
-  const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey, error: item.error as Error }))
+  const loadingQueriesKeys = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string)
+  const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey as string, error: item.error as Error }))
 
-  return { searchResults: flights, pairings, servingCarriers, scrapersForRoutes, loadingQueries, errors }
+  return { searchResults: flights, pairings, servingCarriers, scrapersForRoutes, loadingQueriesKeys, errors }
 }
+
+//////////////////////
 
 const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionContext) => {
   const pairing = meta as QueryPairing
@@ -91,14 +95,17 @@ const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionCo
   return carriers
 }
 
-const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string): boolean => {
+export const doesScraperSupportAirlineInclCashOnly = (scraper: Scraper, airlineCode: string): boolean => {
   if (scraper.disabled)
     return false
   const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
     .concat(scraper.cashOnlyFares! ? [airlineCode] : [])   // cash-only scrapers run for all airlines
     .flatMap((code) => scraperConfig.airlineGroups?.[code as keyof ScrapersConfig["airlineGroups"]] || code)  // expand groups
-    .filter((code) => (scraper.cashOnlyFares ? !scraperConfig.chaseUnsupportedAirlines?.includes(code) : true))  // if a cash-only scraper, remove unsupported airlines
   return supported.includes(airlineCode)
+}
+
+export const doesScraperSupportAirlineExclCashOnly = (scraper: Scraper, airlineCode: string): boolean => {
+  return doesScraperSupportAirlineInclCashOnly(scraper, airlineCode) && !scraper.cashOnlyFares
 }
 
 const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.QueryFunctionContext) => {
@@ -118,24 +125,28 @@ const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.Que
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: scraperQuery }
   const scraperResults = (await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
 
-  // Remove fares from airlines that should have been excluded
-  const scraper = scraperConfig.scrapers.find((chkScraper) => chkScraper.name === scraperQuery.scraper)!
-  return scraperResults.flightsWithFares.map((flight) => {
-    const airlineSupported = doesScraperSupportAirline(scraper, flight.flightNo.substring(0, 2))
-    return { ...flight, fares: airlineSupported ? flight.fares : [] }
-
-  // Convert cash-only scrapers to miles
-  }).map((flight) => {
-    if (!scraper.cashOnlyFares)
-      return flight
-    const newFares = flight.fares.map((fare) => {
-      if (fare.currencyOfCash !== "USD")
-        throw new Error("Cash-only scrapers should only have USD fares")
-      return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0 }
-    })
-    return { ...flight, fares: newFares }
-  })
+  return scraperResults.flightsWithFares
 }
+
+// A scraper can return cash fares for an airline (ex Southwest) which Chase Ultimate Rewards cash fares
+// dont support. We keep the hinting of the flights here, but remove the fare.
+const removeCashFaresFromUnsupportedAirlines = (flight: FlightWithFares): FlightWithFares => ({
+  ...flight,
+  fares: flight.fares.filter((fare) => {
+    if (scraperConfig.scrapers.find((scraper) => scraper.name === fare.scraper)?.cashOnlyFares)
+      return !scraperConfig.chaseUnsupportedAirlines?.includes(flight.flightNo.substring(0, 2))
+    return true
+  })
+})
+
+const convertCashToMilesForCashOnlyScrapers = (flight: FlightWithFares) => ({
+  ...flight,
+  fares: flight.fares.map((fare) => {
+    if (!scraperConfig.scrapers.find((scraper) => scraper.name === fare.scraper)?.cashOnlyFares)
+      return fare
+    return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0 }
+  })
+})
 
 // Merges properties of FlightWithFares into unique FlightWithFares by flightNo
 const mergeFlightsByFlightNo = (scraperResults: FlightWithFares[]) => {
