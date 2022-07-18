@@ -27,7 +27,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       destination: segment.arrival.airport,
       flightNo: `${segment.airline} ${segment.flight_number}`,
       duration: segment.duration / 60,
-      aircraft: "",
+      aircraft: undefined,
       amenities: {
         hasPods: undefined,
         hasWiFi: undefined

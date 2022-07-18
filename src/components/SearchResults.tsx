@@ -42,7 +42,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       render: (_text: string, flight) => (
         <>
           <Tooltip title={flight.aircraft || "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>
-            <MdiAirplane style={{ verticalAlign: "middle" }} />
+            <MdiAirplane style={{ verticalAlign: "middle", color: flight.aircraft ? "#000000" : "#dddddd" }} />
           </Tooltip>
           <Tooltip title={triState(flight.amenities?.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
             <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities?.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />

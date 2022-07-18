@@ -40,7 +40,7 @@
     "AA": ["T", "U", "X", "Z"],
     "HA": ["T", "D"]
   },
-  "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC"],
+  "excludeAirlines": ["1I", "FX", "KH", "5X", "8C", "KZ", "5Y", "OO", "K4", "NC", "4Y"],
   "chaseUnsupportedAirlines": ["WN"],
   "scrapers": [
     {
