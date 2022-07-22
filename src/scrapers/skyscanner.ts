@@ -3,7 +3,7 @@
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 import { randomUserAgent } from "./common"
-import type { SkyScannerResponse } from "./extra/skyscanner"
+import type { SkyScannerResponse } from "./samples/skyscanner"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {

@@ -47,7 +47,7 @@ export interface Daum {
 export interface Identification {
   id?: string
   row: number
-  number: Number
+  number: number
   callsign?: string
   codeshare: any
 }

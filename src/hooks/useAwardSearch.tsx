@@ -5,8 +5,8 @@ import scrapersRaw from "../scrapers/config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueriesWithKeys } from "../helpers/common"
-import { FlightRadar24Response } from "../scrapers/extra/fr24"
-export const scraperConfig = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
+import type { FlightRadar24Response } from "../scrapers/samples/fr24"
+export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 

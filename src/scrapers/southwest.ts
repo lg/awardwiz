@@ -5,7 +5,7 @@
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
 import { equipmentTypeLookup, processScraperFlowRules, sleep } from "./common"
-import type { SouthwestResponse } from "./extra/southwest"
+import type { SouthwestResponse } from "./samples/southwest"
 
 type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: string }[] } }
 

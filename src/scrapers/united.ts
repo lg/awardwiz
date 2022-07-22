@@ -1,5 +1,5 @@
 import type { FlightWithFares, ScraperFunc } from "../types/scrapers"
-import type { Trip, UnitedResponse } from "./extra/united"
+import type { Trip, UnitedResponse } from "./samples/united"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)

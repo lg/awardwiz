@@ -1,6 +1,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
-import type { JetBlueResponse } from "./extra/jetblue"
+import type { JetBlueResponse } from "./samples/jetblue"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)

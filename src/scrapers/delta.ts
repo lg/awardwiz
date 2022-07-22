@@ -3,7 +3,7 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
 import { processScraperFlowRules } from "./common"
-import type { DeltaResponse } from "./extra/delta"
+import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
 

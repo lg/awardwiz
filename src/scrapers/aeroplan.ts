@@ -7,7 +7,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
-import type { AeroplanResponse } from "./extra/aeroplan"
+import type { AeroplanResponse } from "./samples/aeroplan"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)

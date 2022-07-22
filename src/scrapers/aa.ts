@@ -1,6 +1,6 @@
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 import { pptrFetch } from "./common"
-import type { AAResponse, Slice } from "./extra/aa"
+import type { AAResponse, Slice } from "./samples/aa"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   await page.goto("https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false")

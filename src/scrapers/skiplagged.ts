@@ -3,7 +3,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import type { SkipLaggedResponse, Segment } from "./extra/skiplagged"
+import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   page.goto(`https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`)
