@@ -7,14 +7,14 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
-type AeroplanFetchFlights = typeof import("./extra/aeroplan_sample.json")
+import type { AeroplanResponse } from "./extra/aeroplan"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
   }, { timeout: 20000 })
-  const raw = await response.json() as AeroplanFetchFlights
+  const raw = await response.json() as AeroplanResponse
 
   const flightsWithFares: FlightWithFares[] = []
   if (raw.data && raw.data.airBoundGroups !== null && raw.data.airBoundGroups.length > 0) {
@@ -25,7 +25,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (raw: AeroplanFetchFlights, origOrigin: string, origDestination: string) => {
+const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDestination: string) => {
   const results: FlightWithFares[] = []
   raw.data.airBoundGroups.forEach((group) => {
     const { flightId } = group.boundDetails.segments[0]

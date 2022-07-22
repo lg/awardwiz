@@ -3,7 +3,7 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
 import { processScraperFlowRules } from "./common"
-type DeltaSearchResults = typeof import("./extra/delta_sample.json")
+import type { DeltaResponse } from "./extra/delta"
 
 // Samples: AMS-DXB, JFK-AMS
 
@@ -38,7 +38,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://www.delta.com/shop/ow/search" && checkResponse.request().method() === "POST"
   }, { timeout: 20000 })
-  const raw = await response.json() as DeltaSearchResults
+  const raw = await response.json() as DeltaResponse
 
   const flightsWithFares: FlightWithFares[] = []
   if (raw.itinerary && raw.itinerary.length > 0) {
@@ -49,7 +49,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (raw: DeltaSearchResults) => {
+const standardizeResults = (raw: DeltaResponse) => {
   const results: FlightWithFares[] = []
   raw.itinerary.forEach((itinerary) => {
     const trip = itinerary.trip[0]

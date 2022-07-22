@@ -1,10 +1,10 @@
-import { FlightWithFares, ScraperFunc } from "../types/scrapers"
-type UnitedFetchFlights = typeof import("./extra/united_sample.json")
+import type { FlightWithFares, ScraperFunc } from "../types/scrapers"
+import type { Trip, UnitedResponse } from "./extra/united"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
   const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
-  const raw = await response.json() as UnitedFetchFlights
+  const raw = await response.json() as UnitedResponse
 
   const flightsWithFares: FlightWithFares[] = []
   if (raw.data.Trips !== null && raw.data.Trips.length > 0) {
@@ -15,7 +15,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (unitedTrip: UnitedFetchFlights["data"]["Trips"][number]) => {
+const standardizeResults = (unitedTrip: Trip) => {
   const results: FlightWithFares[] = []
   unitedTrip.Flights.forEach((flight) => {
     const result: FlightWithFares = {

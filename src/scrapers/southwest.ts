@@ -3,9 +3,10 @@
 /* eslint-disable no-await-in-loop */
 
 import { HTTPResponse } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
+import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
 import { equipmentTypeLookup, processScraperFlowRules, sleep } from "./common"
-type SouthwestTypes = typeof import("./extra/southwest_sample.json")
+import type { SouthwestResponse } from "./extra/southwest"
+
 type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: string }[] } }
 
 export type ScraperFlowRule = {
@@ -32,7 +33,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   await processScraperFlowRules(page, rules)
 
-  let raw: SouthwestTypes
+  let raw: SouthwestResponse
   let tries = 0
   do {
     raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: HTTPResponse) => response.json())

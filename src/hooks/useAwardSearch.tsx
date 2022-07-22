@@ -5,11 +5,10 @@ import scrapersRaw from "../scrapers/config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueriesWithKeys } from "../helpers/common"
+import { FlightRadar24Response } from "../scrapers/extra/fr24"
 export const scraperConfig = JSON.parse(scrapersRaw) as import("../types/config.schema").ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
-
-type FR24SearchResult = typeof import("../scrapers/extra/fr24_sample.json") & typeof import("../scrapers/extra/fr24_errors_sample.json")
 
 export type QueryPairing = ExpandRecursively<{origin: string, destination: string, departureDate: string}>
 export type ServingCarrier = ExpandRecursively<{ origin: string, destination: string, airlineCode: string, airlineName: string }>
@@ -80,7 +79,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionContext) => {
   const pairing = meta as QueryPairing
   const dataHtml = (await axios.post<string>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`, { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
-  const data: FR24SearchResult = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
+  const data: FlightRadar24Response = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)

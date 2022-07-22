@@ -1,5 +1,6 @@
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
 import { pptrFetch } from "./common"
+import type { AAResponse, Slice } from "./extra/aa"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   await page.goto("https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false")
@@ -30,7 +31,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       "loyaltyInfo": null
     })
   })
-  const json = JSON.parse(raw) as typeof import("./extra/aa_sample.json")
+  const json = JSON.parse(raw) as AAResponse
 
   if (json.error && json.error !== "309")
     throw new Error(json.error)
@@ -44,7 +45,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   return { data: { flightsWithFares } }
 }
 
-const standardizeResults = (slices: typeof import("./extra/aa_sample.json")["slices"], query: ScraperQuery): FlightWithFares[] => (
+const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFares[] => (
   slices.map((slice) => {
     const segment = slice.segments[0]
     const leg = segment.legs[0]
@@ -87,7 +88,7 @@ const standardizeResults = (slices: typeof import("./extra/aa_sample.json")["sli
       return undefined
 
     return result
-  }).filter((result) => !!result) as FlightWithFares[]
+  }).filter((result): result is FlightWithFares => !!result)
 )
 
 module.exports = scraper

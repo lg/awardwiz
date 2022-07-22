@@ -2,13 +2,8 @@
 // This scraper uses SkipLagged for prices
 
 import { HTTPResponse } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-
-type SkipLaggedResponse = typeof import("./extra/skiplagged_sample.json")
-type FlightId = keyof SkipLaggedResponse["flights"]
-type Flights = Record<FlightId, SkipLaggedResponse["flights"][FlightId]>
-type Flight = Flights[FlightId]
-type Segment = Flight["segments"][number]
+import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
+import type { SkipLaggedResponse, Segment } from "./extra/skiplagged"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   page.goto(`https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`)

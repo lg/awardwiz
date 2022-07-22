@@ -1,6 +1,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
-type JetBlueFetchFlights = typeof import("./extra/jetblue_sample.json")
+import type { JetBlueResponse } from "./extra/jetblue"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
   page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)
@@ -11,7 +11,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   if (response.statusText() === "JB_INVALID_REQUEST")   // seasonal flights here and there
     return { data: { flightsWithFares: [] } }
 
-  const json = await response.json() as JetBlueFetchFlights
+  const json = await response.json() as JetBlueResponse
 
   const flightsWithFares: FlightWithFares[] = []
   if (json.itinerary && json.itinerary.length > 0) {
@@ -29,7 +29,7 @@ const cabinClassToCabin: {[ cabinClass: string ]: string} = {
   C: "business"    // mint class on jetblue
 }
 
-const standardizeResults = (raw: JetBlueFetchFlights) => {
+const standardizeResults = (raw: JetBlueResponse) => {
   const results: FlightWithFares[] = []
   raw.itinerary.forEach((itinerary) => {
     const durationText = itinerary.segments[0].duration.match(/.+?(\d+?)H(\d+?)M/)
