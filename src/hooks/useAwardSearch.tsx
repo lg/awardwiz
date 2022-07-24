@@ -1,6 +1,6 @@
 import * as ReactQuery from "react-query"
 import axios from "axios"
-import { ExpandRecursively, FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
+import { ExpandRecursively, FlightFare, FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapersRaw from "../scrapers/config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
@@ -60,10 +60,11 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const flights = React.useMemo(() => {
-    const curFlights: FlightWithFares[] = JSON.parse(JSON.stringify(scraperResults))   // clone the object to guarantee it won't be written back to the request
-    return mergeFlightsByFlightNo(curFlights)
+    const ret = scraperResults.map((flight) => reduceToBestFarePerCabin(flight))
+    return mergeFlightsByFlightNo(ret)
       .map((flight) => removeCashFaresFromUnsupportedAirlines(flight))
       .map((flight) => convertCashToMilesForCashOnlyScrapers(flight))
+      .map((flight) => reduceToBestFarePerCabin(flight))
       .map((flight) => calculateAmenities(flight))
       .map((flight) => calculateSaverAwards(flight))
   }, [scraperResults])
@@ -75,6 +76,16 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 }
 
 //////////////////////
+
+const reduceToBestFarePerCabin = (flight: FlightWithFares): FlightWithFares => {
+  const scraperFares: { [scraperAndCabin: string]: FlightFare } = {}
+  flight.fares.forEach((fare) => {
+    if (!scraperFares[`${fare.scraper}${fare.cabin}`] || fare.miles < scraperFares[`${fare.scraper}${fare.cabin}`].miles)
+      scraperFares[`${fare.scraper}${fare.cabin}`] = fare
+  })
+
+  return { ...flight, fares: Object.values(scraperFares) }
+}
 
 const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionContext) => {
   const pairing = meta as QueryPairing
