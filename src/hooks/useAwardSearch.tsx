@@ -151,7 +151,19 @@ const convertCashToMilesForCashOnlyScrapers = (flight: FlightWithFares) => ({
 const mergeFlightsByFlightNo = (scraperResults: FlightWithFares[]) => {
   const flights: FlightWithFares[] = []
   scraperResults.forEach((scraperResult) => {
-    const existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
+    // Try to first match by flight number
+    let existingFlight = flights.find((flight) => flight.flightNo === scraperResult.flightNo)
+
+    // If no match, also check for codeshares
+    if (!existingFlight) {
+      existingFlight = flights.find((flight) => flight.departureDateTime.substring(0, 16) === scraperResult.departureDateTime.substring(0, 16) && flight.arrivalDateTime.substring(0, 16) === scraperResult.arrivalDateTime.substring(0, 16))
+      if (existingFlight) {
+        // If the existing flight is from a cash-only scraper, take the new flight number, since other scrapers don't usually use codeshare flights
+        if (scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0].scraper)?.cashOnlyFares)
+          existingFlight.flightNo = scraperResult.flightNo
+      }
+    }
+
     if (existingFlight) {
       for (const key in scraperResult) {
         if (existingFlight[key as keyof FlightWithFares] === undefined) {
