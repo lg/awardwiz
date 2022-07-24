@@ -11,7 +11,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const json: SkipLaggedResponse = await response.json()
 
   const flightsWithFares: FlightWithFares[] = Object.entries(json.flights).map(([id, flight]) => {
-    if (flight.count !== 1)
+    if (flight.count !== 1 || flight.segments.length !== 1)
       return undefined
     const segment = flight.segments[0] as Segment
 
