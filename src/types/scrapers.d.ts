@@ -51,6 +51,7 @@ export type SearchQuery = {
   origins: string[]
   destinations: string[]
   departureDate: string
+  cashToPointsRate: number
 }
 
 declare type Airport = {

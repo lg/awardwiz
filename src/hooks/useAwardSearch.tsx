@@ -58,12 +58,13 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     meta: scraperQuery,
   })))
 
+  const cashToPointsRate = searchQuery.cashToPointsRate ?? 1.5
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const flights = React.useMemo(() => {
     const ret = scraperResults.map((flight) => reduceToBestFarePerCabin(flight))
     return mergeFlightsByFlightNo(ret)
       .map((flight) => removeCashFaresFromUnsupportedAirlines(flight))
-      .map((flight) => convertCashToMilesForCashOnlyScrapers(flight))
+      .map((flight) => convertCashToMilesForCashOnlyScrapers(flight, cashToPointsRate))
       .map((flight) => reduceToBestFarePerCabin(flight))
       .map((flight) => calculateAmenities(flight))
       .map((flight) => calculateSaverAwards(flight))
@@ -149,12 +150,12 @@ const removeCashFaresFromUnsupportedAirlines = (flight: FlightWithFares): Flight
   })
 })
 
-const convertCashToMilesForCashOnlyScrapers = (flight: FlightWithFares) => ({
+const convertCashToMilesForCashOnlyScrapers = (flight: FlightWithFares, cashToPointsRate: number) => ({
   ...flight,
   fares: flight.fares.map((fare) => {
     if (!scraperConfig.scrapers.find((scraper) => scraper.name === fare.scraper)?.cashOnlyFares)
       return fare
-    return { ...fare, miles: (fare.cash * 100) / 1.5, cash: 0 }
+    return { ...fare, miles: (fare.cash * 100) / cashToPointsRate, cash: 0 }
   })
 })
 

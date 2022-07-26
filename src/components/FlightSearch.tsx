@@ -1,7 +1,7 @@
 import * as React from "react"
 import moment_ from "moment"
 import { LeftOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
-import { Alert, Button, DatePicker, Form } from "antd"
+import { Alert, Button, DatePicker, Form, Input } from "antd"
 import { SearchResults } from "./SearchResults"
 import { SelectAirport } from "./SelectAirport"
 import { useAwardSearch } from "../hooks/useAwardSearch"
@@ -41,6 +41,7 @@ export const FlightSearch = () => {
         <Form.Item name="departureDate" style={{ marginRight: 5 }}><DatePicker disabledDate={(current) => current.isBefore(moment().subtract(1, "day"))} allowClear={false} /></Form.Item>
         <Button icon={<LeftOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => { form.setFieldsValue({ departureDate: moment(form.getFieldValue("departureDate")).subtract("1", "day") }) }} />
         <Button icon={<RightOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => { form.setFieldsValue({ departureDate: moment(form.getFieldValue("departureDate")).add("1", "day") }) }} />
+        <Form.Item name="cashToPointsRate" style={{ width: 275, marginBottom: 0 }} rules = {[{ type: "number" }]}><Input addonBefore="Chase Ultimate Rewards Rate" defaultValue={1.5} /> </Form.Item>
         <Form.Item wrapperCol={{ offset: 2, span: 3 }} style={{ marginLeft: 10 }}><Button type="primary" htmlType="submit" icon={<SearchOutlined />} loading={searchProgress.loadingQueriesKeys.length > 0}>Search</Button></Form.Item>
       </Form>
 
