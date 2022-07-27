@@ -80,6 +80,7 @@
       "cashOnlyFares": true
     },
     {
+      "disabled": true,
       "name": "southwest",
       "supportedAirlines": ["WN"],
       "nativeAirline": "WN"
