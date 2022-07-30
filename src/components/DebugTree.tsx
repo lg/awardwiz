@@ -1,7 +1,7 @@
 import { Alert, Tree } from "antd"
 import React, { ReactNode, useEffect } from "react"
 import Text from "antd/lib/typography/Text"
-import { LoadingOutlined } from "@ant-design/icons"
+import { LoadingOutlined, StopOutlined } from "@ant-design/icons"
 
 export type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactNode, isLoading: boolean, text: ReactNode, error: Error | undefined }
 export type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: ReactNode, children: DebugTreeNodeComputed[] }
@@ -29,19 +29,19 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
     if (node.isLoading && meta?.endTime)
       setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, startTime: Date.now(), endTime: 0 } }))
 
-    let title = <>{node.text}</>
-    if (node.error) {
+    let title = <span style={{ color: node.error ? "red" : undefined }}>{node.text}</span>
+    if (node.error && node.error.message !== "stopped") {
       title = <>{title} <Alert showIcon message={node.error.message} type="error" /></>
-    } else if (meta?.startTime && meta.endTime) {
+    } else if (meta?.startTime && meta.endTime && !node.error) {
       title = <>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></>
     }
 
-    return {
-      key: node.key,
-      title,
-      icon: node.isLoading ? <LoadingOutlined /> : node.stableIcon,
-      children: debugTree.filter((checkNode) => checkNode.parentKey === node.key).map((childNode) => computeNode(childNode))
-    }
+    let icon = node.isLoading ? <LoadingOutlined /> : node.stableIcon
+    if (node.error)
+      icon = <StopOutlined style={{ color: "red" }} />
+
+    const children = debugTree.filter((checkNode) => checkNode.parentKey === node.key).map((childNode) => computeNode(childNode))
+    return { key: node.key, title, icon, children }
   }
 
   const rootNode = debugTree.find((node) => node.key === rootKey)

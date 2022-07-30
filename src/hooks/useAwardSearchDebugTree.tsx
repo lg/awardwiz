@@ -23,24 +23,28 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
     error: undefined
   })
 
-  debugTree.push(...pairings.map((pairing) => ({
-    key: `${pairing.origin}${pairing.destination}`,
-    parentKey: debugTreeRootKey,
-    text: <>{pairing.origin} → {pairing.destination}</>,
-    stableIcon: <NodeIndexOutlined />,
-    isLoading: loadingQueriesKeys.some((item) => item === `servingCarriers-${pairing.origin}-${pairing.destination}`),
-    error: errors.find((item) => item.queryKey === `servingCarriers-${pairing.origin}-${pairing.destination}`)?.error
-  })))
+  debugTree.push(...pairings.map((pairing): DebugTreeNode => {
+    const queryKey = `servingCarriers-${pairing.origin}-${pairing.destination}`
+    return {
+      key: `${pairing.origin}${pairing.destination}`,
+      parentKey: debugTreeRootKey,
+      text: <>{pairing.origin} → {pairing.destination}</>,
+      stableIcon: <NodeIndexOutlined />,
+      isLoading: loadingQueriesKeys.includes(queryKey),
+      error: errors.find((query) => query.queryKey === queryKey)?.error
+    }
+  }))
 
-  debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]) => {
+  debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]): DebugTreeNode => {
+    const queryKey = `awardAvailability-${key}-${scraperForRoute.departureDate}`
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperForRoute.scraper)?.cashOnlyFares
     return {
       key,
       parentKey: `${scraperForRoute.origin}${scraperForRoute.destination}`,
       text: <><Text code>{scraperForRoute.scraper}</Text>: {isCashOnlyScraper ? "Cash-to-points fares" : scraperForRoute.matchedAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}</>,
       stableIcon: <CarbonPaintBrush />,
-      isLoading: loadingQueriesKeys.some((item) => item === `awardAvailability-${key}-${scraperForRoute.departureDate}`),
-      error: errors.find((item) => item.queryKey === `awardAvailability-${key}-${scraperForRoute.departureDate}`)?.error
+      isLoading: loadingQueriesKeys.includes(queryKey),
+      error: errors.find((query) => query.queryKey === queryKey)?.error
     }
   }))
 

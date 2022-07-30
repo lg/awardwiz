@@ -6,6 +6,7 @@ import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueriesWithKeys } from "../helpers/common"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
+import { useQueryClient } from "react-query"
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
@@ -21,17 +22,24 @@ export type AwardSearchProgress = {
   scrapersForRoutes: ScrapersForRoutes,
   loadingQueriesKeys: string[],
   errors: { queryKey: string, error: Error }[]
+  stop: () => void
 }
 
 export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress => {
+  const [stoppedQueries, setStoppedQueries] = React.useState<string[]>([])
+
   // Take all origins and destinations and create a list of all possible pairs: [{origin, destination, departureDate}, ...]
-  const pairings = searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
+  const pairings = React.useMemo(() => {
+    setStoppedQueries([])
+    return searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
+  }, [searchQuery])
 
   // Returns the airlines flying a route as: [{origin, destination, airlineCode, airlineName}, ...]
   const { queries: servingCarriersQueries, data: servingCarriers } = useQueriesWithKeys<ServingCarrier[]>(pairings.map((pairing) => ({
     queryKey: `servingCarriers-${pairing.origin}-${pairing.destination}`,
     queryFn: fetchServingCarriers,
-    meta: pairing
+    meta: pairing,
+    enabled: !stoppedQueries.includes(`servingCarriers-${pairing.origin}-${pairing.destination}`)
   })))
 
   // Group the above by "scraper-orig-dest" -> {matchedAirlines[], origin, destination, scraper, departureDate}
@@ -56,6 +64,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     retry: 1,
     queryFn: fetchAwardAvailability,
     meta: scraperQuery,
+    enabled: !stoppedQueries.includes(`awardAvailability-${key}-${scraperQuery.departureDate}`)
   })))
 
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
@@ -70,9 +79,16 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   }, [scraperResults])
 
   const loadingQueriesKeys = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string)
-  const errors = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error).map((item) => ({ queryKey: item.queryKey as string, error: item.error as Error }))
+  const errorsQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error || stoppedQueries.includes(item.queryKey))
+  const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey as string, error: query.error as Error ?? Error("stopped") }))
 
-  return { searchResults: flights, pairings, servingCarriers, scrapersForRoutes, loadingQueriesKeys, errors }
+  const queryClient = useQueryClient()
+  const stop = async () => {
+    setStoppedQueries([...loadingQueriesKeys])
+    loadingQueriesKeys.forEach((queryKey) => queryClient.cancelQueries(queryKey))
+  }
+
+  return { searchResults: flights, pairings, servingCarriers, scrapersForRoutes, loadingQueriesKeys, errors, stop }
 }
 
 //////////////////////
