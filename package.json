@@ -12,7 +12,7 @@
     "depcheck": "depcheck --ignores @iconify/json,~icons",
     "schemas": "npx json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "husky install",
-    "pre-commit": ""
+    "pre-commit": ".husky/pre-commit"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"

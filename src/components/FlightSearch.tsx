@@ -31,7 +31,7 @@ export const FlightSearch = () => {
   }, [searchQuery])
 
   const isSearching = searchProgress.loadingQueriesKeys.length > 0
-  const onSearchClick = async (values: {origins: string[], destinations: string[], departureDate: Moment}) => {
+  const onSearchClick = async (values: { origins: string[], destinations: string[], departureDate: Moment }) => {
     if (isSearching)
       return searchProgress.stop()
     return setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") })

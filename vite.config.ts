@@ -35,7 +35,7 @@ export default defineConfig({
     coverage: {
       reporter: ["lcovonly"],
       enabled: true,
-      clean: true,
+      clean: true
     }
-  },
+  }
 })

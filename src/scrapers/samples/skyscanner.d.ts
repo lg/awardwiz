@@ -443,13 +443,9 @@ export interface Pixels2 {
 
 export interface PositionToImpressionId {}
 
-export interface CreativePositionToImpressionId {
-  [key: string]: string
-}
+export type CreativePositionToImpressionId = Record<string, string>
 
-export interface Itineraries2 {
-  [key: string]: ItineraryEco
-}
+export type Itineraries2 = Record<string, ItineraryEco>
 
 export interface ItineraryEco {
   id: string

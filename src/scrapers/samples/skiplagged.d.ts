@@ -8,21 +8,13 @@ export interface SkipLaggedResponse {
   duration: number
 }
 
-export interface Airlines {
-  [key: string]: { name: string }
-}
+export type Airlines = Record<string, { name: string }>
 
-export interface Cities {
-  [key: string]: { name: string }
-}
+export type Cities = Record<string, { name: string }>
 
-export interface Airports {
-  [key: string]: { name: string }
-}
+export type Airports = Record<string, { name: string }>
 
-export interface Flights {
-  [key: string]: Flight
-}
+export type Flights = Record<string, Flight>
 
 export interface Flight {
   segments: Segment[]

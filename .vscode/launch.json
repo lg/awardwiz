@@ -15,15 +15,11 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Scraper",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/src/scrapers/debug.ts",
       "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
-      ],
-      "internalConsoleOptions": "openOnSessionStart",
+      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "internalConsoleOptions": "openOnSessionStart"
     },
     {
       "type": "node",

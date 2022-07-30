@@ -38,7 +38,8 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         </>
       )
     },
-    { title: "Amenities",
+    {
+      title: "Amenities",
       render: (_text: string, flight) => (
         <>
           <Tooltip title={flight.aircraft ?? "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>

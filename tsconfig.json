@@ -18,13 +18,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": [
-      "unplugin-icons/types/react",
-      "vitest/globals"
-    ]
+    "types": ["unplugin-icons/types/react", "vitest/globals"]
   },
   "include": ["src", "vite.config.ts"],
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"]
 }

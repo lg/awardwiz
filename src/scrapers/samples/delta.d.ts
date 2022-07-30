@@ -1677,9 +1677,7 @@ export interface Userdata {
   layover: string[]
 }
 
-export interface LayoverAirports {
-  [key: string]: string
-}
+export type LayoverAirports = Record<string, string>
 
 export interface Requestparam {
   campaignId: string

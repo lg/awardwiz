@@ -8,7 +8,7 @@ import CarbonLogout from "~icons/carbon/logout"
 export const supabase = new SupabaseClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 export const LoginScreen = ({ children }: { children: JSX.Element }) => {
-  const [message, setMessage] = React.useState<{type: AlertProps["type"], text: string}>({ type: undefined, text: "" })
+  const [message, setMessage] = React.useState<{ type: AlertProps["type"], text: string }>({ type: undefined, text: "" })
   const [supabaseSession, setSupabaseSession] = React.useState(supabase.auth.session())
 
   React.useEffect(() => {
@@ -76,7 +76,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
             />
           </GoogleOAuthProvider>
         </Row>
-        { message.type !== undefined && (
+        {message.type !== undefined && (
           <Row justify="center">
             <Alert style={{ marginTop: 10 }} message={message.text} type={message.type} showIcon />
           </Row>
