@@ -37,12 +37,12 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
           scraper: "skiplagged",
           bookingClass: undefined
         }))
-        .reduce((acc, fare) => {
+        .reduce<FlightFare[]>((acc, fare) => {
           const existing = acc.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
             return acc
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
-        }, [] as FlightFare[])
+        }, [])
     } as FlightWithFares
 
   }).filter((flight): flight is FlightWithFares => !!flight)

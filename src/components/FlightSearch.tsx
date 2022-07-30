@@ -16,7 +16,7 @@ export const FlightSearch = () => {
 
   const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: moment().add("1", "day").format("YYYY-MM-DD") }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => {
-    const receivedDate = JSON.parse(localStorage.getItem("searchQuery") || JSON.stringify(defaultSearchQuery))
+    const receivedDate = JSON.parse(localStorage.getItem("searchQuery") ?? JSON.stringify(defaultSearchQuery))
     if (moment(receivedDate.departureDate).isBefore(moment()))
       receivedDate.departureDate = defaultSearchQuery.departureDate
     return receivedDate

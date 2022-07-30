@@ -4,7 +4,7 @@ const flexOnTop: React.CSSProperties = { position: "fixed", zIndex: 999999, disp
 
 export const ScratchPad = () => {
   const [visible, setVisible] = React.useState(false)
-  const [scratchPad, setScratchPad] = React.useState(localStorage.getItem("scratchpad") || "")
+  const [scratchPad, setScratchPad] = React.useState(localStorage.getItem("scratchpad") ?? "")
   React.useEffect(() => {
     localStorage.setItem("scratchpad", scratchPad)
   }, [scratchPad])

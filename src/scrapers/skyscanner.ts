@@ -41,13 +41,13 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
   let latestFlights: FlightWithFares[] = []
   let receivedCaptcha = false
   page.on("response", async (response: HTTPResponse) => {
-    if (response && response.url().startsWith("https://www.skyscanner.com/sttc/px/captcha-v2/index.html")) {
+    if (response.url().startsWith("https://www.skyscanner.com/sttc/px/captcha-v2/index.html")) {
       if (!receivedCaptcha)
         console.log(`received captcha on ${cabin} cabin`)
       receivedCaptcha = true
     }
 
-    if (response && response.url().startsWith("https://www.skyscanner.com/g/conductor/v1/fps3/search")) {
+    if (response.url().startsWith("https://www.skyscanner.com/g/conductor/v1/fps3/search")) {
       const json: SkyScannerResponse = await response.json()
       latestFlights = standardizeFlights(json, cabin)
       console.log(`updated flights: ${latestFlights.length} (cabin: ${cabin})`)
@@ -61,7 +61,7 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
   await Promise.race([req, timeout])    // note there's a catch() for all puppeteer requests, incl the page.goto
   await page.close()
 
-  if (receivedCaptcha && latestFlights.length === 0)
+  if ((receivedCaptcha as boolean) && latestFlights.length === 0)
     throw new Error(`Captcha prevented results for ${cabin} cabin`)
 
   return latestFlights
@@ -89,7 +89,7 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
       return undefined
 
     const airlineCode = json.carriers.find((checkCarrier) => checkCarrier.id === segment.marketing_carrier_id)?.display_code
-    const fareFamily = itinerary.pricing_options[0].items[0].fares[0].fare_family || ""
+    const fareFamily = itinerary.pricing_options[0].items[0].fares[0].fare_family ?? ""
 
     let actualCabin = cabin
     if (cabin === "first") {
@@ -128,12 +128,12 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
           scraper: "skyscanner",
           bookingClass: pricingOption.items[0].fares[0].booking_code
         }))
-        .reduce((acc, fare) => {
+        .reduce<FlightFare[]>((acc, fare) => {
           const existing = acc.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
             return acc
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
-        }, [] as FlightFare[])
+        }, [])
     } as FlightWithFares
 
   }).filter((flight): flight is FlightWithFares => !!flight)

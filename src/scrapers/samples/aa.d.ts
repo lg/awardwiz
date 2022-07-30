@@ -263,7 +263,7 @@ export interface PricingDetail {
   perPassengerAwardPoints: number
   tripType: string
   allPassengerTaxesAndFees?: AllPassengerTaxesAndFees2
-  extendedFareCode: string
+  extendedFareCode?: string
   perPassengerTaxesAndFees: PerPassengerTaxesAndFees2
   productBenefits: string
   productType: string

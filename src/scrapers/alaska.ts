@@ -25,9 +25,9 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   await page.setContent(htmlResponse)
   const res = await page.$$eval(".optionList > li", (elements: Element[]) => {
-    // @ts-ignore
+    // @ts-expect-error
     const queryEl = (rootEl: Element | Document, selector: string, getAttrib: string): string | undefined => rootEl.querySelector(selector)?.[getAttrib]
-    const queryElMatch = (rootEl: Element | Document, selector: string, getAttrib: string, match: RegExp): RegExpMatchArray | undefined => queryEl(rootEl, selector, getAttrib)?.match(match) || undefined
+    const queryElMatch = (rootEl: Element | Document, selector: string, getAttrib: string, match: RegExp): RegExpMatchArray | undefined => queryEl(rootEl, selector, getAttrib)?.match(match) ?? undefined
     const zeroPad = (num: string | number) => (num.toString().length === 1 ? `0${num}` : num)
     const time12to24 = (time: string) => { const d = new Date(`1/1/2020 ${time}`); return `${zeroPad(d.getHours())}:${zeroPad(d.getMinutes())}` }
     const addToDate = (date: string, days: number) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().split("T")[0] }
@@ -77,7 +77,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
             scraper: "alaska"
           }
           return flightFare
-        }).filter((fare) => fare)
+        })
       }
       return flight
     }).filter((flight) => flight)

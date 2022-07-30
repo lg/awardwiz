@@ -1,5 +1,5 @@
 export interface UnitedResponse {
-  data: Data
+  data?: Data
   Error: any
 }
 

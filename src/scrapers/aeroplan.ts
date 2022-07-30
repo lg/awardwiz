@@ -17,7 +17,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   const raw = await response.json() as AeroplanResponse
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.data && raw.data.airBoundGroups !== null && raw.data.airBoundGroups.length > 0) {
+  if (raw.data?.airBoundGroups && raw.data.airBoundGroups.length > 0) {
     const flights = standardizeResults(raw, context.origin, context.destination)
     flightsWithFares.push(...flights)
   }
@@ -27,7 +27,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
 
 const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDestination: string) => {
   const results: FlightWithFares[] = []
-  raw.data.airBoundGroups.forEach((group) => {
+  raw.data?.airBoundGroups.forEach((group) => {
     const { flightId } = group.boundDetails.segments[0]
     const flightLookup = raw.dictionaries.flight[flightId as keyof typeof raw.dictionaries.flight]
 
@@ -58,7 +58,7 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
       throw new Error(`Unknown aircraft type: ${flightLookup.aircraftCode}`)
 
     group.airBounds.forEach((fare) => {
-      const cabinShortToCabin: {[x: string]: string} = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
+      const cabinShortToCabin: Record<string, string> = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
       let cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
       if (!cabin)
         throw new Error(`Unknown cabin type: ${fare.availabilityDetails[0].cabin}`)

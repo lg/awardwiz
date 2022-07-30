@@ -1,8 +1,12 @@
 export interface SouthwestResponse {
   data: Data
   success: boolean
-  notifications: any
+  notifications: Notifications
   uiMetadata: UiMetadata
+}
+
+export interface Notifications {
+  formErrors?: { code: string }[]
 }
 
 export interface Data {

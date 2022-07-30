@@ -4,7 +4,7 @@ env:
 extends:
   - airbnb
   - plugin:import/typescript
-  - plugin:@typescript-eslint/recommended
+  - plugin:@typescript-eslint/strict
   - plugin:react/recommended
   - plugin:promise/recommended
   - plugin:react-hooks/recommended
@@ -14,6 +14,7 @@ parserOptions:
     jsx: true
   ecmaVersion: latest
   sourceType: module
+  project: ["./tsconfig.json"]
 plugins:
   - react
   - '@typescript-eslint'
@@ -80,3 +81,5 @@ rules:
   "@typescript-eslint/no-explicit-any": off
   quote-props: off
   no-restricted-syntax: off
+  "@typescript-eslint/consistent-type-definitions": off
+  "@typescript-eslint/prefer-string-starts-ends-with": off

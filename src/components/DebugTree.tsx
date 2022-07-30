@@ -7,14 +7,14 @@ export type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactN
 export type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: ReactNode, children: DebugTreeNodeComputed[] }
 
 const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
-  if (item.children)
+  if (item.children.length > 0)
     collectedKeys.push(item.key)
   item.children.forEach((child) => allKeys(child as {key: string, children: unknown[]}, collectedKeys))
   return collectedKeys
 }
 
 export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], rootKey: string }) => {
-  const [nodeMeta, setNodeMeta] = React.useState<{[ key: string ]: { startTime: number, endTime: number } | undefined}>({})
+  const [nodeMeta, setNodeMeta] = React.useState<Record<string, { startTime: number, endTime: number } | undefined>>({})
   useEffect(() => setNodeMeta({}), [rootKey])   // reset metadata of keys when root key changes to avoid showing stale data
 
   const defaultNodeMeta = { startTime: 0, endTime: 0 }

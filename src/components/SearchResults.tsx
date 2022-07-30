@@ -16,8 +16,8 @@ const triState = (condition: boolean | undefined, trueVal: string, falseVal: str
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
-    const faresForClass = fares?.filter((fare) => fare.cabin === cabin)
-    if (!faresForClass || faresForClass.length === 0)
+    const faresForClass = fares.filter((fare) => fare.cabin === cabin)
+    if (faresForClass.length === 0)
       return null
     return faresForClass.reduce((smallest, cur) => (cur.miles < smallest.miles ? cur : smallest))
   }
@@ -41,14 +41,14 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     { title: "Amenities",
       render: (_text: string, flight) => (
         <>
-          <Tooltip title={flight.aircraft || "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>
+          <Tooltip title={flight.aircraft ?? "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>
             <MdiAirplane style={{ verticalAlign: "middle", color: flight.aircraft ? "#000000" : "#dddddd" }} />
           </Tooltip>
-          <Tooltip title={triState(flight.amenities?.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
-            <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities?.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />
+          <Tooltip title={triState(flight.amenities.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+            <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />
           </Tooltip>
-          <Tooltip title={triState(flight.amenities?.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
-            <MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(flight.amenities?.hasPods, "#000000", "#dddddd", "#ffffff") }} />
+          <Tooltip title={triState(flight.amenities.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+            <MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(flight.amenities.hasPods, "#000000", "#dddddd", "#ffffff") }} />
           </Tooltip>
         </>
       )
@@ -80,7 +80,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       dataIndex: "destination",
       sorter: (recordA, recordB) => recordA.destination.localeCompare(recordB.destination),
     },
-    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col?.key))).map((column): ColumnType<FlightWithFares> => ({
+    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col.key))).map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
       render: (_text: string, record) => {
@@ -89,12 +89,12 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
           return ""
 
         const milesStr = Math.round(smallestFare.miles).toLocaleString()
-        const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash ?? "", maximumFractionDigits: 0 })
+        const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash, maximumFractionDigits: 0 })
 
         const tooltipContent = record.fares
           .filter((fare) => fare.cabin === column.key)
           .sort((a, b) => a.miles - b.miles)
-          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass || "?"})` : ` (${fare.bookingClass || "?"})`}</div>)
+          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass ?? "?"})` : ` (${fare.bookingClass ?? "?"})`}</div>)
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
         return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>

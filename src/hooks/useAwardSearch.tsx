@@ -14,7 +14,7 @@ const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 export type QueryPairing = ExpandRecursively<{origin: string, destination: string, departureDate: string}>
 export type ServingCarrier = ExpandRecursively<{ origin: string, destination: string, airlineCode: string, airlineName: string }>
 type ScraperForRoute = ExpandRecursively<{ origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }>
-export type ScrapersForRoutes = ExpandRecursively<{[scraperOrigDestKey: string]: ScraperForRoute}>
+export type ScrapersForRoutes = ExpandRecursively<Record<string, ScraperForRoute>>
 export type AwardSearchProgress = {
   searchResults: FlightWithFares[],
   pairings: QueryPairing[],
@@ -44,7 +44,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Group the above by "scraper-orig-dest" -> {matchedAirlines[], origin, destination, scraper, departureDate}
   const scrapersForRoutes = React.useMemo(() => {
-    return servingCarriers.reduce((result, curCarrier) => {
+    return servingCarriers.reduce<ScrapersForRoutes>((result, curCarrier) => {
       const compatibleScrapers = scraperConfig.scrapers.filter((checkScraper) => doesScraperSupportAirlineInclCashOnly(checkScraper, curCarrier.airlineCode))
       compatibleScrapers.forEach((scraper) => {
         const key = `${scraper.name}-${curCarrier.origin}-${curCarrier.destination}`
@@ -53,7 +53,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
           result[key].matchedAirlines.push(curCarrier.airlineCode)
       })
       return result
-    }, {} as ScrapersForRoutes)
+    }, {})
   }, [servingCarriers, searchQuery])
 
   // Returns the scraper results from all scrapers: [{ flightNo, origin, amenities, ... }]
@@ -80,7 +80,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   const loadingQueriesKeys = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string)
   const errorsQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error || stoppedQueries.includes(item.queryKey))
-  const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey as string, error: query.error as Error ?? Error("stopped") }))
+  const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? Error("stopped") }))
 
   const queryClient = useQueryClient()
   const stop = async () => {
@@ -94,27 +94,27 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 //////////////////////
 
 const reduceToBestFarePerCabin = (flight: FlightWithFares): FlightWithFares => {
-  const scraperFares: { [scraperAndCabin: string]: FlightFare } = {}
+  const scraperFares: Record<string, FlightFare | undefined> = {}
   flight.fares.forEach((fare) => {
-    if (!scraperFares[`${fare.scraper}${fare.cabin}`] || fare.miles < scraperFares[`${fare.scraper}${fare.cabin}`].miles)
+    if (!scraperFares[`${fare.scraper}${fare.cabin}`] || fare.miles < scraperFares[`${fare.scraper}${fare.cabin}`]!.miles)
       scraperFares[`${fare.scraper}${fare.cabin}`] = fare
   })
 
-  return { ...flight, fares: Object.values(scraperFares) }
+  return { ...flight, fares: Object.values(scraperFares) as FlightFare[] }
 }
 
 const fetchServingCarriers = async ({ signal, meta }: ReactQuery.QueryFunctionContext) => {
   const pairing = meta as QueryPairing
   const dataHtml = (await axios.post<string>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`, { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${pairing.origin}&destination=${pairing.destination}` }, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
-  const data: FlightRadar24Response = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent || "")
+  const data: FlightRadar24Response = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent ?? "")
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
-  if (!data.result.response.flight.data)
+  if (!data.result?.response.flight.data)
     return []
 
   const carriers = data.result.response.flight.data
-    .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name } as ServingCarrier))
+    .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline.code.iata, airlineName: item.airline.name } as ServingCarrier))
     .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
     .filter((item) => item.airlineCode && item.airlineName)   // remove flights without sufficient data (usually private flights)
     .filter((item) => !scraperConfig.excludeAirlines?.includes(item.airlineCode!))
@@ -126,7 +126,7 @@ export const doesScraperSupportAirlineInclCashOnly = (scraper: Scraper, airlineC
     return false
   const supported = (scraper.supportedAirlines as string[])  // initial list in scraper config
     .concat(scraper.cashOnlyFares! ? [airlineCode] : [])   // cash-only scrapers run for all airlines
-    .flatMap((code) => scraperConfig.airlineGroups?.[code as keyof ScrapersConfig["airlineGroups"]] || code)  // expand groups
+    .flatMap((code) => scraperConfig.airlineGroups?.[code as keyof ScrapersConfig["airlineGroups"]] ?? code)  // expand groups
   return supported.includes(airlineCode)
 }
 
@@ -137,7 +137,7 @@ export const doesScraperSupportAirlineExclCashOnly = (scraper: Scraper, airlineC
 const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.QueryFunctionContext) => {
   const scraperQuery = meta as ScraperForRoute
   const scraperPath = (name: string) => {
-    const localPath = Object.keys(scraperCode).find((scraperKey) => scraperKey.indexOf(`${name}.ts`) > -1)
+    const localPath = Object.keys(scraperCode).find((scraperKey) => scraperKey.includes(`${name}.ts`))
     if (!localPath) throw new Error(`Could not find scraper ${name}`)
     return localPath
   }
@@ -194,7 +194,7 @@ const mergeFlightsByFlightNo = (scraperResults: FlightWithFares[]) => {
     if (existingFlight) {
       for (const key in scraperResult) {
         if (existingFlight[key as keyof FlightWithFares] === undefined) {
-          // @ts-ignore
+          // @ts-expect-error
           existingFlight[key] = scraperResult[key]
         }
       }
@@ -216,8 +216,8 @@ const mergeFlightsByFlightNo = (scraperResults: FlightWithFares[]) => {
 
 const calculateAmenities = (flight: FlightWithFares) => {
   const amenities = scraperConfig.airlineAmenities?.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
-  const hasPods = amenities?.podsAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
-  const hasWifi = amenities?.wifiAircraft?.some((checkStr) => ((flight.aircraft || "").indexOf(checkStr) > -1 || checkStr === "*"))
+  const hasPods = amenities?.podsAircraft?.some((checkStr) => ((flight.aircraft ?? "").includes(checkStr) || checkStr === "*"))
+  const hasWifi = amenities?.wifiAircraft?.some((checkStr) => ((flight.aircraft ?? "").includes(checkStr) || checkStr === "*"))
   return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods, hasWiFi: flight.amenities.hasWiFi ?? hasWifi } }
 }
 

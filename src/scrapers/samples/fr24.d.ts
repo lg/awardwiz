@@ -1,6 +1,6 @@
 export interface FlightRadar24Response {
-  result: Result
-  errors: Errors
+  result?: Result
+  errors?: Errors
   _api: Api
 }
 

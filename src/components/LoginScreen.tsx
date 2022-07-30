@@ -18,7 +18,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
 
   const sessionEmail = supabaseSession?.user?.email
   React.useEffect(() => {
-    console.log(`Current user logged in: ${sessionEmail || "(not logged in)"}`)
+    console.log(`Current user logged in: ${sessionEmail ?? "(not logged in)"}`)
   }, [sessionEmail])
 
   const onGoogleCredential = async (credentialResponse: CredentialResponse) => {
@@ -29,7 +29,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
     if (error) { setMessage({ type: "error", text: error.message }); return }
     if (!data?.user?.email) { setMessage({ type: "error", text: "Could not get email address from auth provider" }); return }
 
-    // @ts-ignore (needed because of the nonce hack in signInWithOpenIDConnect above)
+    // @ts-expect-error (needed because of the nonce hack in signInWithOpenIDConnect above)
     // eslint-disable-next-line no-underscore-dangle
     supabase.auth._saveSession(data); supabase.auth._notifyAllSubscribers("SIGNED_IN")
   }
@@ -45,8 +45,8 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
     return (
       <>
         <Dropdown overlay={avatarMenu} trigger={["click"]}>
-          <Avatar src={supabaseSession.user?.user_metadata?.picture} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>
-            {`${supabaseSession.user?.user_metadata?.given_name?.toString()[0]}${supabaseSession.user?.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
+          <Avatar src={supabaseSession.user?.user_metadata.picture} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>
+            {`${supabaseSession.user?.user_metadata.given_name?.toString()[0]}${supabaseSession.user?.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
           </Avatar>
         </Dropdown>
         {children}

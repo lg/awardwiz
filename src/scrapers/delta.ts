@@ -41,7 +41,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   const raw = await response.json() as DeltaResponse
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.itinerary && raw.itinerary.length > 0) {
+  if (raw.itinerary.length > 0) {
     const flights = standardizeResults(raw)
     flightsWithFares.push(...flights)
   }
@@ -63,22 +63,22 @@ const standardizeResults = (raw: DeltaResponse) => {
       duration: trip.flightSegment[0].totalAirTime.day * 24 * 60 + trip.flightSegment[0].totalAirTime.hour * 60 + trip.flightSegment[0].totalAirTime.minute,
       aircraft: trip.flightSegment[0].flightLeg[0].aircraft.fleetName,
       fares: trip.viewSeatUrls[0].fareOffer.itineraryOfferList
-        .filter((offer) => offer && offer.soldOut === false && offer.offered === true)
+        .filter((offer) => !offer.soldOut && offer.offered)
         .map((offer) => ({
-          cash: offer.totalPrice?.currency?.amount || -1,
-          currencyOfCash: offer.totalPrice?.currency?.code || "USD",
-          miles: offer.totalPrice?.miles?.miles || 0,
+          cash: offer.totalPrice?.currency?.amount ?? -1,
+          currencyOfCash: offer.totalPrice?.currency?.code ?? "USD",
+          miles: offer.totalPrice?.miles?.miles ?? 0,
           cabin: offer.brandInfoByFlightLegs[0].cos[0] === "O" ? "business" : "economy",
           scraper: "delta",
           bookingClass: offer.brandInfoByFlightLegs[0].cos
         }))
-        .filter((fare) => fare.cash !== undefined && fare.cash !== -1 && fare.miles !== 0)
-        .reduce((acc, fare) => {
+        .filter((fare) => fare.cash !== -1 && fare.miles !== 0)
+        .reduce<FlightFare[]>((acc, fare) => {
           const existing = acc.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
             return acc
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
-        }, [] as FlightFare[]),
+        }, []),
       amenities: {
         hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
         hasWiFi: trip.summarizedProducts.some((product) => product.productIconId === "wif") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),

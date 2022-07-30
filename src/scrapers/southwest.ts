@@ -7,7 +7,7 @@ import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers
 import { equipmentTypeLookup, processScraperFlowRules, sleep } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
-type SouthwestErrorTypes = { code: number, notifications: { formErrors: { code: string }[] } }
+type SouthwestErrorTypes = { code: number, notifications?: { formErrors?: { code: string }[] } }
 
 export type ScraperFlowRule = {
   find: string
@@ -49,7 +49,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   } while ((raw as unknown as SouthwestErrorTypes).code === 403050700)
 
   const { notifications } = (raw as unknown as SouthwestErrorTypes)
-  if (notifications && notifications.formErrors && notifications.formErrors[0] && notifications.formErrors[0].code === "ERROR__NO_ROUTES_EXIST")
+  if (notifications?.formErrors?.[0]?.code === "ERROR__NO_ROUTES_EXIST")
     return { data: { flightsWithFares: [] } }
 
   const rawResults = raw.data.searchResults.airProducts[0].details
@@ -72,7 +72,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
         hasWiFi: result.segments[0].wifiOnBoard,
       }
     }
-    const bestFare: FlightFare | undefined = Object.values(result.fareProducts.ADULT).reduce((lowestFare: FlightFare | undefined, product) => {
+    const bestFare = Object.values(result.fareProducts.ADULT).reduce<FlightFare | undefined>((lowestFare: FlightFare | undefined, product) => {
       if (product.availabilityStatus !== "AVAILABLE")
         return lowestFare
       const fare: FlightFare = {
@@ -87,13 +87,13 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       if (!lowestFare || fare.miles < lowestFare.miles)
         return fare
       return lowestFare
-    }, undefined as FlightFare | undefined)
+    }, undefined)
 
     if (bestFare)
       flight.fares.push(bestFare)
 
     return bestFare ? flight : undefined
-  }).filter((flight: FlightWithFares | undefined) => flight !== undefined).map((x) => x as FlightWithFares)
+  }).filter((flight): flight is FlightWithFares => !!flight)
 
   return { data: { flightsWithFares: flights } }
 }

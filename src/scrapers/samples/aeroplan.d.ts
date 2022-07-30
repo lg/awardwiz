@@ -1,5 +1,5 @@
 export interface AeroplanResponse {
-  data: Data;
+  data?: Data;
   dictionaries: Dictionaries;
 }
 

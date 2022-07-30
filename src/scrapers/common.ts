@@ -27,11 +27,11 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     const matchAll = async () => {
       const startTime = Date.now()
 
-      while (true) {
+      while (Date.now() - startTime < 10000) {
         for (let i = 0; i < rules.length; i += 1) {
           if (skipIndexes.includes(i))
             continue
-          let element: ElementHandle<Element> | null = null
+          let element: ElementHandle | null = null
           try {
             element = await page.$(rules[i].find)
           } catch (e) {
@@ -43,9 +43,8 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
           return { index: i, element }
         }
         await sleep(100)
-        if (Date.now() - startTime > 10000)
-          return undefined
       }
+      return undefined
     }
     const match = await matchAll()
     if (!match)
@@ -55,11 +54,8 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     return { element: match.element!, rule: rules[match.index] }
   }
 
-  while (true) {
-    const matchedRule = await matchNextRule()
-    if (!matchedRule)
-      break
-
+  let matchedRule = await matchNextRule()
+  while (matchedRule) {
     console.log("matched rule", matchedRule.rule.find)
     //await sleep(400)
 
@@ -91,6 +87,8 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
     if (matchedRule.rule.fail)
       throw new Error(await matchedRule.element.evaluate((el: any) => el.innerText))
+
+    matchedRule = await matchNextRule()
   }
 
   return ""
@@ -105,7 +103,7 @@ export const pptrFetch = async (page: Page, url: string, init: RequestInit) => {
   }, url, init)
 }
 
-export const equipmentTypeLookup: {[equipmentType: string]: string} = {
+export const equipmentTypeLookup: Record<string, string> = {
   "717": "Boeing 717-200",
   "733": "Boeing 737-300",
   "735": "Boeing 737-500",

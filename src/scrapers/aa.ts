@@ -37,7 +37,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     throw new Error(json.error)
 
   const flightsWithFares: FlightWithFares[] = []
-  if (json.slices && json.slices.length > 0) {
+  if (json.slices.length > 0) {
     const flights = standardizeResults(json.slices, query)
     flightsWithFares.push(...flights)
   }
@@ -58,8 +58,8 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
       duration: slice.durationInMinutes,
       aircraft: leg.aircraft.name,
       amenities: {
-        hasPods: leg.amenities.some((a) => a.indexOf("lie-flat") > -1),
-        hasWiFi: leg.amenities.some((a) => a.indexOf("wifi") > -1)
+        hasPods: leg.amenities.some((a) => a.includes("lie-flat")),
+        hasWiFi: leg.amenities.some((a) => a.includes("wifi"))
       },
       fares: slice.pricingDetail
         .filter((product) => product.productAvailable)
@@ -71,7 +71,8 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
           scraper: "aa",
           bookingClass: product.extendedFareCode?.[0]
         }))
-        .reduce((acc, fare) => {
+        .reduce<FlightFare[]>((acc, fare) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (fare.cabin === undefined)
             throw new Error(`Unknown cabin type on ${segment.flight.carrierCode} ${segment.flight.flightNumber}`)
 
@@ -79,7 +80,7 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
           if (existing && existing.miles < fare.miles)
             return acc
           return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
-        }, [] as FlightFare[])
+        }, [])
     }
 
     if (slice.segments.length > 1)

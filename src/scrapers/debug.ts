@@ -8,6 +8,7 @@ type ScraperModule = typeof import("./alaska")
   const page = await browser.newPage()
 
   const scraperModule: ScraperModule = await import("./southwest")
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   const callMethod = scraperModule.scraper || scraperModule   // needed to keep data types in vscode resolving but at runtime scraperModule is actually called
   const results = await callMethod({ page, context: { origin: "OAK", destination: "HNL", departureDate: "2022-07-25" } })
 

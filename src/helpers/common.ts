@@ -17,7 +17,7 @@ const useArrayMemo = <T extends any[]>(array: T) => {
   const ref = React.useRef<T>(array) //////////////////// the guy had this empty, no array in there
 
   // check if each element of the old and new array match
-  const areArraysConsideredTheSame = (ref.current && array.length === ref.current.length) && array.every((element, i) => element === ref.current?.[i])
+  const areArraysConsideredTheSame = (array.length === ref.current.length) && array.every((element, i) => element === ref.current[i])
 
   React.useEffect(() => {
     // only update prev results if array is not deemed the same

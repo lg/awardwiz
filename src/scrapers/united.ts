@@ -7,8 +7,8 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
   const raw = await response.json() as UnitedResponse
 
   const flightsWithFares: FlightWithFares[] = []
-  if (raw.data.Trips !== null && raw.data.Trips.length > 0) {
-    const flights = standardizeResults(raw.data.Trips[0])
+  if ((raw.data?.Trips || []).length > 0) {
+    const flights = standardizeResults(raw.data!.Trips[0])
     flightsWithFares.push(...flights)
   }
 
@@ -50,7 +50,7 @@ const standardizeResults = (unitedTrip: Trip) => {
 
       const miles = product.Prices[0].Amount
       const cash = product.Prices.length >= 2 ? product.Prices[1].Amount : 0
-      const currencyOfCash = product.Prices.length >= 2 ? (product.Prices[1].Currency ?? "") : ""
+      const currencyOfCash = product.Prices.length >= 2 ? product.Prices[1].Currency : ""
       const bookingClass = product.BookingCode
 
       const cabin = { "United First": "business", "United Economy": "economy", "United Business": "business", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
