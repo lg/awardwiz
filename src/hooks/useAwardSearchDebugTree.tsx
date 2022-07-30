@@ -1,4 +1,5 @@
 import React from "react"
+import * as ReactQuery from "@tanstack/react-query"
 import { DebugTreeNode } from "../components/DebugTree"
 import Text from "antd/lib/typography/Text"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
@@ -24,34 +25,34 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
   })
 
   debugTree.push(...pairings.map((pairing): DebugTreeNode => {
-    const queryKey = `servingCarriers-${pairing.origin}-${pairing.destination}`
+    const queryKey: ReactQuery.QueryKey = [`servingCarriers-${pairing.origin}-${pairing.destination}`]
     return {
       key: `${pairing.origin}${pairing.destination}`,
       parentKey: debugTreeRootKey,
       text: <>{pairing.origin} → {pairing.destination}</>,
       stableIcon: <NodeIndexOutlined />,
-      isLoading: loadingQueriesKeys.includes(queryKey),
-      error: errors.find((query) => query.queryKey === queryKey)?.error
+      isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
+      error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error
     }
   }))
 
   debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]): DebugTreeNode => {
-    const queryKey = `awardAvailability-${key}-${scraperForRoute.departureDate}`
+    const queryKey: ReactQuery.QueryKey = [`awardAvailability-${key}-${scraperForRoute.departureDate}`]
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperForRoute.scraper)?.cashOnlyFares
     return {
       key,
       parentKey: `${scraperForRoute.origin}${scraperForRoute.destination}`,
       text: <><Text code>{scraperForRoute.scraper}</Text>: {isCashOnlyScraper ? "Cash-to-points fares" : scraperForRoute.matchedAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}</>,
       stableIcon: <CarbonPaintBrush />,
-      isLoading: loadingQueriesKeys.includes(queryKey),
-      error: errors.find((query) => query.queryKey === queryKey)?.error
+      isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
+      error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error
     }
   }))
 
   pairings.forEach((pairing) => {
     const airlinesForPairing = servingCarriers.filter((item) => item.origin === pairing.origin && item.destination === pairing.destination).map((item) => item.airlineCode)
     if (airlinesForPairing.length === 0) {
-      if (!loadingQueriesKeys.some((item) => item === `servingCarriers-${pairing.origin}-${pairing.destination}`)) {  // dont display if still loading pairings
+      if (!loadingQueriesKeys.some((item) => ReactQuery.hashQueryKey(item) === ReactQuery.hashQueryKey([`servingCarriers-${pairing.origin}-${pairing.destination}`]))) {  // dont display if still loading pairings
         debugTree.push({
           key: `${pairing.origin}${pairing.destination}-no-carriers`,
           parentKey: `${pairing.origin}${pairing.destination}`,

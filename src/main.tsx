@@ -1,12 +1,14 @@
 import React from "react"
 import ReactDOM from "react-dom/client"
-import * as ReactQuery from "react-query"
-import { ReactQueryDevtools } from "react-query/devtools"
-import { persistQueryClient } from "react-query/persistQueryClient-experimental"
-import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental"
+import * as ReactQuery from "@tanstack/react-query"
+
+import { persistQueryClient } from "@tanstack/react-query-persist-client"
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+
 import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
-import { QueryClientProvider } from "react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { LoginScreen } from "./components/LoginScreen"
 import { ScratchPad } from "./components/ScratchPad"
 
@@ -25,8 +27,8 @@ const queryClient = new ReactQuery.QueryClient({
 
 if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
   console.debug("Using persistent cache")
-  const localStoragePersistor = createWebStoragePersistor({ storage: window.localStorage })
-  persistQueryClient({ queryClient, persistor: localStoragePersistor })
+  const localStoragePersister = createSyncStoragePersister({ storage: window.localStorage })
+  persistQueryClient({ queryClient, persister: localStoragePersister })
 } else {
   console.debug("Not using persistent cache")
 }

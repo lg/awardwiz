@@ -2,7 +2,7 @@ import React, { ReactNode } from "react"
 import { describe, expect, it } from "vitest"
 import { render } from "@testing-library/react"
 import { FlightSearch } from "../components/FlightSearch"
-import { QueryClient, QueryClientProvider } from "react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 // @ts-expect-error required to render things
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

@@ -1,9 +1,9 @@
 import React from "react"
-import * as ReactQuery from "react-query"
+import * as ReactQuery from "@tanstack/react-query"
 
 // Calls ReactQuery's useQueries, but maps the keys to the requests since ReqctQuery doesnt have a way to identify the request
 export const useQueriesWithKeys = <T extends any[]>(queries: readonly [...ReactQuery.QueriesOptions<T>]) => {
-  const queriesWithKeys = ReactQuery.useQueries(queries).map((query, index) => ({ ...query, queryKey: queries[index].queryKey }))
+  const queriesWithKeys = ReactQuery.useQueries({ queries }).map((query, index) => ({ ...query, queryKey: queries[index].queryKey as ReactQuery.QueryKey }))
   const data = useArrayMemo(queriesWithKeys.map((query) => query.data).flat().filter((item): item is T => !!item)) as T
   const immutableData = React.useMemo(() => JSON.parse(JSON.stringify(data)), [data]) as T    // ensure changes dont go back into useQueries
 

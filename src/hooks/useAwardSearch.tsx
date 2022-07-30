@@ -1,4 +1,4 @@
-import * as ReactQuery from "react-query"
+import * as ReactQuery from "@tanstack/react-query"
 import axios from "axios"
 import { ExpandRecursively, FlightFare, FlightWithFares, ScraperQuery, ScraperResults, SearchQuery } from "../types/scrapers"
 import scrapersRaw from "../scrapers/config.json?raw"
@@ -6,12 +6,12 @@ import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueriesWithKeys } from "../helpers/common"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
-import { useQueryClient } from "react-query"
+import { useQueryClient } from "@tanstack/react-query"
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
 const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
-export type QueryPairing = ExpandRecursively<{origin: string, destination: string, departureDate: string}>
+export type QueryPairing = ExpandRecursively<{ origin: string, destination: string, departureDate: string }>
 export type ServingCarrier = ExpandRecursively<{ origin: string, destination: string, airlineCode: string, airlineName: string }>
 type ScraperForRoute = ExpandRecursively<{ origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }>
 export type ScrapersForRoutes = ExpandRecursively<Record<string, ScraperForRoute>>
@@ -20,26 +20,26 @@ export type AwardSearchProgress = {
   pairings: QueryPairing[],
   servingCarriers: ServingCarrier[],
   scrapersForRoutes: ScrapersForRoutes,
-  loadingQueriesKeys: string[],
-  errors: { queryKey: string, error: Error }[]
+  loadingQueriesKeys: ReactQuery.QueryKey[],
+  errors: { queryKey: ReactQuery.QueryKey, error: Error }[]
   stop: () => void
 }
 
 export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress => {
-  const [stoppedQueries, setStoppedQueries] = React.useState<string[]>([])
+  const [stoppedQueries, setStoppedQueries] = React.useState<ReactQuery.QueryKey[]>([])
 
   // Take all origins and destinations and create a list of all possible pairs: [{origin, destination, departureDate}, ...]
   const pairings = React.useMemo(() => {
     setStoppedQueries([])
-    return searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate }) as QueryPairing))
+    return searchQuery.origins.flatMap((origin) => searchQuery.destinations.map((destination) => ({ origin, destination, departureDate: searchQuery.departureDate } as QueryPairing)))
   }, [searchQuery])
 
   // Returns the airlines flying a route as: [{origin, destination, airlineCode, airlineName}, ...]
   const { queries: servingCarriersQueries, data: servingCarriers } = useQueriesWithKeys<ServingCarrier[]>(pairings.map((pairing) => ({
-    queryKey: `servingCarriers-${pairing.origin}-${pairing.destination}`,
+    queryKey: [`servingCarriers-${pairing.origin}-${pairing.destination}`],
     queryFn: fetchServingCarriers,
     meta: pairing,
-    enabled: !stoppedQueries.includes(`servingCarriers-${pairing.origin}-${pairing.destination}`)
+    enabled: !stoppedQueries.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey([`servingCarriers-${pairing.origin}-${pairing.destination}`]))
   })))
 
   // Group the above by "scraper-orig-dest" -> {matchedAirlines[], origin, destination, scraper, departureDate}
@@ -58,13 +58,13 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Returns the scraper results from all scrapers: [{ flightNo, origin, amenities, ... }]
   const { queries: searchQueries, data: scraperResults } = useQueriesWithKeys<FlightWithFares[]>(Object.entries(scrapersForRoutes).map(([key, scraperQuery]) => ({
-    queryKey: `awardAvailability-${key}-${scraperQuery.departureDate}`,
+    queryKey: [`awardAvailability-${key}-${scraperQuery.departureDate}`],
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
     retry: 1,
     queryFn: fetchAwardAvailability,
     meta: scraperQuery,
-    enabled: !stoppedQueries.includes(`awardAvailability-${key}-${scraperQuery.departureDate}`)
+    enabled: !stoppedQueries.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey([`awardAvailability-${key}-${scraperQuery.departureDate}`]))
   })))
 
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
@@ -78,8 +78,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
       .map((flight) => calculateSaverAwards(flight))
   }, [scraperResults])
 
-  const loadingQueriesKeys = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey as string)
-  const errorsQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error || stoppedQueries.includes(item.queryKey))
+  const loadingQueriesKeys = [servingCarriersQueries, searchQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey)
+  const errorsQueries = [servingCarriersQueries, searchQueries].flat().filter((item) => item.error || stoppedQueries.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(item.queryKey)))
   const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? Error("stopped") }))
 
   const queryClient = useQueryClient()
@@ -142,8 +142,8 @@ const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.Que
     return localPath
   }
 
-  const tsCodeCommon = scraperCode[scraperPath("common")] as unknown as string
-  let tsCode = scraperCode[scraperPath(scraperQuery.scraper)] as unknown as string
+  const tsCodeCommon = await scraperCode[scraperPath("common")]()
+  let tsCode = await scraperCode[scraperPath(scraperQuery.scraper)]()
   tsCode = tsCode.replace(/import .* from "\.\/common"/, tsCodeCommon)
   const ts = await import("typescript")
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })

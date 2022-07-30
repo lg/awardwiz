@@ -1,15 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import puppeteer from "puppeteer"
 import moment_ from "moment"
-import { FlightFare, FlightWithFares } from "../types/scrapers"
 const moment = moment_
 
 type Route = [orig: string, dest: string, expectFlight?: string]
-type ScraperConfig = { [key: string]: {
+type ScraperConfig = Record<string, {
   popularRoute: Route,     // expect at least one result
   partnerRoute?: Route,    // expect a search to come up with partner availability
   plusOneDayRoute: Route   // expect a flight to land the day after it takes off
-}}
+}>
 const scrapers: ScraperConfig = {
   aeroplan: { popularRoute: ["YOW", "YYZ"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] },
   alaska: { popularRoute: ["SFO", "JFK"], partnerRoute: ["HKG", "KUL", "MH 79"], plusOneDayRoute: ["HNL", "SFO"] },
@@ -19,7 +18,7 @@ const scrapers: ScraperConfig = {
 }
 
 // eslint-disable-next-line no-unused-vars
-type KeysEnum<T> = { [P in keyof Required<T>]: true };
+// type KeysEnum<T> = { [P in keyof Required<T>]: true }
 
 describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
   let browser: puppeteer.Browser
@@ -65,25 +64,25 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
     // })).toBe(true)
   }, 20000)
 
-  it("fails gracefully with historic searches", async () => {
-    const results = await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]], moment().subtract(1, "week").format("YYYY-MM-DD"))
-    expect(results.data.flightsWithFares.length).toBe(0)
-  })
+  // it("fails gracefully with historic searches", async () => {
+  //   const results = await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]], moment().subtract(1, "week").format("YYYY-MM-DD"))
+  //   expect(results.data.flightsWithFares.length).toBe(0)
+  // })
 
-  it.runIf(scrapers[scraperName].partnerRoute)("can search partner availability", async () => {
-    const results = await runQuery([scraper.partnerRoute![0], scraper.partnerRoute![1]])
-    const expectFlightNo = scraper.partnerRoute![2]
-    expect(results.data.flightsWithFares.find((flight) => {
-      return flight.flightNo === expectFlightNo
-    }), `flight ${expectFlightNo} to have partner availability`).toBeTruthy()
-  }, 20000)
+  // it.runIf(scrapers[scraperName].partnerRoute)("can search partner availability", async () => {
+  //   const results = await runQuery([scraper.partnerRoute![0], scraper.partnerRoute![1]])
+  //   const expectFlightNo = scraper.partnerRoute![2]
+  //   expect(results.data.flightsWithFares.find((flight) => {
+  //     return flight.flightNo === expectFlightNo
+  //   }), `flight ${expectFlightNo} to have partner availability`).toBeTruthy()
+  // }, 20000)
 
-  it.todo("can properly deal with day +1 arrival", async () => {}, 20000)
-  it.todo("fails gracefully when no results", async () => {}, 20000)
-  it.todo("properly classifies domestic 'first' as business", async () => {}, 20000)
-  it.todo("properly classifies domestic 'first' as business unless lieflat", async () => {}, 20000)
-  it.todo("properly classifies first flights", async () => {}, 20000)
-  it.todo("properly classifies first flights with partners", async () => {}, 20000)
+  // it.todo("can properly deal with day +1 arrival", async () => { }, 20000)
+  // it.todo("fails gracefully when no results", async () => { }, 20000)
+  // it.todo("properly classifies domestic 'first' as business", async () => { }, 20000)
+  // it.todo("properly classifies domestic 'first' as business unless lieflat", async () => { }, 20000)
+  // it.todo("properly classifies first flights", async () => { }, 20000)
+  // it.todo("properly classifies first flights with partners", async () => { }, 20000)
 })
 
-export {}
+export { }

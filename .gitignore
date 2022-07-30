@@ -27,3 +27,5 @@ coverage/
 .vercel
 stats.html
 src/**/*.schema.d.ts
+
+tmp.ts
