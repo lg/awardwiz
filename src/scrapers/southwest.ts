@@ -19,6 +19,9 @@ export type ScraperFlowRule = {
 }
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
+  console.log(`*** Starting scraper 'southwest' with ${JSON.stringify(query)}}`)
+  const startTime = Date.now()
+
   page.goto("https://www.southwest.com/air/booking/")
   await page.waitForNavigation({ waitUntil: "networkidle0" })
 
@@ -95,6 +98,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     return bestFare ? flight : undefined
   }).filter((flight): flight is FlightWithFares => !!flight)
 
+  console.log(`*** Completed scraper 'southwest' after ${(Date.now() - startTime) / 1000} seconds`)
   return { data: { flightsWithFares: flights } }
 }
 

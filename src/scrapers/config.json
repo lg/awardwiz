@@ -70,17 +70,16 @@
     },
     {
       "name": "skyscanner",
-      "disabled": true,
       "supportedAirlines": [],
       "cashOnlyFares": true
     },
     {
       "name": "skiplagged",
+      "disabled": true,
       "supportedAirlines": [],
       "cashOnlyFares": true
     },
     {
-      "disabled": true,
       "name": "southwest",
       "supportedAirlines": ["WN"],
       "nativeAirline": "WN"

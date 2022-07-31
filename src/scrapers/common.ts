@@ -19,6 +19,14 @@ export type ScraperFlowRule = {
 }
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
+
+export const waitFor = async function waitFor(f: () => boolean) {
+  while (!f())
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(1000)
+  return f()
+}
+
 export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[]) => {
   const skipIndexes: number[] = []
 

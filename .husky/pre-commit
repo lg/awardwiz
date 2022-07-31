@@ -3,4 +3,5 @@
 
 npm run depcheck
 npx lint-staged
+npm run build
 # npm test -- --run

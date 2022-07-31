@@ -39,7 +39,7 @@ export interface Daum {
   identification: Identification
   status: Status
   aircraft?: Aircraft
-  airline: Airline
+  airline?: Airline
   airport: Airport
   time: Time
 }

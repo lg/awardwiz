@@ -2,10 +2,13 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { randomUserAgent } from "./common"
+import { randomUserAgent, waitFor } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
+  console.log(`*** Starting scraper 'skyscanner' with ${JSON.stringify(query)}}`)
+  const startTime = Date.now()
+
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {
     return scrapeClass(page, query, cabin)
   })
@@ -30,6 +33,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     })
   })
 
+  console.log(`*** Completed scraper 'skyscanner' after ${(Date.now() - startTime) / 1000} seconds`)
   return { data: { flightsWithFares: flights } }
 }
 
@@ -56,14 +60,21 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
 
   page.goto(`https://www.skyscanner.com/transport/flights/${query.origin.toLowerCase()}/${query.destination.toLowerCase()}/${query.departureDate.substring(2, 4)}${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}/?adults=1&adultsv2=1&cabinclass=${cabin}&children=0&childrenv2=&inboundaltsenabled=false&infants=0&outboundaltsenabled=false&preferdirects=true&ref=home&rtn=0`).catch(() => {})
 
+  let raceDone = false
   const req = page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://www.skyscanner.com/slipstream/grp/v1/custom/public/acorn/funnel_events/clients.SearchResultsPage")).catch(() => {})
-  const timeout = page.waitForTimeout(20000).catch(() => {})
-  await Promise.race([req, timeout])    // note there's a catch() for all puppeteer requests, incl the page.goto
+  const timeout = page.waitForTimeout(15000).catch(() => {})
+  const captchaed = waitFor(() => { if (receivedCaptcha || raceDone) { if (receivedCaptcha) { console.log(`fast stopping due to captcha on cabin ${cabin}`) } return true } return false })
+
+  await Promise.race([req, timeout, captchaed])    // note there's a catch() for all puppeteer requests, incl the page.goto
+  raceDone = true
   await page.close()
 
-  if ((receivedCaptcha as boolean) && latestFlights.length === 0)
-    throw new Error(`Captcha prevented results for ${cabin} cabin`)
+  if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
+    console.log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
+    return scrapeClass(page, query, cabin)
+  }
 
+  console.log(`Settled cabin ${cabin} with ${latestFlights.length} flights.`)
   return latestFlights
 }
 
