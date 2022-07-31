@@ -1,14 +1,17 @@
-// NOTE: you must run scraper in proper environment since Delta uses Akamai bot detection
+// NOTE: you must run scraper in proper environment since Delta uses Akamai bot detection.
+// if you do too many failed attempts, youll get banned for a while. wait it out or find a
+// proxy server.
 
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import { processScraperFlowRules } from "./common"
+import { processScraperFlowRules, randomUserAgent } from "./common"
 import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   console.log("going to delta main page")
+  await page.setUserAgent(randomUserAgent())
   await page.goto("https://www.delta.com/flight-search/book-a-flight")
 
   const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
@@ -17,7 +20,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     { find: "#fromAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.origin, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
     { find: "#toAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.destination, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
     { find: "select[name='selectTripType']", selectValue: "ONE_WAY" },
-    { find: "#calDepartLabelCont", andWaitFor: ".dl-datepicker-calendar", andThen: [{ find: `a[data-date^='${formattedDate}']`, andWaitFor: `a[data-date^='${formattedDate}'][class*='dl-selected-date']`, andThen: [{ find: "button.donebutton", andWaitFor: "div[class*='calDispValueCont']:not([class*='open'])" }], done: true }, { find: "a[aria-label='Next']:not([class*='no-next'])", reusable: true }] },
+    { find: "#calDepartLabelCont", andWaitFor: ".dl-datepicker-calendar", andThen: [{ find: `a[data-date^='${formattedDate}']`, clickMethod: "offset55", andWaitFor: `a[data-date^='${formattedDate}'][class*='dl-selected-date']`, andThen: [{ find: "button.donebutton", andWaitFor: "div[class*='calDispValueCont']:not([class*='open'])" }], done: true }, { find: "a[aria-label='Next']:not([class*='no-next'])", reusable: true }] },
     { find: "#shopWithMiles" }
   ])
 

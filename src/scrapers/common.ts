@@ -15,6 +15,7 @@ export type ScraperFlowRule = {
   andThen?: ScraperFlowRule[]
   reusable?: boolean
   fail?: boolean
+  clickMethod?: "default" | "offset55" | "eval"    // offset55 = clicks at (5,5) from the top of the button, eval = uses element.evaluate and does an element.click()
 }
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
@@ -60,8 +61,15 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     //await sleep(400)
 
     // Do not click on the element in certain cases
-    if (!matchedRule.rule.selectValue)
-      await matchedRule.element.click()
+    if (!matchedRule.rule.selectValue) {
+      if (matchedRule.rule.clickMethod === "offset55") {
+        await matchedRule.element.click({ offset: { x: 5, y: 5 } })
+      } else if (matchedRule.rule.clickMethod === "eval") {
+        await matchedRule.element.evaluate((el: any) => el.click())
+      } else {
+        await matchedRule.element.click()
+      }
+    }
 
     if (matchedRule.rule.type) {
       await matchedRule.element.focus()
@@ -73,8 +81,11 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       await page.select(matchedRule.rule.find, matchedRule.rule.selectValue)
     }
 
-    if (matchedRule.rule.andWaitFor)
+    if (matchedRule.rule.andWaitFor) {
+      console.log(`waiting for ${matchedRule.rule.andWaitFor}`)
       await page.waitForSelector(matchedRule.rule.andWaitFor)
+      console.log("got it")
+    }
 
     if (matchedRule.rule.andThen)
       await processScraperFlowRules(page, matchedRule.rule.andThen)

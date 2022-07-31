@@ -1,5 +1,6 @@
 export interface AAResponse {
   error: string
+  errorNumber?: number
   responseMetadata: ResponseMetadata
   products: string[]
   slices: Slice[]

@@ -33,6 +33,9 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   })
   const json = JSON.parse(raw) as AAResponse
 
+  if (json.errorNumber === 1100)  // historic date
+    return { data: { flightsWithFares: [] } }
+
   if (json.error && json.error !== "309")
     throw new Error(json.error)
 

@@ -24,7 +24,7 @@ rules:
   quotes: ["error", "double"]
   semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
   max-len: off
-  no-unused-vars: ["error", { "args": "none" }]
+  no-unused-vars: ["error", { "args": "none", "varsIgnorePattern": "_.*" }]
   "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }]
   no-use-before-define: off
   no-undef: off # because of JSX
