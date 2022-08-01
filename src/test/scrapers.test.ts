@@ -19,7 +19,7 @@ const scrapers: ScraperConfig = {
   delta: { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] },
   jetblue: { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"] },
   southwest: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"] },
-  united: { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }
+  united: { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] },
   // skiplagged
   // skyscanner
 }
@@ -31,10 +31,10 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
   let context: puppeteer.BrowserContext
   let page: puppeteer.Page
 
-  beforeAll(async () => { browser = await puppeteer.connect({ browserWSEndpoint: "ws://10.0.1.17:4000", defaultViewport: { width: 1400, height: 800 } }) })
+  beforeAll(async () => { browser = await puppeteer.connect({ browserWSEndpoint: "ws://10.0.1.96:4000", defaultViewport: { width: 1400, height: 800 } }) })
   beforeEach(async () => { context = await browser.createIncognitoBrowserContext(); page = await context.newPage() })
-  afterEach(async () => { await page.close(); await context.close() })
-  afterAll(async () => { await setTimeout(() => { browser.close() }, 1000) })
+  afterEach(async () => { await page.close().catch(() => {}); await context.close().catch(() => {}) })
+  afterAll(async () => { await setTimeout(() => { browser.close().catch(() => {}) }, 1000) })
 
   const scraper = scrapers[scraperName]
   const scraperModule: typeof import("../scrapers/alaska") = await import(`../scrapers/${scraperName}`)

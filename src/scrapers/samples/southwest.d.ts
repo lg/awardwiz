@@ -1,8 +1,9 @@
 export interface SouthwestResponse {
-  data: Data
+  data?: Data
   success: boolean
-  notifications: Notifications
+  notifications?: Notifications
   uiMetadata: UiMetadata
+  code?: number
 }
 
 export interface Notifications {
@@ -10,7 +11,7 @@ export interface Notifications {
 }
 
 export interface Data {
-  searchResults: SearchResults
+  searchResults?: SearchResults
 }
 
 export interface SearchResults {

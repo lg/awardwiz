@@ -1,63 +1,49 @@
-/* eslint-disable no-continue */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-await-in-loop */
-
-import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import { equipmentTypeLookup, processScraperFlowRules, sleep } from "./common"
+import { equipmentTypeLookup, finishScraper, gotoPage, processScraperFlowRules, retry, startScraper } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
-type SouthwestErrorTypes = { code: number, notifications?: { formErrors?: { code: string }[] } }
-
-export type ScraperFlowRule = {
-  find: string
-  type?: string
-  done?: true
-  andWaitFor?: string
-  andDebugger?: true
-  andThen?: ScraperFlowRule[]
-}
+const BLOCK_IN_URL: string[] = [  // substrings
+  "/scripts/analytics/", "api/logging", "__imp_apg__",
+  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico"
+]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  console.log(`*** Starting scraper 'southwest' with ${JSON.stringify(query)}}`)
-  const startTime = Date.now()
+  startScraper("southwest", page, query, { blockInUrl: BLOCK_IN_URL })
 
-  page.goto("https://www.southwest.com/air/booking/")
-  await page.waitForNavigation({ waitUntil: "networkidle0" })
+  await gotoPage(page, "https://www.southwest.com/air/booking/", 5000, "networkidle2", 3)
+  console.log("loaded. starting scraper flow.")
 
-  const rules: ScraperFlowRule[] = [
+  await processScraperFlowRules(page, [
     { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']" },
     { find: "input[value='POINTS']", andWaitFor: "input:checked[value='POINTS']" },
     { find: "input#originationAirportCode", type: query.origin, andThen: [{ find: `button[aria-label~=${query.origin}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
     { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
-    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, andWaitFor: ".overlay-background[style='']", done: true }] },
-    { find: "#form-mixin--submit-button", done: true },
-  ]
+    { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, andWaitFor: ".overlay-background[style='']", done: true }] }
+  ])
 
-  await processScraperFlowRules(page, rules)
+  // Clicking the southwest find button sometimes will redirect back with an error (usually botting)
+  const response = await retry(5, async () => {
+    console.log("clicking submit button")
+    await page.waitForSelector("#form-mixin--submit-button").then((el: any) => el.click())
 
-  let raw: SouthwestResponse
-  let tries = 0
-  do {
-    raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((response: HTTPResponse) => response.json())
-    if (raw.success)
-      break
+    console.log("waiting for response")
+    const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 5000 })
+      .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
+      .catch((e) => { throw new Error(e) })
+    if (!raw.success || raw.code === 403050700) // that code is for "we know youre a bot"
+      throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors)}`)
+    return raw
+  }).catch((e) => {
+    console.error("Giving up on retrieving response: ", e)
+    throw e
+  })
 
-    tries += 1
-    if (tries === 5)
-      throw new Error("Failed after trying 5 times to load southwest searches")
-    // console.log("waiting 5 seconds and trying again")
-    await sleep(5000)
-    page.click("#form-mixin--submit-button")
-  } while ((raw as unknown as SouthwestErrorTypes).code === 403050700)
+  // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
+  const results = response.data?.searchResults?.airProducts[0].details ?? []
+  if (response.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
+    console.log("No routes exist between the origin and destination")
 
-  const { notifications } = (raw as unknown as SouthwestErrorTypes)
-  if (notifications?.formErrors?.[0]?.code === "ERROR__NO_ROUTES_EXIST")
-    return { data: { flightsWithFares: [] } }
-
-  const rawResults = raw.data.searchResults.airProducts[0].details
-
-  const flights: FlightWithFares[] = rawResults.map((result) => {
+  const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)
       return undefined
 
@@ -98,8 +84,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     return bestFare ? flight : undefined
   }).filter((flight): flight is FlightWithFares => !!flight)
 
-  console.log(`*** Completed scraper 'southwest' after ${(Date.now() - startTime) / 1000} seconds`)
-  return { data: { flightsWithFares: flights } }
+  return finishScraper("southwest", page, flights)
 }
 
 module.exports = scraper
