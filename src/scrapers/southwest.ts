@@ -1,10 +1,10 @@
 import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import { equipmentTypeLookup, finishScraper, gotoPage, processScraperFlowRules, retry, startScraper } from "./common"
+import { equipmentTypeLookup, finishScraper, gotoPage, processScraperFlowRules, retry, ScraperFlowRule, startScraper } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
 const BLOCK_IN_URL: string[] = [  // substrings
   "/scripts/analytics/", "api/logging", "__imp_apg__",
-  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico"
+  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico", "go-mpulse.net"
 ]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
@@ -14,12 +14,16 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   console.log("loaded. starting scraper flow.")
 
   await processScraperFlowRules(page, [
-    { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']" },
+    { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']", done: true },
+  ])
+
+  const items = [
     { find: "input[value='POINTS']", andWaitFor: "input:checked[value='POINTS']" },
     { find: "input#originationAirportCode", type: query.origin, andThen: [{ find: `button[aria-label~=${query.origin}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
     { find: "input#destinationAirportCode", type: query.destination, andThen: [{ find: `button[aria-label~=${query.destination}]`, andWaitFor: ".overlay-background[style='']", done: true }] },
     { find: "input#departureDate", type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`, andThen: [{ find: `button[id*='${query.departureDate}']`, andWaitFor: ".overlay-background[style='']", done: true }] }
-  ])
+  ] as ScraperFlowRule[]
+  await processScraperFlowRules(page, items.sort((a, b) => Math.random() - 0.5))
 
   // Clicking the southwest find button sometimes will redirect back with an error (usually botting)
   const response = await retry(5, async () => {

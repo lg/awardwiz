@@ -84,23 +84,17 @@ const scraperStartTime = Date.now()
 export const startScraper = async (scraper: string, page: Page, query: ScraperQuery, options?: StartScraperOptions) => {
   console.log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
 
-  // DISABLED FOR NOW since the ban rate sure is high
-
-  // await page.setRequestInterception(true)
-  // page.on("request", async (req) => {
-  //   if (["image", "font", "stylesheet"].includes(req.resourceType())
-  //       || (options?.blockInUrl && options.blockInUrl.some((segment) => req.url().includes(segment)))) {
-  //     req.abort()
-  //     return
-  //   }
-  //   req.continue()
-  // })
-
-  // page.on("response", async (resp) => {
-  //   const keyName = Object.keys(resp.headers()).find((k) => k.toLowerCase() === "content-length")
-  //   const len = keyName ? resp.headers()[keyName] : "0"
-  //   console.log(`resourceType: ${resp.request().resourceType()} - status: ${resp.status()} - length: ${len} - contentType: ${resp.headers()["content-type"]} - ${resp.url()}`)
-  // })
+  const blockedResources = [
+    "*/favicon.ico", ".css", ".jpg", ".jpeg", ".png", ".svg", ".woff",
+    "*.optimizely.com", "everesttech.net", "userzoom.com", "doubleclick.net", "googleadservices.com", "adservice.google.com/*",
+    "connect.facebook.com", "connect.facebook.net", "sp.analytics.yahoo.com",
+    ...(options?.blockInUrl ?? []),
+  ]
+  // Use existing CDP connection from Puppeteer (puppeteer >= 14.4.1: page._client -> page._client())
+  // @ts-expect-error
+  // eslint-disable-next-line no-underscore-dangle
+  const client = typeof page._client === "function" ? page._client() : page._client
+  await client.send("Network.setBlockedURLs", { urls: blockedResources })
 }
 
 export const finishScraper = async (scraper: string, page: Page, flights: FlightWithFares[]) => {

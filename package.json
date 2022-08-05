@@ -5,7 +5,6 @@
   "scripts": {
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "dev": "vite",
     "build": "npm run schemas && tsc && vite build",
     "preview": "vite preview",
     "start": "npm run schemas && vite",

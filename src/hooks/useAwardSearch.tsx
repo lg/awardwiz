@@ -13,7 +13,7 @@ const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 export type QueryPairing = ExpandRecursively<{ origin: string, destination: string, departureDate: string }>
 export type ServingCarrier = ExpandRecursively<{ origin: string, destination: string, airlineCode: string, airlineName: string }>
-type ScraperForRoute = ExpandRecursively<{ origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }>
+export type ScraperForRoute = ExpandRecursively<{ origin: string, destination: string, scraper: string, matchedAirlines: string[], departureDate: string }>
 export type ScrapersForRoutes = ExpandRecursively<Record<string, ScraperForRoute>>
 export type AwardSearchProgress = {
   searchResults: FlightWithFares[],
