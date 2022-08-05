@@ -83,7 +83,10 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
 const scraperStartTime = Date.now()
 export const startScraper = async (scraper: string, page: Page, query: ScraperQuery, options?: StartScraperOptions) => {
   console.log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
+  applyPageBlocks(page, options)
+}
 
+export const applyPageBlocks = async (page: Page, options?: StartScraperOptions) => {
   const blockedResources = [
     "*/favicon.ico", ".css", ".jpg", ".jpeg", ".png", ".svg", ".woff",
     "*.optimizely.com", "everesttech.net", "userzoom.com", "doubleclick.net", "googleadservices.com", "adservice.google.com/*",

@@ -2,10 +2,16 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { randomUserAgent, waitFor } from "./common"
+import { randomUserAgent, startScraper, finishScraper, waitFor, applyPageBlocks } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
+const BLOCK_IN_URL: string[] = [  // substrings
+  "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net"
+]
+
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
+  startScraper("skyscanner", page, query, { blockInUrl: BLOCK_IN_URL })
+
   console.log(`*** Starting scraper 'skyscanner' with ${JSON.stringify(query)}}`)
   const startTime = Date.now()
 
@@ -34,13 +40,14 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   })
 
   console.log(`*** Completed scraper 'skyscanner' after ${(Date.now() - startTime) / 1000} seconds`)
-  return { data: { flightsWithFares: flights } }
+  return finishScraper("skyscanner", page, flights)
 }
 
 const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string): Promise<FlightWithFares[]> => {
   // This scrape is done in parallel, so create a new page
   const page = await (await globalPage.browser().createIncognitoBrowserContext()).newPage()
   page.setUserAgent(randomUserAgent())
+  applyPageBlocks(page, { blockInUrl: BLOCK_IN_URL })
 
   let latestFlights: FlightWithFares[] = []
   let receivedCaptcha = false
@@ -71,7 +78,7 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
 
   if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
     console.log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
-    return scrapeClass(page, query, cabin)
+    return scrapeClass(globalPage, query, cabin)
   }
 
   console.log(`Settled cabin ${cabin} with ${latestFlights.length} flights.`)

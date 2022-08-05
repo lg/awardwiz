@@ -4,7 +4,8 @@ import type { SouthwestResponse } from "./samples/southwest"
 
 const BLOCK_IN_URL: string[] = [  // substrings
   "/scripts/analytics/", "api/logging", "__imp_apg__",
-  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico", "go-mpulse.net"
+  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico", "go-mpulse.net",
+  "www.uplift-platform.com"
 ]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
