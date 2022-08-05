@@ -6,14 +6,11 @@ import { randomUserAgent, startScraper, finishScraper, waitFor, applyPageBlocks 
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
 const BLOCK_IN_URL: string[] = [  // substrings
-  "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net"
+  "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net", "px-client.net", "slipstream.skyscanner.net"
 ]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
   startScraper("skyscanner", page, query, { blockInUrl: BLOCK_IN_URL })
-
-  console.log(`*** Starting scraper 'skyscanner' with ${JSON.stringify(query)}}`)
-  const startTime = Date.now()
 
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {
     return scrapeClass(page, query, cabin)
@@ -39,15 +36,15 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     })
   })
 
-  console.log(`*** Completed scraper 'skyscanner' after ${(Date.now() - startTime) / 1000} seconds`)
   return finishScraper("skyscanner", page, flights)
 }
 
 const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string): Promise<FlightWithFares[]> => {
   // This scrape is done in parallel, so create a new page
-  const page = await (await globalPage.browser().createIncognitoBrowserContext()).newPage()
-  page.setUserAgent(randomUserAgent())
-  applyPageBlocks(page, { blockInUrl: BLOCK_IN_URL })
+  const context = await globalPage.browser().createIncognitoBrowserContext()
+  const page = await context.newPage()
+  await page.setUserAgent(randomUserAgent())
+  await applyPageBlocks(page, { blockInUrl: BLOCK_IN_URL })
 
   let latestFlights: FlightWithFares[] = []
   let receivedCaptcha = false
@@ -70,16 +67,25 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
   let raceDone = false
   const req = page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://www.skyscanner.com/slipstream/grp/v1/custom/public/acorn/funnel_events/clients.SearchResultsPage")).catch(() => {})
   const timeout = page.waitForTimeout(15000).catch(() => {})
-  const captchaed = waitFor(() => { if (receivedCaptcha || raceDone) { if (receivedCaptcha) { console.log(`fast stopping due to captcha on cabin ${cabin}`) } return true } return false })
+  const captchaed = waitFor(() => {
+    if (raceDone) return true
+    if (receivedCaptcha) {
+      raceDone = true
+      console.log(`fast stopping due to captcha on cabin ${cabin}`)
+    }
+    return raceDone
+  })
 
   await Promise.race([req, timeout, captchaed])    // note there's a catch() for all puppeteer requests, incl the page.goto
   raceDone = true
-  await page.close()
 
   if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
     console.log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
     return scrapeClass(globalPage, query, cabin)
   }
+
+  await page.close().catch(() => {})
+  await context.close().catch(() => {})
 
   console.log(`Settled cabin ${cabin} with ${latestFlights.length} flights.`)
   return latestFlights

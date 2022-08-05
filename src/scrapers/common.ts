@@ -60,7 +60,7 @@ const gotoPageOnce = async (page: Page, url: string, maxRequestGapMs: number, wa
 export const waitFor = async function waitFor(f: () => boolean) {
   while (!f())
     // eslint-disable-next-line no-await-in-loop
-    await sleep(1000)
+    await sleep(200)
   return f()
 }
 
