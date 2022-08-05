@@ -36,9 +36,9 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
       title = <>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></>
     }
 
-    let icon = node.isLoading ? <LoadingOutlined /> : node.stableIcon
-    if (node.error)
-      icon = <StopOutlined style={{ color: "red" }} />
+    let icon = node.stableIcon
+    if (node.isLoading) icon = <LoadingOutlined />
+    else if (node.error) icon = <StopOutlined style={{ color: "red" }} />
 
     const children = debugTree.filter((checkNode) => checkNode.parentKey === node.key).map((childNode) => computeNode(childNode))
     return { key: node.key, title, icon, children }
