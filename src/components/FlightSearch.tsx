@@ -27,7 +27,7 @@ export const FlightSearch = () => {
   React.useEffect(() => {
     localStorage.setItem("searchQuery", JSON.stringify(searchQuery))
     const logSearch = async (query: object) => supabase.from("searches").insert([{ user_id: supabase.auth.session()?.user?.id, query }])
-    logSearch(searchQuery)
+    void logSearch(searchQuery)
   }, [searchQuery])
 
   const isSearching = searchProgress.loadingQueriesKeys.length > 0

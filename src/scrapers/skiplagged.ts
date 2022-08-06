@@ -6,7 +6,7 @@ import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  page.goto(`https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`)
+  void page.goto(`https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`)
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php"))
   const json: SkipLaggedResponse = await response.json()
 

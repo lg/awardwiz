@@ -83,7 +83,7 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
 const scraperStartTime = Date.now()
 export const startScraper = async (scraper: string, page: Page, query: ScraperQuery, options?: StartScraperOptions) => {
   console.log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
-  applyPageBlocks(page, options)
+  return applyPageBlocks(page, options)
 }
 
 export const applyPageBlocks = async (page: Page, options?: StartScraperOptions) => {

@@ -80,3 +80,6 @@ rules:
   no-restricted-syntax: off
   "@typescript-eslint/consistent-type-definitions": off
   "@typescript-eslint/prefer-string-starts-ends-with": off
+
+  "@typescript-eslint/no-floating-promises": ["error"]
+  "no-void": off

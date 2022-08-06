@@ -3,7 +3,7 @@ import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
 import type { JetBlueResponse } from "./samples/jetblue"
 
 export const scraper: ScraperFunc = async ({ page, context }) => {
-  page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)
+  void page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST"
   }, { timeout: 20000 })

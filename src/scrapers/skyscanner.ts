@@ -10,7 +10,7 @@ const BLOCK_IN_URL: string[] = [  // substrings
 ]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  startScraper("skyscanner", page, query, { blockInUrl: BLOCK_IN_URL })
+  await startScraper("skyscanner", page, query, { blockInUrl: BLOCK_IN_URL })
 
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {
     return scrapeClass(page, query, cabin)
