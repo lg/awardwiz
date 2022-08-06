@@ -1,29 +1,34 @@
-import { sleep } from "./common"
+import axios, { AxiosError } from "axios"
+import * as fs from "fs/promises"
+import * as ts from "typescript/lib/typescript.js"
+import { ScraperQuery, ScraperResults } from "../types/scrapers"
 
-type ScraperModule = typeof import("./alaska")
+const main = (async () => {
+  console.log("loading files")
+  const query = { origin: "SFO", destination: "JFK", scraper: "jetblue", departureDate: "2022-11-05" }
+  const commonTS = await fs.readFile("src/scrapers/common.ts", "utf8")
+  const scraperTS = await fs.readFile(`src/scrapers/${query.scraper}.ts`, "utf8")
 
-(async () => {
-  const puppeteer = await import("puppeteer")
-  //const browser = await puppeteer.launch({ headless: false, devtools: true, defaultViewport: { width: 1300, height: 800 } })
-  //const browser = await puppeteer.connect({ browserWSEndpoint: "ws://127.0.0.1:4000", defaultViewport: { width: 1300, height: 800 } })
-  const browser = await puppeteer.connect({ browserWSEndpoint: "ws://10.0.1.96:4000", defaultViewport: { width: 1400, height: 800 } })
-  const browserContext = await browser.createIncognitoBrowserContext()
-  const page = await browserContext.newPage()
+  console.log("building")
+  const tsCode = scraperTS.replace(/import .* from "\.\/common"/, commonTS)
+  const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
-  const scraperModule: ScraperModule = await import("./southwest")
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const callMethod = scraperModule.scraper || scraperModule   // needed to keep data types in vscode resolving but at runtime scraperModule is actually called
-  const results = await callMethod({ page, context: { origin: "OAK", destination: "LIH", departureDate: "2022-10-30" } })
+  console.log(`running: ${JSON.stringify(query)}`)
+  const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: query }
+  const startTime = Date.now()
+  const config = (await fs.readFile(".env.local", "utf8")).split("\n").reduce((acc: Record<string, string>, line) => { const [key, value] = line.split("="); acc[key] = value; return acc }, {})
+  const raw = await axios.post<ScraperResults>(`${config.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": config.VITE_BROWSERLESS_AWS_PROXY_API_KEY } }).catch((err) => err)
 
-  console.log(JSON.stringify(results, null, 2))
+  console.log(`completed in: ${(Date.now() - startTime).toLocaleString()} ms`)
+  if (raw instanceof AxiosError && raw.response) {
+    console.log(`error: ${raw.response.status} ${raw.response.statusText}\n${JSON.stringify(raw.response.data, null, 2)}`)
 
-  console.log("closing browser!")
-  await page.close()
-  await browserContext.close()
-  await browser.close()
-  await sleep(5000)
+  } else {
+    console.log("results:")
+    console.log(JSON.stringify(raw.data))
+  }
+})
 
-  console.log("ok done")
-})()
+void main()
 
 export {}

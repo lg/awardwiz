@@ -40,7 +40,7 @@ rules:
   no-debugger: off
   no-console: off
   object-curly-newline: off
-  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result"] }]
+  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result", "acc"] }]
   lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
 
   react/jsx-one-expression-per-line: off
