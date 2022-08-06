@@ -1,16 +1,23 @@
-import { HTTPResponse } from "puppeteer"
-import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
+import { FlightWithFares, FlightFare } from "../types/scrapers"
+import { browserlessInit, log, retry, Scraper, ScraperMetadata } from "./common"
 import type { JetBlueResponse } from "./samples/jetblue"
 
-export const scraper: ScraperFunc = async ({ page, context }) => {
-  void page.goto(`https://www.jetblue.com/booking/flights?from=${context.origin}&to=${context.destination}&depart=${context.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`)
-  const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
-    return checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST"
-  }, { timeout: 20000 })
+const meta: ScraperMetadata = {
+  name: "jetblue",
+  blockUrls: ["sdk.jetbluevacations.com", "sentry.io", "trustarc.com", "htp.tokenex.com", "truste-svc.net"],
+  noRandomUserAgent: true,
+}
 
-  if (response.statusText() === "JB_INVALID_REQUEST")   // seasonal flights here and there
-    return { data: { flightsWithFares: [] } }
+export const scraper: Scraper = async (page, query) => {
+  void retry(5, async () => {
+    log("going to flights page")
+    await page.goto(`https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`, { waitUntil: "domcontentloaded", timeout: 15000 }).catch((err) => {
+      if (!page.isClosed()) throw err   // if this is a lingering request
+    })
+    log("completed results page")
+  })
 
+  const response = await page.waitForResponse((checkResponse) => checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST", { timeout: 25000 })
   const json = await response.json() as JetBlueResponse
 
   const flightsWithFares: FlightWithFares[] = []
@@ -19,7 +26,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
     flightsWithFares.push(...flights)
   }
 
-  return { data: { flightsWithFares } }
+  return flightsWithFares
 }
 
 // note: they have an entire lookup call that's made for this for all their partners (which seem to not be searchable on points)
@@ -90,4 +97,4 @@ const standardizeResults = (raw: JetBlueResponse) => {
   return results
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

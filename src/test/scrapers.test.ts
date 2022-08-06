@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { beforeEach, describe, expect, it } from "vitest"
-import puppeteer from "puppeteer"
+import { describe, expect } from "vitest"
 import moment_ from "moment"
-import { FlightFare, FlightWithFares } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
+import * as fs from "fs/promises"
+import ts from "typescript"
+import axios from "axios"
 const moment = moment_
 
 type Route = [orig: string, dest: string, expectFlight?: string]
@@ -10,7 +12,9 @@ type ScraperConfig = Record<string, {
   popularRoute: Route,     // expect at least one result
   partnerRoute?: Route,    // expect a search to come up with partner availability
   plusOneDayRoute: Route   // expect a flight to land the day after it takes off
-  missingFareAttribs?: (keyof FlightFare)[]     // if we know a scraper is missing a certain field
+  missingAttribs?: (keyof FlightWithFares)[]    // if we know a scraper is missing a certain field
+  missingFareAttribs?: (keyof FlightFare)[]     // if we know a scraper is missing a certain fare field
+  zeroMilesOk?: boolean    // use this for cash-only scrapers
 }>
 const scrapers: ScraperConfig = {
   aa: { popularRoute: ["SFO", "LAX"], partnerRoute: ["NRT", "SFO", "JL 58"], plusOneDayRoute: ["SFO", "JFK"] },
@@ -19,42 +23,39 @@ const scrapers: ScraperConfig = {
   delta: { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] },
   jetblue: { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"] },
   southwest: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"] },
+  skiplagged: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] },
+  skyscanner: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] },
   united: { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] },
-  // skiplagged
-  // skyscanner
 }
 
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
 describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
-  let browser: puppeteer.Browser
-  let context: puppeteer.BrowserContext
-  let page: puppeteer.Page
-
-  beforeAll(async () => { browser = await puppeteer.connect({ browserWSEndpoint: "ws://10.0.1.96:4000", defaultViewport: { width: 1400, height: 800 } }) })
-  beforeEach(async () => { context = await browser.createIncognitoBrowserContext(); page = await context.newPage() })
-  afterEach(async () => { await page.close().catch(() => {}); await context.close().catch(() => {}) })
-  afterAll(async () => { await setTimeout(() => { browser.close().catch(() => {}) }, 1000) })
-
   const scraper = scrapers[scraperName]
-  const scraperModule: typeof import("../scrapers/alaska") = await import(`../scrapers/${scraperName}`)
   const defCheckDate = moment().add(3, "months").format("YYYY-MM-DD")
   const debugText = `(${scraper.popularRoute[0]}->${scraper.popularRoute[1]} ${defCheckDate})`
   const runQuery = async (route: [orig: string, dest: string], checkDate = defCheckDate) => {
-    return scraperModule.scraper({ page, context: { origin: route[0], destination: route[1], departureDate: checkDate } })
+    const commonTS = await fs.readFile("src/scrapers/common.ts", "utf8")
+    const scraperTS = await fs.readFile(`src/scrapers/${scraperName}.ts`, "utf8")
+    const tsCode = scraperTS.replace(/import .* from "\.\/common"/, commonTS)
+    const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
+
+    const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
+    const raw = await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+    return raw.data
   }
 
-  it(`can do a basic popular search ${debugText}`, async () => {
+  test.concurrent(`can do a basic popular search ${debugText}`, async () => {
     const results = await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]])
 
-    expect(results.data.flightsWithFares.length).toBeGreaterThanOrEqual(1)
-    expect(results.data.flightsWithFares.every((flight) => flight.fares.length > 0)).toBe(true)
-    expect(results.data.flightsWithFares.every((flight) => flight.fares.every((fare) => fare.miles > 1000))).toBe(true)
+    expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(1)
+    expect(results.flightsWithFares.every((flight) => flight.fares.length > 0)).toBe(true)
+    if (!scraper.zeroMilesOk) expect(results.flightsWithFares.every((flight) => flight.fares.every((fare) => fare.miles > 1000))).toBe(true)
 
     // Ensure that there there are no unexpected missing attributes
     const expectedFlightKeys: KeysEnum<FlightWithFares> = { flightNo: true, departureDateTime: true, arrivalDateTime: true, origin: true, destination: true, duration: true, fares: true, aircraft: true, amenities: true }
-    results.data.flightsWithFares.forEach((flight: Record<string, any>) => {
-      const undefinedFlightKeys = Object.keys(expectedFlightKeys).filter((check) => flight[check] === undefined)
+    results.flightsWithFares.forEach((flight: Record<string, any>) => {
+      const undefinedFlightKeys = Object.keys(expectedFlightKeys).filter((check) => flight[check] === undefined && !(scraper.missingAttribs?.includes(check as keyof FlightWithFares)))
       expect(undefinedFlightKeys, `Expected flight \n\n${JSON.stringify(flight)}\n\n to not have any undefined keys`).toEqual([])
 
       const expectedFareKeys: KeysEnum<Omit<FlightFare, "isSaverFare">> = { cabin: true, miles: true, bookingClass: true, cash: true, currencyOfCash: true, scraper: true }
@@ -75,10 +76,10 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
   //   expect(results.data.flightsWithFares.length).toBe(0)
   // })
 
-  it.runIf(scrapers[scraperName].partnerRoute)("can search partner availability", async () => {
+  test.runIf(scrapers[scraperName].partnerRoute).concurrent("can search partner availability", async () => {
     const results = await runQuery([scraper.partnerRoute![0], scraper.partnerRoute![1]])
     const expectFlightNo = scraper.partnerRoute![2]
-    expect(results.data.flightsWithFares.find((flight) => {
+    expect(results.flightsWithFares.find((flight) => {
       return flight.flightNo === expectFlightNo
     }), `flight ${expectFlightNo} to have partner availability`).toBeTruthy()
   })

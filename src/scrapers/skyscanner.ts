@@ -1,17 +1,18 @@
 // this scraper is best run with a stealth-capable browser
 
 import { HTTPResponse, Page } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { randomUserAgent, startScraper, finishScraper, waitFor, applyPageBlocks } from "./common"
+import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
+import { randomUserAgent, waitFor, applyPageBlocks, ScraperMetadata, browserlessInit, Scraper, log } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
-const BLOCK_IN_URL: string[] = [  // substrings
-  "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net", "px-client.net", "slipstream.skyscanner.net"
-]
+const meta: ScraperMetadata = {
+  name: "skyscanner",
+  blockUrls: [
+    "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net", "px-client.net", "slipstream.skyscanner.net"
+  ],
+}
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  await startScraper("skyscanner", page, query, { blockInUrl: BLOCK_IN_URL })
-
+export const scraper: Scraper = async (page, query) => {
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {
     return scrapeClass(page, query, cabin)
   })
@@ -36,7 +37,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     })
   })
 
-  return finishScraper("skyscanner", page, flights)
+  return flights
 }
 
 const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string): Promise<FlightWithFares[]> => {
@@ -44,21 +45,21 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
   const context = await globalPage.browser().createIncognitoBrowserContext()
   const page = await context.newPage()
   await page.setUserAgent(randomUserAgent())
-  await applyPageBlocks(page, { blockInUrl: BLOCK_IN_URL })
+  await applyPageBlocks(page, { blockInUrl: meta.blockUrls })
 
   let latestFlights: FlightWithFares[] = []
   let receivedCaptcha = false
   page.on("response", async (response: HTTPResponse) => {
     if (response.url().startsWith("https://www.skyscanner.com/sttc/px/captcha-v2/index.html")) {
       if (!receivedCaptcha)
-        console.log(`received captcha on ${cabin} cabin`)
+        log(`received captcha on ${cabin} cabin`)
       receivedCaptcha = true
     }
 
     if (response.url().startsWith("https://www.skyscanner.com/g/conductor/v1/fps3/search")) {
       const json: SkyScannerResponse = await response.json()
       latestFlights = standardizeFlights(json, cabin)
-      console.log(`updated flights: ${latestFlights.length} (cabin: ${cabin})`)
+      log(`updated flights: ${latestFlights.length} (cabin: ${cabin})`)
     }
   })
 
@@ -71,7 +72,7 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
     if (raceDone) return true
     if (receivedCaptcha) {
       raceDone = true
-      console.log(`fast stopping due to captcha on cabin ${cabin}`)
+      log(`fast stopping due to captcha on cabin ${cabin}`)
     }
     return raceDone
   })
@@ -80,19 +81,19 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
   raceDone = true
 
   if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
-    console.log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
+    log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
     return scrapeClass(globalPage, query, cabin)
   }
 
   await page.close().catch(() => {})
   await context.close().catch(() => {})
 
-  console.log(`Settled cabin ${cabin} with ${latestFlights.length} flights.`)
+  log(`Settled cabin ${cabin} with ${latestFlights.length} flights.`)
   return latestFlights
 }
 
 const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWithFares[] => {
-  console.log(`total multi-hop itineraries: ${json.itineraries.length}`)
+  log(`total multi-hop itineraries: ${json.itineraries.length}`)
 
   return json.itineraries.map((itinerary) => {
     if (itinerary.leg_ids.length > 1)
@@ -163,4 +164,4 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
   }).filter((flight): flight is FlightWithFares => !!flight)
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

@@ -2,11 +2,18 @@
 // This scraper uses SkipLagged for prices
 
 import { HTTPResponse } from "puppeteer"
-import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
+import type { FlightFare, FlightWithFares } from "../types/scrapers"
+import { browserlessInit, gotoPage, Scraper, ScraperMetadata } from "./common"
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  void page.goto(`https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`)
+const meta: ScraperMetadata = {
+  name: "skiplagged",
+  blockUrls: ["www.gstatic.com"],
+}
+
+export const scraper: Scraper = async (page, query) => {
+  void gotoPage(page, `https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`, 5000, "domcontentloaded", 5)
+
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php"))
   const json: SkipLaggedResponse = await response.json()
 
@@ -47,7 +54,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   }).filter((flight): flight is FlightWithFares => !!flight)
 
-  return { data: { flightsWithFares } }
+  return flightsWithFares
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

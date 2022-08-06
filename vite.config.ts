@@ -31,12 +31,13 @@ export default defineConfig({
 
   test: {
     globals: true,
-    testTimeout: 30000,
+    testTimeout: 40000,
     environment: "jsdom",
     coverage: {
       reporter: ["lcovonly"],
       enabled: true,
       clean: true
-    }
+    },
+    sequence: { shuffle: true }
   }
 })

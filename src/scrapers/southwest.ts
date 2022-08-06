@@ -1,18 +1,19 @@
-import type { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import { equipmentTypeLookup, finishScraper, gotoPage, processScraperFlowRules, retry, ScraperFlowRule, startScraper } from "./common"
+import type { FlightFare, FlightWithFares } from "../types/scrapers"
+import { browserlessInit, equipmentTypeLookup, gotoPage, log, processScraperFlowRules, retry, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
-const BLOCK_IN_URL: string[] = [  // substrings
-  "/scripts/analytics/", "api/logging", "__imp_apg__",
-  "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico", "go-mpulse.net",
-  "www.uplift-platform.com"
-]
+const meta: ScraperMetadata = {
+  name: "southwest",
+  blockUrls: [
+    "/scripts/analytics/", "api/logging", "__imp_apg__",
+    "techlab-cdn.com", "zeronaught.com", "mpeasylink.com", "favicon.ico", "go-mpulse.net",
+    "www.uplift-platform.com"
+  ],
+}
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  await startScraper("southwest", page, query, { blockInUrl: BLOCK_IN_URL })
-
+export const scraper: Scraper = async (page, query) => {
   await gotoPage(page, "https://www.southwest.com/air/booking/", 5000, "networkidle2", 3)
-  console.log("loaded. starting scraper flow.")
+  log("loaded. starting scraper flow.")
 
   await processScraperFlowRules(page, [
     { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']", done: true },
@@ -28,10 +29,10 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   // Clicking the southwest find button sometimes will redirect back with an error (usually botting)
   const response = await retry(5, async () => {
-    console.log("clicking submit button")
+    log("clicking submit button")
     await page.waitForSelector("#form-mixin--submit-button").then((el: any) => el.click())
 
-    console.log("waiting for response")
+    log("waiting for response")
     const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 5000 })
       .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
       .catch((e) => { throw new Error(e) })
@@ -46,7 +47,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
   const results = response.data?.searchResults?.airProducts[0].details ?? []
   if (response.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
-    console.log("No routes exist between the origin and destination")
+    log("No routes exist between the origin and destination")
 
   const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)
@@ -89,7 +90,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     return bestFare ? flight : undefined
   }).filter((flight): flight is FlightWithFares => !!flight)
 
-  return finishScraper("southwest", page, flights)
+  return flights
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

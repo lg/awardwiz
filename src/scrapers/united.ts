@@ -1,8 +1,22 @@
-import type { FlightWithFares, ScraperFunc } from "../types/scrapers"
+import type { FlightWithFares } from "../types/scrapers"
+import { browserlessInit, log, retry, Scraper, ScraperMetadata } from "./common"
 import type { Trip, UnitedResponse } from "./samples/united"
 
-export const scraper: ScraperFunc = async ({ page, context }) => {
-  void page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${context.origin}&t=${context.destination}&d=${context.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`)
+const meta: ScraperMetadata = {
+  name: "united",
+  blockUrls: [
+  ],
+}
+
+export const scraper: Scraper = async (page, query) => {
+  void retry(5, async () => {
+    log("going to flights page")
+    await page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`, { waitUntil: "domcontentloaded", timeout: 25000 }).catch((err) => {
+      if (!page.isClosed()) throw err   // if this is a lingering request
+    })
+    log("completed results page")
+  })
+
   const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
   const raw = await response.json() as UnitedResponse
 
@@ -12,7 +26,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
     flightsWithFares.push(...flights)
   }
 
-  return { data: { flightsWithFares } }
+  return flightsWithFares
 }
 
 const standardizeResults = (unitedTrip: Trip) => {
@@ -72,4 +86,4 @@ const standardizeResults = (unitedTrip: Trip) => {
   return results
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

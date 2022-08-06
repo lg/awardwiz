@@ -23,6 +23,37 @@ type StartScraperOptions = {
   blockInUrl?: string[]
 }
 
+export type ScraperMetadata = {
+  name: string,
+  blockUrls?: string[]
+  noRandomUserAgent?: boolean
+}
+
+export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFares[]>
+type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
+
+let curMeta: ScraperMetadata
+export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput) => {
+  curMeta = meta
+  log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
+
+  await applyPageBlocks(params.page, { blockInUrl: meta.blockUrls })
+  if (!meta.noRandomUserAgent) await params.page.setUserAgent(randomUserAgent())
+
+  const result = await scraperFunc(params.page, params.context).catch((e) => {
+    log("** Uncaught Error in scraper **\n", e)
+    return []
+  })
+
+  await params.page.close().catch((err) => {})
+  await params.browser.close().catch(() => {})
+
+  log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
+  return { data: { flightsWithFares: result } }
+}
+
+export const log = (...args: any) => console.log(`[${new Date().toISOString().replaceAll(/T|Z/g, " ").substring(0, 19)} ${curMeta.name}] `, ...args)
+
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
 export const gotoPage = async (page: Page, url: string, maxRequestGapMs: number, waitUntil: PuppeteerLifeCycleEvent, retries: number) => {
@@ -33,11 +64,15 @@ export const gotoPage = async (page: Page, url: string, maxRequestGapMs: number,
 
 // This method does a race between: the request, a standard timeout, and a gap-between-requests timeout
 const gotoPageOnce = async (page: Page, url: string, maxRequestGapMs: number, waitUntil: PuppeteerLifeCycleEvent) => {
-  console.log("going to url: ", url)
-  const gotoProm = page.goto(url, { waitUntil })
+  let completed = false
+
+  log("going to url: ", url)
+  const gotoProm = page.goto(url, { waitUntil }).catch((err) => {
+    if (!page.isClosed()) throw err   // this could be a lingering request thats being closed
+    completed = true
+  })
 
   // The timeout is based on the gap between prequests
-  let completed = false
   let gapTimeout: string | number | NodeJS.Timeout | undefined
   let resolveFunc: (value: unknown) => void
   const gapTimeoutProm = new Promise((resolve) => {
@@ -69,7 +104,7 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
     try {
       return await fn()
     } catch (err) {
-      console.log(`Failed attempt. ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
+      log(`Failed attempt. ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
       if (attempt >= maxAttempts)
         throw err
 
@@ -82,7 +117,7 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
 
 const scraperStartTime = Date.now()
 export const startScraper = async (scraper: string, page: Page, query: ScraperQuery, options?: StartScraperOptions) => {
-  console.log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
+  log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
   return applyPageBlocks(page, options)
 }
 
@@ -91,6 +126,7 @@ export const applyPageBlocks = async (page: Page, options?: StartScraperOptions)
     "*/favicon.ico", ".css", ".jpg", ".jpeg", ".png", ".svg", ".woff",
     "*.optimizely.com", "everesttech.net", "userzoom.com", "doubleclick.net", "googleadservices.com", "adservice.google.com/*",
     "connect.facebook.com", "connect.facebook.net", "sp.analytics.yahoo.com",
+    "cdn.cookielaw.org", "*.qualtrics.com", "p11.techlab-cdn.com",
     ...(options?.blockInUrl ?? []),
   ]
   // Use existing CDP connection from Puppeteer (puppeteer >= 14.4.1: page._client -> page._client())
@@ -101,7 +137,7 @@ export const applyPageBlocks = async (page: Page, options?: StartScraperOptions)
 }
 
 export const finishScraper = async (scraper: string, page: Page, flights: FlightWithFares[]) => {
-  console.log(`*** Completed scraper '${scraper}' after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds`)
+  log(`*** Completed scraper '${scraper}' after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds`)
 
   return { data: { flightsWithFares: flights } }
 }
@@ -144,7 +180,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
   let matchedRule = await matchNextRule()
   while (matchedRule) {
-    console.log("matched rule", matchedRule.rule.find)
+    log("matched rule", matchedRule.rule.find)
     //await sleep(400)
 
     // Do not click on the element in certain cases
@@ -169,9 +205,9 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     }
 
     if (matchedRule.rule.andWaitFor) {
-      console.log(`waiting for ${matchedRule.rule.andWaitFor}`)
+      log(`waiting for ${matchedRule.rule.andWaitFor}`)
       await page.waitForSelector(matchedRule.rule.andWaitFor)
-      console.log("got it")
+      log("got it")
     }
 
     if (matchedRule.rule.andThen)

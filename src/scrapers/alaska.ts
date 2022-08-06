@@ -1,9 +1,19 @@
-import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
+import { browserlessInit, gotoPage, log, Scraper, ScraperMetadata } from "./common"
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
+const meta: ScraperMetadata = {
+  name: "alaska",
+  blockUrls: [
+    "resource.alaskaair.net", "p2pcontent-fd-prod.azurefd.net",
+    "geoservice.alaskaair.com"
+  ],
+}
+
+export const scraper: Scraper = async (page, query) => {
   // warm the browser up
-  await page.goto("https://m.alaskaair.com/shopping/?timeout=true")
+  await gotoPage(page, "https://m.alaskaair.com/shopping/?timeout=true", 5000, "domcontentloaded", 5)
 
+  log("doing xhr")
   const htmlResponse = await page.evaluate(async (context: ScraperQuery) => {
     const options: RequestInit = {}
     options.headers = {
@@ -23,6 +33,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
 
   }, query)
 
+  log("parsing")
   await page.setContent(htmlResponse)
   const res = await page.$$eval(".optionList > li", (elements: Element[]) => {
     // @ts-expect-error
@@ -85,9 +96,10 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
   // Get the aircraft type for each flight from the details page
+  log("getting aircraft details")
   const flights: FlightWithFares[] = []
   for await (const flight of res) {
-    await page.goto(flight.aircraft!)    // should be a URL at this point
+    await gotoPage(page, flight.aircraft!, 5000, "domcontentloaded", 5)
 
     const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
     const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)
@@ -103,7 +115,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     flights.push({ ...flight, aircraft, duration })
   }
 
-  return { data: { flightsWithFares: flights } }
+  return flights
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

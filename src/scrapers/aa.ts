@@ -1,16 +1,18 @@
-import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { pptrFetch, startScraper, finishScraper } from "./common"
+import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
+import { browserlessInit, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
 import type { AAResponse, Slice } from "./samples/aa"
 
-const BLOCK_IN_URL: string[] = [  // substrings
-  "customer.cludo.com"
-  // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
-]
+const meta: ScraperMetadata = {
+  name: "aa",
+  blockUrls: [
+    "customer.cludo.com", // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
+  ],
+}
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  await startScraper("aa", page, query, { blockInUrl: BLOCK_IN_URL })
+export const scraper: Scraper = async (page, query) => {
+  await gotoPage(page, "https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false", 5000, "domcontentloaded", 5)
 
-  await page.goto("https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false")
+  log("fetching itinerary")
   const raw = await pptrFetch(page, "https://www.aa.com/booking/api/search/itinerary", {
     method: "POST",
     headers: {
@@ -38,6 +40,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
       "loyaltyInfo": null
     })
   })
+  log("parsing")
   const json = JSON.parse(raw) as AAResponse
 
   if (json.error && json.error !== "309")
@@ -51,7 +54,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     flightsWithFares.push(...flights)
   }
 
-  return finishScraper("aa", page, flightsWithFares)
+  return flightsWithFares
 }
 
 const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFares[] => (
@@ -101,4 +104,4 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
   }).filter((result): result is FlightWithFares => !!result)
 )
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

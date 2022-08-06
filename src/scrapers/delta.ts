@@ -3,16 +3,20 @@
 // proxy server.
 
 import { HTTPResponse } from "puppeteer"
-import { FlightFare, FlightWithFares, ScraperFunc } from "../types/scrapers"
-import { processScraperFlowRules, randomUserAgent } from "./common"
+import { FlightFare, FlightWithFares } from "../types/scrapers"
+import { browserlessInit, gotoPage, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
 
-export const scraper: ScraperFunc = async ({ page, context: query }) => {
+const meta: ScraperMetadata = {
+  name: "delta",
+  blockUrls: ["dlt-beacon.dynatrace-managed.com", "p11.techlab-cdn.com"],
+}
+
+export const scraper: Scraper = async (page, query) => {
   console.log("going to delta main page")
-  await page.setUserAgent(randomUserAgent())
-  await page.goto("https://www.delta.com/flight-search/book-a-flight")
+  await gotoPage(page, "https://www.delta.com/flight-search/book-a-flight", 7000, "load", 5)
 
   const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
 
@@ -34,7 +38,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   if (errorMsg) {
     const errorText = await errorMsg.evaluate((el: any) => el.innerText)
     if (errorText.includes("no results were found for your search"))
-      return { data: { flightsWithFares: [] } }
+      return []
     throw new Error(errorText)
   }
 
@@ -49,7 +53,7 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
     flightsWithFares.push(...flights)
   }
 
-  return { data: { flightsWithFares } }
+  return flightsWithFares
 }
 
 const standardizeResults = (raw: DeltaResponse) => {
@@ -99,4 +103,4 @@ const standardizeResults = (raw: DeltaResponse) => {
   return results
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)

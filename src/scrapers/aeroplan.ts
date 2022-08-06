@@ -6,18 +6,20 @@
 // - A330|787|777 have pods in Business class (and no First class)
 
 import { HTTPResponse } from "puppeteer"
-import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
-import { startScraper, finishScraper } from "./common"
+import { FlightWithFares, FlightFare } from "../types/scrapers"
+import { ScraperMetadata, Scraper, browserlessInit, gotoPage } from "./common"
 import type { AeroplanResponse } from "./samples/aeroplan"
 
-const BLOCK_IN_URL: string[] = [  // substrings
-  "p11.techlab-cdn.com", "assets.adobedtm.com"
-]
+const meta: ScraperMetadata = {
+  name: "aeroplan",
+  blockUrls: [
+    "p11.techlab-cdn.com", "assets.adobedtm.com", // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
+    "aircanada.demdex.net" // TODO I DONT THINK THESE WORK
+  ],
+}
 
-export const scraper: ScraperFunc = async ({ page, context }) => {
-  await startScraper("aeroplan", page, context, { blockInUrl: BLOCK_IN_URL })
-
-  void page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)
+export const scraper: Scraper = async (page, query) => {
+  void gotoPage(page, `https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`, 5000, "domcontentloaded", 5)
 
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
@@ -26,11 +28,11 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
 
   const flightsWithFares: FlightWithFares[] = []
   if (raw.data?.airBoundGroups && raw.data.airBoundGroups.length > 0) {
-    const flights = standardizeResults(raw, context.origin, context.destination)
+    const flights = standardizeResults(raw, query.origin, query.destination)
     flightsWithFares.push(...flights)
   }
 
-  return finishScraper("aeroplan", page, flightsWithFares)
+  return flightsWithFares
 }
 
 const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDestination: string) => {
@@ -104,4 +106,4 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
   return results
 }
 
-module.exports = scraper
+module.exports = (params: any) => browserlessInit(meta, scraper, params)
