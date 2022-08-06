@@ -7,13 +7,21 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, ScraperFunc, FlightFare } from "../types/scrapers"
+import { startScraper, finishScraper } from "./common"
 import type { AeroplanResponse } from "./samples/aeroplan"
 
+const BLOCK_IN_URL: string[] = [  // substrings
+  "p11.techlab-cdn.com", "assets.adobedtm.com"
+]
+
 export const scraper: ScraperFunc = async ({ page, context }) => {
-  page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)
+  await startScraper("aeroplan", page, context, { blockInUrl: BLOCK_IN_URL })
+
+  void page.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${context.origin}&dest0=${context.destination}&departureDate0=${context.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`)
+
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
     return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
-  }, { timeout: 20000 })
+  }, { timeout: 27000 })
   const raw = await response.json() as AeroplanResponse
 
   const flightsWithFares: FlightWithFares[] = []
@@ -22,7 +30,7 @@ export const scraper: ScraperFunc = async ({ page, context }) => {
     flightsWithFares.push(...flights)
   }
 
-  return { data: { flightsWithFares } }
+  return finishScraper("aeroplan", page, flightsWithFares)
 }
 
 const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDestination: string) => {

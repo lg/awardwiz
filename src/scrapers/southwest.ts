@@ -9,7 +9,7 @@ const BLOCK_IN_URL: string[] = [  // substrings
 ]
 
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
-  startScraper("southwest", page, query, { blockInUrl: BLOCK_IN_URL })
+  await startScraper("southwest", page, query, { blockInUrl: BLOCK_IN_URL })
 
   await gotoPage(page, "https://www.southwest.com/air/booking/", 5000, "networkidle2", 3)
   console.log("loaded. starting scraper flow.")

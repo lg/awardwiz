@@ -1,8 +1,15 @@
 import { FlightFare, FlightWithFares, ScraperFunc, ScraperQuery } from "../types/scrapers"
-import { pptrFetch } from "./common"
+import { pptrFetch, startScraper, finishScraper } from "./common"
 import type { AAResponse, Slice } from "./samples/aa"
 
+const BLOCK_IN_URL: string[] = [  // substrings
+  "customer.cludo.com"
+  // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
+]
+
 export const scraper: ScraperFunc = async ({ page, context: query }) => {
+  await startScraper("aa", page, query, { blockInUrl: BLOCK_IN_URL })
+
   await page.goto("https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false")
   const raw = await pptrFetch(page, "https://www.aa.com/booking/api/search/itinerary", {
     method: "POST",
@@ -33,19 +40,18 @@ export const scraper: ScraperFunc = async ({ page, context: query }) => {
   })
   const json = JSON.parse(raw) as AAResponse
 
-  if (json.errorNumber === 1100)  // historic date
-    return { data: { flightsWithFares: [] } }
-
   if (json.error && json.error !== "309")
     throw new Error(json.error)
 
+  if (json.errorNumber !== 1100) { /* historic date */ }
+
   const flightsWithFares: FlightWithFares[] = []
-  if (json.slices.length > 0) {
+  if (json.slices && json.slices.length > 0) {
     const flights = standardizeResults(json.slices, query)
     flightsWithFares.push(...flights)
   }
 
-  return { data: { flightsWithFares } }
+  return finishScraper("aa", page, flightsWithFares)
 }
 
 const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFares[] => (

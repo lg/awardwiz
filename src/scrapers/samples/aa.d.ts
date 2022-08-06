@@ -3,7 +3,7 @@ export interface AAResponse {
   errorNumber?: number
   responseMetadata: ResponseMetadata
   products: string[]
-  slices: Slice[]
+  slices?: Slice[]
   utag: Utag
 }
 
