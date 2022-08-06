@@ -28,16 +28,18 @@ export const scraper: Scraper = async (page, query) => {
     { find: "#shopWithMiles" }
   ])
 
-  await processScraperFlowRules(page, [
+  const result = await processScraperFlowRules(page, [
     { find: "#btnSubmit" },
     { find: "#advance-search-global-err-msg", done: true },
-    { find: "button.btn-primary-cta", done: true }
+    { find: "button.btn-primary-cta", done: true },
+    { find: "td.selected .naText", done: true }
   ])
 
-  const errorMsg = await page.$("#advance-search-global-err-msg")
-  if (errorMsg) {
-    const errorText = await errorMsg.evaluate((el: any) => el.innerText)
-    if (errorText.includes("no results were found for your search"))
+  if (result === "td.selected .naText") return []   // no results
+
+  if (result === "#advance-search-global-err-msg") {
+    const errorText = await page.$eval("#advance-search-global-err-msg", (el: any) => el.innerText)
+    if (errorText.includes("no results were found for your search"))  // another way for no results
       return []
     throw new Error(errorText)
   }

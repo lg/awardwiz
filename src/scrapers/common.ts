@@ -27,6 +27,7 @@ export type ScraperMetadata = {
   name: string,
   blockUrls?: string[]
   noRandomUserAgent?: boolean
+  noBlocking?: boolean
 }
 
 export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFares[]>
@@ -35,9 +36,10 @@ type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: num
 let curMeta: ScraperMetadata
 export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput) => {
   curMeta = meta
+  const scraperStartTime = Date.now()
   log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
 
-  await applyPageBlocks(params.page, { blockInUrl: meta.blockUrls })
+  if (!meta.noBlocking) await applyPageBlocks(params.page, { blockInUrl: meta.blockUrls })
   if (!meta.noRandomUserAgent) await params.page.setUserAgent(randomUserAgent())
 
   const result = await scraperFunc(params.page, params.context).catch((e) => {
@@ -115,12 +117,6 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
   return execute(1)
 }
 
-const scraperStartTime = Date.now()
-export const startScraper = async (scraper: string, page: Page, query: ScraperQuery, options?: StartScraperOptions) => {
-  log(`*** Starting scraper '${scraper}' with ${JSON.stringify(query)}}`)
-  return applyPageBlocks(page, options)
-}
-
 export const applyPageBlocks = async (page: Page, options?: StartScraperOptions) => {
   const blockedResources = [
     "*/favicon.ico", ".css", ".jpg", ".jpeg", ".png", ".svg", ".woff",
@@ -136,13 +132,7 @@ export const applyPageBlocks = async (page: Page, options?: StartScraperOptions)
   await client.send("Network.setBlockedURLs", { urls: blockedResources })
 }
 
-export const finishScraper = async (scraper: string, page: Page, flights: FlightWithFares[]) => {
-  log(`*** Completed scraper '${scraper}' after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds`)
-
-  return { data: { flightsWithFares: flights } }
-}
-
-export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[]) => {
+export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[]): Promise<string> => {
   const skipIndexes: number[] = []
 
   const matchNextRule = async () => {
@@ -217,7 +207,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       debugger
 
     if (matchedRule.rule.done)
-      return matchedRule.element.evaluate((el: any) => el.innerText)
+      return matchedRule.rule.find
 
     if (matchedRule.rule.fail)
       throw new Error(await matchedRule.element.evaluate((el: any) => el.innerText))
