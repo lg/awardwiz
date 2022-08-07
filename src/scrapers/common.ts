@@ -15,7 +15,7 @@ export type ScraperFlowRule = {
   andDebugger?: true
   andThen?: ScraperFlowRule[]
   reusable?: boolean
-  fail?: boolean
+  throw?: string   // an error will be thrown with this text
   clickMethod?: "default" | "offset55" | "eval"    // offset55 = clicks at (5,5) from the top of the button, eval = uses element.evaluate and does an element.click()
 }
 
@@ -54,7 +54,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
   return { data: { flightsWithFares: result } }
 }
 
-export const log = (...args: any) => console.log(`[${new Date().toISOString().replaceAll(/T|Z/g, " ").substring(0, 19)} ${curMeta.name}] `, ...args)
+export const log = (...args: any) => console.log(`[${(new Date()).toLocaleString()} ${curMeta.name}] `, ...args)
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
@@ -184,6 +184,9 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       }
     }
 
+    if (matchedRule.rule.andDebugger)
+      debugger
+
     if (matchedRule.rule.type) {
       await matchedRule.element.focus()
       await page.waitForTimeout(10)
@@ -203,14 +206,11 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     if (matchedRule.rule.andThen)
       await processScraperFlowRules(page, matchedRule.rule.andThen)
 
-    if (matchedRule.rule.andDebugger)
-      debugger
-
     if (matchedRule.rule.done)
       return matchedRule.rule.find
 
-    if (matchedRule.rule.fail)
-      throw new Error(await matchedRule.element.evaluate((el: any) => el.innerText))
+    if (matchedRule.rule.throw)
+      throw new Error(matchedRule.rule.throw)
 
     matchedRule = await matchNextRule()
   }
