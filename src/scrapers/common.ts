@@ -44,7 +44,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
 
   const result = await scraperFunc(params.page, params.context).catch((e) => {
     log("** Uncaught Error in scraper **\n", e)
-    return []
+    throw e
   })
 
   await params.page.close().catch((err) => {})
@@ -61,6 +61,8 @@ export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resol
 export const gotoPage = async (page: Page, url: string, maxRequestGapMs: number, waitUntil: PuppeteerLifeCycleEvent, retries: number) => {
   await retry(retries, async () => {
     await gotoPageOnce(page, url, maxRequestGapMs, waitUntil)
+    if ((await page.content()).includes("You don't have permission to access"))
+      throw new Error("You don't have permission to access xyz on this server")
   })
 }
 
