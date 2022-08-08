@@ -1,5 +1,5 @@
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, equipmentTypeLookup, gotoPage, log, processScraperFlowRules, retry, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
+import { browserlessInit, equipmentTypeLookup, gotoUrl, log, processScraperFlowRules, retry, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
 const meta: ScraperMetadata = {
@@ -12,7 +12,7 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  await gotoPage(page, "https://www.southwest.com/air/booking/", 5000, "networkidle2", 3)
+  await gotoUrl({ page, url: "https://www.southwest.com/air/booking/", waitUntil: "networkidle0" })
   log("loaded. starting scraper flow.")
 
   await processScraperFlowRules(page, [
@@ -51,6 +51,8 @@ export const scraper: Scraper = async (page, query) => {
 
   const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)
+      return undefined
+    if (!result.fareProducts)   // this will sometimes be missing when a flight has already taken off for same-day flights
       return undefined
 
     const flight: FlightWithFares = {

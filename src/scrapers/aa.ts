@@ -1,5 +1,5 @@
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoUrl, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
 import type { AAResponse, Slice } from "./samples/aa"
 
 const meta: ScraperMetadata = {
@@ -10,7 +10,9 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  await gotoPage(page, "https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false", 5000, "domcontentloaded", 5)
+  await gotoUrl({ page,
+    url: "https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false",
+  })
 
   log("fetching itinerary")
   const raw = await pptrFetch(page, "https://www.aa.com/booking/api/search/itinerary", {

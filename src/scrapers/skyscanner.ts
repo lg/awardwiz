@@ -8,7 +8,13 @@ import type { SkyScannerResponse } from "./samples/skyscanner"
 const meta: ScraperMetadata = {
   name: "skyscanner",
   blockUrls: [
-    "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net", "px-client.net", "slipstream.skyscanner.net"
+    "images.skyscnr.com", "css.skyscnr.com", "b.px-cdn.net", "px-client.net", "slipstream.skyscanner.net",
+    "xhr/api/v2/collector", "/base-stylesheet/", "/js-tag-manager/", "/funnel_events/",
+    "xsell-content", "applog/public/web-browser", "HotelsFrontendHotelsAction",
+    "pixel/impression", "hotels-advert", "cross-sell", "pixel/refreshUpdate", "translations",
+    "LivePricesDisplayed", "client-tracking-sync", "price-alerts-signup-src",
+    "delivery-service", "/culture/", "/copyright/", "strevda-runtime", "/captcha.js",
+    "/sttc/shared-libs/react-dom/", "/shared-libs/react/", "/sttc/shared-libs/*"
   ],
 }
 

@@ -7,23 +7,26 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { ScraperMetadata, Scraper, browserlessInit, gotoPage } from "./common"
+import { ScraperMetadata, Scraper, browserlessInit, gotoUrl } from "./common"
 import type { AeroplanResponse } from "./samples/aeroplan"
 
 const meta: ScraperMetadata = {
   name: "aeroplan",
   blockUrls: [
     "p11.techlab-cdn.com", "assets.adobedtm.com", // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
-    "aircanada.demdex.net" // TODO I DONT THINK THESE WORK
+    "aircanada.demdex.net", // TODO I DONT THINK THESE WORK
+    "assets/favicon_package", "assets/json/header", "assets/json/footer"
   ],
 }
 
 export const scraper: Scraper = async (page, query) => {
-  void gotoPage(page, `https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`, 5000, "domcontentloaded", 5)
-
-  const response = await page.waitForResponse((checkResponse: HTTPResponse) => {
-    return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
-  }, { timeout: 27000 })
+  const response = await gotoUrl({ page,
+    url: `https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`,
+    waitForResponse: (checkResponse: HTTPResponse) => {
+      return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
+    },
+    maxResponseGapMs: 7000
+  })
   const raw = await response.json() as AeroplanResponse
 
   const flightsWithFares: FlightWithFares[] = []

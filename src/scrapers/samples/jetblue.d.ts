@@ -7,6 +7,15 @@ export interface JetBlueResponse {
   currency: string
   programName: string
   isTransatlanticRoute: boolean
+  error?: JetBlueError
+}
+
+export interface JetBlueError {
+  httpStatus: number
+  code: string
+  message: string
+  guid: string
+  ic: string
 }
 
 export interface Dategroup {

@@ -5,16 +5,9 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Chrome",
-      "request": "launch",
-      "type": "chrome",
-      "url": "http://localhost:3000",
-      "webRoot": "${workspaceFolder}"
-    },
-    {
       "type": "node",
       "request": "launch",
-      "name": "Debug Scraper",
+      "name": "Scraper Remote",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "program": "${workspaceFolder}/src/scrapers/debug.ts",
       "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
@@ -24,13 +17,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tests",
-      "autoAttachChildProcesses": true,
+      "name": "Scraper Local",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
-      "args": ["run"],
-      "smartStep": true,
-      "console": "integratedTerminal"
+      "program": "${workspaceFolder}/src/scrapers/debug-local.ts",
+      "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
+      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }

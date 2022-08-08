@@ -5,7 +5,7 @@ import { ScraperQuery, ScraperResults } from "../types/scrapers"
 
 const main = (async () => {
   console.log("loading files")
-  const query = { origin: "SFO", destination: "JFK", scraper: "jetblue", departureDate: "2022-11-05" }
+  const query = { origin: "YYZ", destination: "YOW", scraper: "aeroplan", departureDate: "2022-08-09" }
   const commonTS = await fs.readFile("src/scrapers/common.ts", "utf8")
   const scraperTS = await fs.readFile(`src/scrapers/${query.scraper}.ts`, "utf8")
 

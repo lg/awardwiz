@@ -1,5 +1,5 @@
 import type { FlightWithFares } from "../types/scrapers"
-import { browserlessInit, log, retry, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoUrl, Scraper, ScraperMetadata } from "./common"
 import type { Trip, UnitedResponse } from "./samples/united"
 
 const meta: ScraperMetadata = {
@@ -9,15 +9,10 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  void retry(5, async () => {
-    log("going to flights page")
-    await page.goto(`https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`, { waitUntil: "domcontentloaded", timeout: 25000 }).catch((err) => {
-      if (!page.isClosed()) throw err   // if this is a lingering request
-    })
-    log("completed results page")
+  const response = await gotoUrl({ page,
+    url: `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&fareWheel=False`,
+    waitForResponse: "https://www.united.com/api/flight/FetchFlights"
   })
-
-  const response = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 20000 })
   const raw = await response.json() as UnitedResponse
 
   const flightsWithFares: FlightWithFares[] = []

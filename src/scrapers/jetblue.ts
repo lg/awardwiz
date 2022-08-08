@@ -1,5 +1,5 @@
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { browserlessInit, log, retry, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoUrl, log, Scraper, ScraperMetadata } from "./common"
 import type { JetBlueResponse } from "./samples/jetblue"
 
 const meta: ScraperMetadata = {
@@ -9,16 +9,19 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  void retry(5, async () => {
-    log("going to flights page")
-    await page.goto(`https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`, { waitUntil: "domcontentloaded", timeout: 15000 }).catch((err) => {
-      if (!page.isClosed()) throw err   // if this is a lingering request
-    })
-    log("completed results page")
+  const response = await gotoUrl({ page,
+    url: `https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`,
+    waitForResponse: (checkResponse) => checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST"
   })
 
-  const response = await page.waitForResponse((checkResponse) => checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST", { timeout: 25000 })
   const json = await response.json() as JetBlueResponse
+  if (json.error) {
+    if (json.error.code === "JB_INVALID_ITINERARY_DATE_TIME") {
+      log("invalid date")
+      return []
+    }
+    throw new Error(json.error.message)
+  }
 
   const flightsWithFares: FlightWithFares[] = []
   if (json.itinerary.length > 0) {

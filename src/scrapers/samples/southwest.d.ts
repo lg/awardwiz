@@ -59,7 +59,7 @@ export interface Detail {
   departureDateTime: string
   arrivalDateTime: string
   segments: Segment[]
-  fareProducts: FareProducts
+  fareProducts?: FareProducts
 }
 
 export interface Segment {

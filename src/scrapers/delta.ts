@@ -4,7 +4,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPage, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoUrl, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
@@ -15,18 +15,40 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  console.log("going to delta main page")
-  await gotoPage(page, "https://www.delta.com/flight-search/book-a-flight", 7000, "load", 5)
+  log("going to delta main page")
+  await gotoUrl({ page, url: "https://www.delta.com/flight-search/book-a-flight" })
 
   const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
 
-  await processScraperFlowRules(page, [
+  const ret = await processScraperFlowRules(page, [
     { find: "#fromAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.origin, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
     { find: "#toAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.destination, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
     { find: "select[name='selectTripType']", selectValue: "ONE_WAY" },
-    { find: "#calDepartLabelCont", andWaitFor: ".dl-datepicker-calendar", andThen: [{ find: `a[data-date^='${formattedDate}']`, clickMethod: "offset55", andWaitFor: `a[data-date^='${formattedDate}'][class*='dl-selected-date']`, andThen: [{ find: "button.donebutton", andWaitFor: "div[class*='calDispValueCont']:not([class*='open'])" }], done: true }, { find: "a[aria-label='Next']:not([class*='no-next'])", reusable: true }] },
+    { find: "#calDepartLabelCont",
+      andWaitFor: ".dl-datepicker-calendar",
+      andThen: [
+        {
+          find: `a[data-date^='${formattedDate}']`,
+          clickMethod: "offset55",
+          andWaitFor: `a[data-date^='${formattedDate}'][class*='dl-selected-date']`,
+          andThen: [{ find: "button.donebutton", andWaitFor: "div[class*='calDispValueCont']:not([class*='open'])" }],
+          done: true
+        },
+        { find: `span[data-date^='${formattedDate}']`, throw: "historical date" }, // a date in the past
+        { find: "a[aria-label='Next']:not([class*='no-next'])", reusable: true }
+      ]
+    },
     { find: "#shopWithMiles" }
-  ])
+  ]).catch((e) => {
+    if (e.message === "historical date")
+      return "historical date"
+    throw e
+  })
+
+  if (ret === "historical date") {
+    log("request was for a date in the past")
+    return []
+  }
 
   const result = await processScraperFlowRules(page, [
     { find: "#btnSubmit" },
@@ -36,10 +58,11 @@ export const scraper: Scraper = async (page, query) => {
   ])
 
   if (result === "td.selected .naText") return []   // no results
-
   if (result === "#advance-search-global-err-msg") {
     const errorText = await page.$eval("#advance-search-global-err-msg", (el: any) => el.innerText)
     if (errorText.includes("no results were found for your search"))  // another way for no results
+      return []
+    if (errorText.includes("there is a problem with the flight date(s) you have requested"))  // usually a same-day search
       return []
     throw new Error(errorText)
   }

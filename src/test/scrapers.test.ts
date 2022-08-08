@@ -45,7 +45,7 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
     return raw.data
   }
 
-  test.concurrent(`can do a basic popular search ${debugText}`, async () => {
+  test.concurrent(`can do a basic search ${debugText}`, async () => {
     const results = await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]])
 
     expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(1)
@@ -64,6 +64,10 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
         expect(undefinedFareKeys, `Expected flight \n\n${JSON.stringify(flight)}\n\n and fare \n\n${JSON.stringify(fare)}\n\n to not have any undefined keys`).toEqual([])
       })
     })
+  })
+
+  test.concurrent("can do a basic search same-day", async () => {  // run this at about 10pm PT to best test it
+    await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]], moment().format("YYYY-MM-DD"))
   })
 
   // it("fails gracefully with historic searches", async () => {

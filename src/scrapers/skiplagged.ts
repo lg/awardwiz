@@ -3,18 +3,20 @@
 
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPage, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoUrl, Scraper, ScraperMetadata } from "./common"
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 const meta: ScraperMetadata = {
   name: "skiplagged",
-  blockUrls: ["www.gstatic.com"],
+  blockUrls: ["www.gstatic.com", "/img/", "api/user_info.php", "flex.php"],
 }
 
 export const scraper: Scraper = async (page, query) => {
-  void gotoPage(page, `https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}#`, 5000, "domcontentloaded", 5)
+  const response = await gotoUrl({ page,
+    url: `https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}`,
+    waitForResponse: (checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php")
+  })
 
-  const response = await page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php"))
   const json: SkipLaggedResponse = await response.json()
 
   const flightsWithFares: FlightWithFares[] = Object.entries(json.flights).map(([id, flight]) => {

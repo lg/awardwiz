@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
 
-import type { ElementHandle, Page, PuppeteerLifeCycleEvent } from "puppeteer"
+import type { ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
 import type { FlightWithFares, ScraperQuery } from "../types/scrapers"
 
 export type ScraperFlowRule = {
@@ -58,42 +58,90 @@ export const log = (...args: any) => console.log(`[${(new Date()).toLocaleString
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
-export const gotoPage = async (page: Page, url: string, maxRequestGapMs: number, waitUntil: PuppeteerLifeCycleEvent, retries: number) => {
-  await retry(retries, async () => {
-    await gotoPageOnce(page, url, maxRequestGapMs, waitUntil)
-    if ((await page.content()).includes("You don't have permission to access"))
-      throw new Error("You don't have permission to access xyz on this server")
+// Goes to a URL with a bunch of conveniences
+//   - It will make the request and a child response can come in before the main request is completed
+//   - Responses coming in throughout the request will reset the gap timeout
+//   - An expected response will stop the parent request
+//   - If the gap timeout happens or the expected child response doesn't happen, the parent request is aborted and retried
+//   - If the page is closed, everything ends gracefully *** TODO: this is not implemented yet ***
+type WaitForResponse = string | ((res: HTTPResponse) => boolean | Promise<boolean>)
+type GotoUrlOptions = { page: Page, url: string, retries?: number, maxResponseGapMs?: number, maxTimeoutMs?: number, waitForResponse?: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent }
+export const gotoUrl = async ({ maxTimeoutMs = 25000, retries = 5, ...opts }: GotoUrlOptions) => {
+  const startTime = Date.now()
+  return retry(retries, async () => {
+    return gotoUrlOnce({ ...opts, maxTimeoutMs: maxTimeoutMs - (Date.now() - startTime) })
   })
 }
 
-// This method does a race between: the request, a standard timeout, and a gap-between-requests timeout
-const gotoPageOnce = async (page: Page, url: string, maxRequestGapMs: number, waitUntil: PuppeteerLifeCycleEvent) => {
+const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxResponseGapMs = 5000, maxTimeoutMs, waitForResponse }: Omit<GotoUrlOptions, "retries">) => {
+  let gapTimeoutTimer: number = -1
+  let maxTimeoutTimer
   let completed = false
 
-  log("going to url: ", url)
-  const gotoProm = page.goto(url, { waitUntil }).catch((err) => {
-    if (!page.isClosed()) throw err   // this could be a lingering request thats being closed
-    completed = true
+  // The global timeout (including all retries)
+  const maxTimeoutProm = new Promise<string>((resolve) => {
+    maxTimeoutTimer = setTimeout(() => resolve("max timeout"), maxTimeoutMs)
   })
 
-  // The timeout is based on the gap between prequests
-  let gapTimeout: string | number | NodeJS.Timeout | undefined
-  let resolveFunc: (value: unknown) => void
-  const gapTimeoutProm = new Promise((resolve) => {
-    resolveFunc = resolve
-    gapTimeout = setTimeout(resolveFunc, maxRequestGapMs * 2) // initial connection can take longer
+  log(`going to url: ${url}`)
+  const urlProm = page.goto(url, { waitUntil, timeout: 0 }).then((resp) => {
+    log("parent url finished loading")
+    return resp ?? undefined
+  }).catch((err) => {
+    log(`parent url error: ${err}`)
+    return err.message
   })
 
-  const responsesProm = page.waitForResponse((req) => {
-    if (gapTimeout) clearTimeout(gapTimeout)
+  // There is a simple mode for this function where not specifying waitForResponse will just do a
+  // request for the url waiting for the waitUntil event. This retains the retry ability above.
+  if (!waitForResponse) {
+    const response = await Promise.race([urlProm, maxTimeoutProm])
+    if (response === undefined || typeof response === "string") throw new Error(response)
+
+    clearTimeout(maxTimeoutTimer)
+    // TODO: maybe the Abort call is required here
+
+    return response as HTTPResponse
+  }
+
+  // Gap timeout timer
+  let resolveFunc: TimerHandler
+  const gapTimeoutProm = new Promise<string>((resolve) => {
+    resolveFunc = () => { resolve("gap timeout") }
+    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs)
+  })
+
+  const responseProm = page.waitForResponse((res: HTTPResponse) => {
+    // If this callback happens after the request is done, ignore it
     if (completed) return true
-    gapTimeout = setTimeout(resolveFunc, maxRequestGapMs)
-    return false
-  })
+    // if (!res.url().startsWith("data:")) log(`url coming in: ${res.url()}`)
 
-  const winner = await Promise.race([gotoProm, gapTimeoutProm, responsesProm])
+    // Reset the gap timeout timer since we got a response
+    clearTimeout(gapTimeoutTimer)
+    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs)
+
+    if (typeof waitForResponse === "string") return res.url() === waitForResponse
+    return waitForResponse!(res)
+  }, { timeout: 0 })
+
+  // Either we get a response or a timeout
+  const ret = await Promise.race([responseProm, gapTimeoutProm, maxTimeoutProm])
+
+  // Ensure that events don't happen after we're completed
   completed = true
-  if (winner === undefined) throw new Error("Timeout from waiting for page to load")
+  if (gapTimeoutTimer !== -1) clearTimeout(gapTimeoutTimer)
+  clearTimeout(maxTimeoutTimer)
+
+  // Timeouts resolve as strings
+  if (ret === "max timeout" || ret === "gap timeout") {
+    // @ts-expect-error
+    // eslint-disable-next-line no-underscore-dangle
+    const client = typeof page._client === "function" ? page._client() : page._client
+    await client.send("Page.stopLoading")
+
+    throw new Error(ret)
+  }
+  return ret as HTTPResponse
 }
 
 export const waitFor = async function waitFor(f: () => boolean) {
@@ -108,6 +156,10 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
     try {
       return await fn()
     } catch (err) {
+      if ((err as Error).message === "max timeout") {
+        log("Bailing out of retry because of max timeout")
+        throw err
+      }
       log(`Failed attempt. ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
       if (attempt >= maxAttempts)
         throw err
