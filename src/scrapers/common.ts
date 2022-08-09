@@ -78,9 +78,11 @@ const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxRespo
   let maxTimeoutTimer
   let completed = false
 
+  const singleUrlMode = !waitForResponse
+
   // The global timeout (including all retries)
   const maxTimeoutProm = new Promise<string>((resolve) => {
-    maxTimeoutTimer = setTimeout(() => resolve("max timeout"), maxTimeoutMs)
+    maxTimeoutTimer = setTimeout(() => resolve(singleUrlMode ? "gap timeout" : "max timeout"), singleUrlMode ? maxResponseGapMs : maxTimeoutMs)
   })
 
   log(`going to url: ${url}`)
@@ -88,13 +90,14 @@ const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxRespo
     log("parent url finished loading")
     return resp ?? undefined
   }).catch((err) => {
+    if (completed) return "already completed"    // the request had already finished
     log(`parent url error: ${err}`)
     return err.message
   })
 
   // There is a simple mode for this function where not specifying waitForResponse will just do a
   // request for the url waiting for the waitUntil event. This retains the retry ability above.
-  if (!waitForResponse) {
+  if (singleUrlMode) {
     const response = await Promise.race([urlProm, maxTimeoutProm])
     if (response === undefined || typeof response === "string") throw new Error(response)
 
@@ -160,7 +163,7 @@ export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promi
         log("Bailing out of retry because of max timeout")
         throw err
       }
-      log(`Failed attempt. ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
+      log(`Failed attempt (${(err as Error).message}). ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
       if (attempt >= maxAttempts)
         throw err
 
@@ -272,13 +275,17 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
   return ""
 }
 
-export const pptrFetch = async (page: Page, url: string, init: RequestInit) => {
+export const pptrFetch = async (page: Page, url: string, init: RequestInit, timeoutMs: number = 25000) => {
   // eslint-disable-next-line no-shadow
-  return page.evaluate(async (url, init) => {
-    const fetchResponse = await fetch(url, init)
+  return page.evaluate(async (url, init, timeoutMs) => {
+    const ac = new AbortController()
+    const { signal } = ac
+    void setTimeout(() => { ac.abort() }, timeoutMs)
+
+    const fetchResponse = await fetch(url, { ...init, signal })
     const resp = fetchResponse.text()
     return resp
-  }, url, init)
+  }, url, init, timeoutMs)
 }
 
 export const equipmentTypeLookup: Record<string, string> = {
