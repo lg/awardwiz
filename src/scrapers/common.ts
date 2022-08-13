@@ -258,7 +258,6 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
   let matchedRule = await matchNextRule()
   while (matchedRule) {
-    log("matched rule", matchedRule.rule.find)
     //await sleep(400)
 
     if (matchedRule.rule.andContainsText) {
@@ -269,6 +268,8 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       } else {
         log("matched text", text)
       }
+    } else {
+      log("matched rule", matchedRule.rule.find)
     }
 
     // Do not click on the element in certain cases

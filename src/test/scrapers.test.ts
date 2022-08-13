@@ -88,8 +88,17 @@ test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", as
   expect(results.flightsWithFares.length).toBe(0)
 })
 
+test.only.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
+  const futureDate = moment().add(10, "months").format("YYYY-MM-DD")
+  const results = await runQuery(scraperName, scraper.popularRoute, futureDate)
+  expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(1)
+  results.flightsWithFares.forEach((flight) => {
+    const receivedDate = moment(flight.departureDateTime).format("YYYY-MM-DD")
+    expect(receivedDate, `Expected date from results (${receivedDate}) to be the same as we searched (${futureDate})`).equals(futureDate)
+  })
+})
+
 // more:
-//   - 11 months from now
 //   // it.todo("can distinguish a 3-class domestic vs 2-class domestic", async () => {})
 //   // it.todo("can properly deal with day +1 arrival", async () => { }, 20000)
 //   // it.todo("fails gracefully when no results", async () => { }, 20000)
