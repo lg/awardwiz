@@ -1,5 +1,5 @@
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { browserlessInit, gotoUrl, log, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoPageAndWaitForResponse, log, Scraper, ScraperMetadata } from "./common"
 import type { JetBlueResponse } from "./samples/jetblue"
 
 const meta: ScraperMetadata = {
@@ -9,7 +9,7 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  const response = await gotoUrl({ page,
+  const response = await gotoPageAndWaitForResponse({ page,
     url: `https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`,
     waitForResponse: (checkResponse) => checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST",
     maxResponseGapMs: 10000,

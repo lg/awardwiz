@@ -25,7 +25,7 @@ rules:
   semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
   max-len: off
   no-unused-vars: ["error", { "args": "none", "varsIgnorePattern": "_.*" }]
-  "@typescript-eslint/no-unused-vars": ["error", { "args": "none" }]
+  "@typescript-eslint/no-unused-vars": off # ["error", { "args": "none" }]
   no-use-before-define: off
   no-undef: off # because of JSX
   max-classes-per-file: off

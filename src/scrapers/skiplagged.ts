@@ -3,7 +3,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoUrl, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoPageAndWaitForResponse, Scraper, ScraperMetadata } from "./common"
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 const meta: ScraperMetadata = {
@@ -12,7 +12,7 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  const response = await gotoUrl({ page,
+  const response = await gotoPageAndWaitForResponse({ page,
     url: `https://skiplagged.com/flights/${query.origin}/${query.destination}/${query.departureDate}`,
     waitForResponse: (checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php")
   })

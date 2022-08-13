@@ -7,7 +7,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { ScraperMetadata, Scraper, browserlessInit, gotoUrl } from "./common"
+import { ScraperMetadata, Scraper, browserlessInit, gotoPageAndWaitForResponse } from "./common"
 import type { AeroplanResponse } from "./samples/aeroplan"
 
 const meta: ScraperMetadata = {
@@ -20,12 +20,13 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  const response = await gotoUrl({ page,
+  const response = await gotoPageAndWaitForResponse({ page,
     url: `https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=DOM`,
     waitForResponse: (checkResponse: HTTPResponse) => {
       return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
     },
-    maxResponseGapMs: 7000
+    maxResponseGapMs: 5000,
+    waitMoreWhen: ["akamai-gw", "assets/"]
   })
   const raw = await response.json() as AeroplanResponse
 

@@ -2,7 +2,7 @@
 /* eslint-disable no-constant-condition */
 /* eslint-disable no-await-in-loop */
 
-import type { ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
+import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
 import type { FlightWithFares, ScraperQuery } from "../types/scrapers"
 
 export type ScraperFlowRule = {
@@ -39,73 +39,102 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
   const scraperStartTime = Date.now()
   log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
 
-  if (!meta.noBlocking) await applyPageBlocks(params.page, { blockInUrl: meta.blockUrls })
-  if (!meta.noRandomUserAgent) await params.page.setUserAgent(randomUserAgent())
+  await prepPage(params.page, meta)
 
-  const result = await scraperFunc(params.page, params.context).catch((e) => {
-    log("** Uncaught Error in scraper **\n", e)
-    throw e
+  let timeoutTimer = -1
+  const timeout = new Promise<undefined>((resolve) => {
+    timeoutTimer = setTimeout(resolve, (params.timeout ?? 30000) - 1000)
   })
 
-  await params.page.close().catch((err) => {})
-  await params.browser.close().catch(() => {})
+  let result = await Promise.race([runAttempt(params.page, params, scraperFunc, meta, undefined), timeout])
+  const errored = result === undefined
+  if (result === undefined) {
+    log("* Ended in an error, getting screenshot *")
+    const path = `${meta.name}-${Date.now()}.png`
+    await params.page.screenshot({ path })
+    log(`* Screenshot saved to ${process.cwd()}/${path} *`)
+    result = []
+  }
 
-  log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
-  return { data: { flightsWithFares: result } }
+  if (timeoutTimer !== -1) clearTimeout(timeoutTimer)
+  await params.browser?.close().catch(() => {})
+
+  log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
+  return { data: { flightsWithFares: result, errored, retries: retriesDone } }
 }
 
-export const log = (...args: any) => console.log(`[${(new Date()).toLocaleString()} ${curMeta.name}] `, ...args)
+const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
+  if (!meta.noBlocking) await applyPageBlocks(pageToPrep, { blockInUrl: meta.blockUrls })
+  if (!meta.noRandomUserAgent) await pageToPrep.setUserAgent(randomUserAgent())
+}
+
+let retriesDone = 0
+const runAttempt = async (page: Page, params: BrowserlessInput, scraperFunc: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[]> => {
+  const result = await scraperFunc(page, params.context).catch(async (e) => {
+    if (page.isClosed()) return undefined
+    log("* Error in scraper, taking screenshot *\n", e)
+
+    const filename = `${meta.name}-${Date.now()}.png`
+    await page.screenshot({ path: filename })
+    log(`* Screenshot saved to ${process.cwd()}/${filename} *`)
+
+    return undefined
+  })
+
+  await page.close().catch((err) => {})
+  if (contextToClose) await contextToClose.close().catch((err) => {})
+
+  if (result === undefined) {
+    log("* Retrying *")
+    const context = await params.page.browser().createIncognitoBrowserContext()
+    const newPage = await context.newPage()
+    await prepPage(newPage, meta)
+    retriesDone += 1
+    return runAttempt(newPage, params, scraperFunc, meta, context)
+  }
+
+  return result
+}
+
+const randId = Math.round(Math.random() * 1000)
+export const log = (...args: any) => console.log(`[${(new Date()).toLocaleString()} ${curMeta.name}-${randId}] `, ...args)
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
+
+export const gotoPage = async (page: Page, url: string, waitUntil: PuppeteerLifeCycleEvent = "domcontentloaded", timeout: number = waitUntil === "domcontentloaded" ? 5000 : 25000) => {
+  log(`Going to ${url}`)
+  const load = await page.goto(url, { waitUntil, timeout })
+  if (load && load.status() !== 200) {
+    log(await load.text())
+    throw new Error(`Page loading failed with status ${load.status()}`)
+  }
+
+  log("Completed loading url")
+  return load
+}
 
 // Goes to a URL with a bunch of conveniences
 //   - It will make the request and a child response can come in before the main request is completed
 //   - Responses coming in throughout the request will reset the gap timeout
-//   - An expected response will stop the parent request
-//   - If the gap timeout happens or the expected child response doesn't happen, the parent request is aborted and retried
-//   - If the page is closed, everything ends gracefully *** TODO: this is not implemented yet ***
+//   - If the gap timeout happens or the expected child response doesn't happen, an error is thrown (and the entire scraper will be retried)
+//   - If the page is closed, everything ends gracefully
 type WaitForResponse = string | ((res: HTTPResponse) => boolean | Promise<boolean>)
-type GotoUrlOptions = { page: Page, url: string, retries?: number, maxResponseGapMs?: number, maxTimeoutMs?: number, waitForResponse?: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent }
-export const gotoUrl = async ({ maxTimeoutMs = 25000, retries = 5, ...opts }: GotoUrlOptions) => {
-  const startTime = Date.now()
-  return retry(retries, async () => {
-    return gotoUrlOnce({ ...opts, maxTimeoutMs: maxTimeoutMs - (Date.now() - startTime) })
-  })
-}
-
-const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxResponseGapMs = 5000, maxTimeoutMs, waitForResponse }: Omit<GotoUrlOptions, "retries">) => {
+type GotoPageOptions = { page: Page, url: string, maxResponseGapMs?: number, waitForResponse: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent, waitMoreWhen?: string[] }
+export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs = 7000, waitForResponse, waitMoreWhen = [] }: GotoPageOptions) => {
   let gapTimeoutTimer: number = -1
-  let maxTimeoutTimer
   let completed = false
 
-  const singleUrlMode = !waitForResponse
-
-  // The global timeout (including all retries)
-  const maxTimeoutProm = new Promise<string>((resolve) => {
-    maxTimeoutTimer = setTimeout(() => resolve(singleUrlMode ? "gap timeout" : "max timeout"), singleUrlMode ? maxResponseGapMs : maxTimeoutMs)
-  })
-
   log(`going to url: ${url}`)
-  const urlProm = page.goto(url, { waitUntil, timeout: 0 }).then((resp) => {
+  void page.goto(url, { timeout: 0 }).then((resp) => {
     log("parent url finished loading")
     return resp ?? undefined
+
   }).catch((err) => {
+    if (page.isClosed()) return undefined
     if (completed) return "already completed"    // the request had already finished
     log(`parent url error: ${err}`)
-    return err.message
+    return (err as Error).message
   })
-
-  // There is a simple mode for this function where not specifying waitForResponse will just do a
-  // request for the url waiting for the waitUntil event. This retains the retry ability above.
-  if (singleUrlMode) {
-    const response = await Promise.race([urlProm, maxTimeoutProm])
-    if (response === undefined || typeof response === "string") throw new Error(response)
-
-    clearTimeout(maxTimeoutTimer)
-    // TODO: maybe the Abort call is required here
-
-    return response as HTTPResponse
-  }
 
   // Gap timeout timer
   let resolveFunc: TimerHandler
@@ -114,6 +143,7 @@ const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxRespo
     gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs)
   })
 
+  let waitMore = false
   const responseProm = page.waitForResponse((res: HTTPResponse) => {
     // If this callback happens after the request is done, ignore it
     if (completed) return true
@@ -121,30 +151,30 @@ const gotoUrlOnce = async ({ url, page, waitUntil = "domcontentloaded", maxRespo
 
     // Reset the gap timeout timer since we got a response
     clearTimeout(gapTimeoutTimer)
-    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs)
+    if (waitMoreWhen.some((checkUrl) => res.url().includes(checkUrl))) {
+      if (!waitMore) log("enabled waitextra!")
+      waitMore = true
+    }
+    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs + (waitMore ? 29000 - maxResponseGapMs : 0))
 
     if (typeof waitForResponse === "string") return res.url() === waitForResponse
     return waitForResponse!(res)
   }, { timeout: 0 })
 
   // Either we get a response or a timeout
-  const ret = await Promise.race([responseProm, gapTimeoutProm, maxTimeoutProm])
+  const ret = await Promise.race([responseProm, gapTimeoutProm])
 
   // Ensure that events don't happen after we're completed
   completed = true
   if (gapTimeoutTimer !== -1) clearTimeout(gapTimeoutTimer)
-  clearTimeout(maxTimeoutTimer)
 
   // Timeouts resolve as strings
-  if (ret === "max timeout" || ret === "gap timeout") {
-    // @ts-expect-error
-    // eslint-disable-next-line no-underscore-dangle
-    const client = typeof page._client === "function" ? page._client() : page._client
-    await client.send("Page.stopLoading")
+  if (typeof ret === "string") throw new Error(ret)
 
-    throw new Error(ret)
-  }
-  return ret as HTTPResponse
+  // Early catch errors
+  if (ret.status() !== 200) throw new Error(`Got status ${ret.status()}`)
+
+  return ret
 }
 
 export const waitFor = async function waitFor(f: () => boolean) {

@@ -4,7 +4,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoUrl, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
@@ -15,11 +15,11 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  log("going to delta main page")
-  await gotoUrl({ page, url: "https://www.delta.com/flight-search/book-a-flight" })
+  await gotoPage(page, "https://www.delta.com/flight-search/book-a-flight")
 
   const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
 
+  log("processing scraper flow")
   const ret = await processScraperFlowRules(page, [
     { find: "#fromAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.origin, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
     { find: "#toAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.destination, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
@@ -64,7 +64,7 @@ export const scraper: Scraper = async (page, query) => {
       return []
     if (errorText.includes("there is a problem with the flight date(s) you have requested"))  // usually a same-day search
       return []
-    throw new Error(errorText)
+    throw new Error(`#advance-search-global-err-msg: ${errorText}`)
   }
 
   const response = await page.waitForResponse((checkResponse: HTTPResponse) => {

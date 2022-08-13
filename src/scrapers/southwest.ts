@@ -1,5 +1,5 @@
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, equipmentTypeLookup, gotoUrl, log, processScraperFlowRules, retry, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
+import { browserlessInit, equipmentTypeLookup, gotoPage, log, processScraperFlowRules, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
 const meta: ScraperMetadata = {
@@ -12,9 +12,7 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  await gotoUrl({ page, url: "https://www.southwest.com/air/booking/", waitUntil: "networkidle0" })
-  log("loaded. starting scraper flow.")
-
+  await gotoPage(page, "https://www.southwest.com/air/booking/", "networkidle0")
   await processScraperFlowRules(page, [
     { find: "input[value='oneway']", andWaitFor: "input:checked[value='oneway']", done: true },
   ])
@@ -28,25 +26,19 @@ export const scraper: Scraper = async (page, query) => {
   await processScraperFlowRules(page, items.sort((a, b) => Math.random() - 0.5))
 
   // Clicking the southwest find button sometimes will redirect back with an error (usually botting)
-  const response = await retry(5, async () => {
-    log("clicking submit button")
-    await page.waitForSelector("#form-mixin--submit-button").then((el: any) => el.click())
+  log("clicking submit button")
+  await page.waitForSelector("#form-mixin--submit-button").then((el: any) => el.click())
 
-    log("waiting for response")
-    const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 5000 })
-      .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
-      .catch((e) => { throw new Error(e) })
-    if (!raw.success || raw.code === 403050700) // that code is for "we know youre a bot"
-      throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors)}`)
-    return raw
-  }).catch((e) => {
-    console.error("Giving up on retrieving response: ", e)
-    throw e
-  })
+  log("waiting for response")
+  const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 5000 })
+    .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
+
+  if (!raw.success || raw.code === 403050700) // that code is for "we know youre a bot"
+    throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.code)}`)
 
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
-  const results = response.data?.searchResults?.airProducts[0].details ?? []
-  if (response.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
+  const results = raw.data?.searchResults?.airProducts[0].details ?? []
+  if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
     log("No routes exist between the origin and destination")
 
   const flights: FlightWithFares[] = results.map((result) => {

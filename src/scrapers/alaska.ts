@@ -1,5 +1,5 @@
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { browserlessInit, gotoUrl, log, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoPage, log, Scraper, ScraperMetadata } from "./common"
 
 const meta: ScraperMetadata = {
   name: "alaska",
@@ -11,7 +11,7 @@ const meta: ScraperMetadata = {
 
 export const scraper: Scraper = async (page, query) => {
   // warm the browser up
-  await gotoUrl({ page, url: "https://m.alaskaair.com/shopping/?timeout=true" })
+  await gotoPage(page, "https://m.alaskaair.com/shopping/?timeout=true")
 
   log("doing xhr")
   const htmlResponse = await page.evaluate(async (context: ScraperQuery) => {
@@ -99,7 +99,7 @@ export const scraper: Scraper = async (page, query) => {
   log("getting aircraft details")
   const flights: FlightWithFares[] = []
   for await (const flight of res) {
-    await gotoUrl({ page, url: flight.aircraft! })
+    await gotoPage(page, flight.aircraft!)
 
     const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
     const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)
