@@ -21,7 +21,7 @@ export default defineConfig({
       jsx: "react",
       defaultStyle: "vertical-align: text-bottom;"
     }),
-    visualizer({ open: true }),
+    visualizer({ open: process.env.SHOW_VIZ ? process.env.SHOW_VIZ === "true" : true }),
     watchAndRun([{
       name: "generate-ts-schemas",
       watch: path.resolve("src/**/*.schema.json"),
@@ -31,7 +31,8 @@ export default defineConfig({
 
   test: {
     globals: true,
-    testTimeout: 40000,
+    maxConcurrency: 10,
+    testTimeout: 60000, // incase we get in the test queue on browserless
     environment: "jsdom",
     coverage: {
       reporter: ["lcovonly"],

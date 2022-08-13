@@ -53,7 +53,7 @@ export type SearchQuery = {
   departureDate: string
 }
 
-declare type Airport = {
+export type Airport = {
   icao_code: string
   iata_code: string
   name: string
@@ -64,8 +64,6 @@ declare type Airport = {
   city: string
   country: string
 }
-
-declare type AirportWithDistance = Airport & { distance: number }
 
 // These two are here to help hack VSCode to give the full definition when hovering over a type
 export type Expand<T> = T extends (...args: infer A) => infer R

@@ -23,6 +23,7 @@ interface ImportMetaEnv {
   readonly VITE_BROWSERLESS_AWS_PROXY_API_KEY: string
 }
 
+// eslint-disable-next-line no-unused-vars
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }

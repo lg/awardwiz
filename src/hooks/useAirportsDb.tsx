@@ -1,9 +1,7 @@
 import { DefaultOptionType } from "antd/lib/select"
 import * as React from "react"
 import airportsDb from "../airports.json"
-
-type Unpacked<T> = T extends (infer U)[] ? U : T
-export type Airport = Unpacked<typeof airportsDb>
+import type { Airport } from "../types/scrapers"
 
 export const useAirportsDb = () => {
   return React.useMemo(() => {

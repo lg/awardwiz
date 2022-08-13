@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 // go to flightradar24 and then look in the localdb in the browser for "list.airports"
 const https = require('https')
 https.get("https://www.flightradar24.com/airports/list?version=0", resp => resp.pipe(fs.createWriteStream("public/uu.json")))

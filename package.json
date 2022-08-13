@@ -11,7 +11,8 @@
     "depcheck": "depcheck --ignores @iconify/json,~icons",
     "schemas": "npx json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "husky install",
-    "pre-commit": ".husky/pre-commit"
+    "check": "npm run depcheck && npx eslint . && SHOW_VIZ=false npm run build -- --log-level=error",
+    "lets-upgrade-packages": "npx npm-check -u"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"
@@ -19,12 +20,12 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@react-oauth/google": "^0.2.6",
-    "@supabase/supabase-js": "^1.35.4",
+    "@supabase/supabase-js": "^1.35.6",
     "@tanstack/query-sync-storage-persister": "^4.0.10",
-    "@tanstack/react-query": "^4.0.10",
+    "@tanstack/react-query": "^4.1.3",
     "@tanstack/react-query-devtools": "^4.0.10",
     "@tanstack/react-query-persist-client": "^4.0.10",
-    "antd": "^4.22.2",
+    "antd": "^4.22.4",
     "axios": "^0.27.2",
     "moment": "^2.29.4",
     "react": "^18.2.0",
@@ -32,16 +33,16 @@
     "typescript": "^4.7.4"
   },
   "devDependencies": {
-    "@iconify/json": "^2.1.85",
+    "@iconify/json": "^2.1.92",
     "@kitql/vite-plugin-watch-and-run": "^0.4.2",
     "@svgr/core": "^6.3.1",
     "@testing-library/react": "^13.3.0",
-    "@typescript-eslint/eslint-plugin": "^5.31.0",
-    "@typescript-eslint/parser": "^5.31.0",
-    "@vitejs/plugin-react": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "@vitejs/plugin-react": "^2.0.1",
     "c8": "^7.12.0",
     "depcheck": "^1.4.3",
-    "eslint": "^8.20.0",
+    "eslint": "^8.21.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.6.1",
@@ -50,12 +51,12 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.0",
     "jsdom": "^20.0.0",
-    "json-schema-to-typescript": "^11.0.1",
+    "json-schema-to-typescript": "^11.0.2",
     "lint-staged": "^13.0.3",
-    "puppeteer": "^15.5.0",
+    "puppeteer": "^16.1.0",
     "rollup-plugin-visualizer": "^5.7.1",
     "unplugin-icons": "^0.14.8",
-    "vite": "^3.0.4",
-    "vitest": "^0.19.1"
+    "vite": "^3.0.7",
+    "vitest": "^0.21.1"
   }
 }
