@@ -20,9 +20,24 @@ export const scraper: Scraper = async (page, query) => {
   const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
 
   log("processing scraper flow")
+  const andThen = (airportCode: string): any => ([{
+    find: "#search_input",
+    type: airportCode,
+    andThen: [{
+      find: ".airportLookup-list .airport-code",
+      andWaitFor: "body:not([class*='modal-open'])",
+      done: true,
+    }, {
+      find: "#resultStatus",
+      andContainsText: "No search result",
+      clickMethod: "dont-click",
+      throw: "airport not found",
+      reusable: true
+    }]
+  }])
   const ret = await processScraperFlowRules(page, [
-    { find: "#fromAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.origin, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
-    { find: "#toAirportName span.airport-code.d-block", andThen: [{ find: "#search_input", type: query.destination, andThen: [{ find: ".airportLookup-list .airport-code", andWaitFor: "body:not([class*='modal-open'])" }] }] },
+    { find: "#fromAirportName span.airport-code.d-block", andThen: andThen(query.origin) },
+    { find: "#toAirportName span.airport-code.d-block", andThen: andThen(query.destination) },
     { find: "select[name='selectTripType']", selectValue: "ONE_WAY" },
     { find: "#calDepartLabelCont",
       andWaitFor: ".dl-datepicker-calendar",
@@ -40,13 +55,17 @@ export const scraper: Scraper = async (page, query) => {
     },
     { find: "#shopWithMiles" }
   ]).catch((e) => {
-    if (e.message === "historical date")
-      return "historical date"
+    if (e.message === "historical date" || e.message === "airport not found")
+      return e.message
     throw e
   })
 
   if (ret === "historical date") {
     log("request was for a date in the past")
+    return []
+  }
+  if (ret === "airport not found") {
+    log("origin/destination airport not found")
     return []
   }
 

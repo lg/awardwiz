@@ -83,10 +83,13 @@ test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partner
   expect(found, `Could not find flight ${scraper.partnerRoute![2]} ${scraper.partnerRoute![0]}->${scraper.partnerRoute![1]} on ${checkDate} or the following two days`).toBe(true)
 })
 
-// test.only.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", async (scraperName, scraper) => {
-//   await runQuery(scraperName, ["SFO", "OGS"])
-// })
+test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", async (scraperName, scraper) => {
+  const results = await runQuery(scraperName, ["SFO", "OGS"])
+  expect(results.flightsWithFares.length).toBe(0)
+})
 
+// more:
+//   - 11 months from now
 //   // it.todo("can distinguish a 3-class domestic vs 2-class domestic", async () => {})
 //   // it.todo("can properly deal with day +1 arrival", async () => { }, 20000)
 //   // it.todo("fails gracefully when no results", async () => { }, 20000)

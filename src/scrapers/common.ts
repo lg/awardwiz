@@ -16,7 +16,8 @@ export type ScraperFlowRule = {
   andThen?: ScraperFlowRule[]
   reusable?: boolean
   throw?: string   // an error will be thrown with this text
-  clickMethod?: "default" | "offset55" | "eval"    // offset55 = clicks at (5,5) from the top of the button, eval = uses element.evaluate and does an element.click()
+  clickMethod?: "default" | "offset55" | "eval" | "dont-click"    // offset55 = clicks at (5,5) from the top of the button, eval = uses element.evaluate and does an element.click()
+  andContainsText?: string
 }
 
 type StartScraperOptions = {
@@ -260,12 +261,24 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     log("matched rule", matchedRule.rule.find)
     //await sleep(400)
 
+    if (matchedRule.rule.andContainsText) {
+      const text = await matchedRule.element.evaluate((el) => el.textContent)
+      if (!text?.includes(matchedRule.rule.andContainsText)) {
+        matchedRule = await matchNextRule()
+        continue
+      } else {
+        log("matched text", text)
+      }
+    }
+
     // Do not click on the element in certain cases
     if (!matchedRule.rule.selectValue) {
       if (matchedRule.rule.clickMethod === "offset55") {
         await matchedRule.element.click({ offset: { x: 5, y: 5 } })
       } else if (matchedRule.rule.clickMethod === "eval") {
         await matchedRule.element.evaluate((el: any) => el.click())
+      } else if (matchedRule.rule.clickMethod === "dont-click") {
+        // do nothing
       } else {
         await matchedRule.element.click()
       }
