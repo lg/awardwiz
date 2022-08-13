@@ -22,7 +22,7 @@ const scrapers: ScraperConfig = {
   alaska: { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"] },
   delta: { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] },
   jetblue: { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"] },
-  southwest: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"] },
+  // southwest: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"] },
   skiplagged: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] },
   skyscanner: { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] },
   united: { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] },
@@ -70,24 +70,27 @@ describe.each(Object.keys(scrapers))("%o scraper", async (scraperName) => {
     await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]], moment().format("YYYY-MM-DD"))
   })
 
-  // it("fails gracefully with historic searches", async () => {
-  //   const results = await runQuery([scraper.popularRoute[0], scraper.popularRoute[1]], moment().subtract(1, "week").format("YYYY-MM-DD"))
-  //   expect(results.data.flightsWithFares.length).toBe(0)
-  // })
-
   // it.only("fails gracefully with unserved airports", async () => {
   //   const results = await runQuery(["SFO", "OGS"])
   //   expect(results.data.flightsWithFares.length).toBe(0)
   // })
 
   test.runIf(scrapers[scraperName].partnerRoute).concurrent("can search partner availability", async () => {
-    const results = await runQuery([scraper.partnerRoute![0], scraper.partnerRoute![1]])
-    const expectFlightNo = scraper.partnerRoute![2]
-    expect(results.flightsWithFares.find((flight) => {
-      return flight.flightNo === expectFlightNo
-    }), `flight ${expectFlightNo} to have partner availability`).toBeTruthy()
+    let checkDate = defCheckDate
+    let found = false
+    do {
+      // eslint-disable-next-line no-await-in-loop
+      const results = await runQuery([scraper.partnerRoute![0], scraper.partnerRoute![1]], checkDate)
+      const expectFlightNo = scraper.partnerRoute![2]
+      found = !!results.flightsWithFares.find((flight) => flight.flightNo === expectFlightNo)
+
+      checkDate = moment(checkDate).add(1, "days").format("YYYY-MM-DD")
+    } while (moment(checkDate).isBefore(moment(checkDate).add(3, "days")) && !found)
+
+    expect(found, `Could not find flight ${scraper.partnerRoute![2]} ${scraper.partnerRoute![0]}->${scraper.partnerRoute![1]} on ${checkDate} or the following two days`).toBe(true)
   })
 
+  // it.todo("can distinguish a 3-class domestic vs 2-class domestic", async () => {})
   // it.todo("can properly deal with day +1 arrival", async () => { }, 20000)
   // it.todo("fails gracefully when no results", async () => { }, 20000)
   // it.todo("properly classifies domestic 'first' as business", async () => { }, 20000)
