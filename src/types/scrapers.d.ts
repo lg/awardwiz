@@ -1,6 +1,7 @@
+import { QueryKey } from "@tanstack/react-query"
 import type { Page } from "puppeteer"
 
-export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResults }>
+export type ScraperFunc = (query: BrowserlessQuery) => Promise<{ data: ScraperResponse }>
 export type BrowserlessQuery = {
   page: Page,
   context: ScraperQuery,
@@ -14,12 +15,17 @@ export type ScraperQuery = ExpandRecursively<{
   departureDate: string
 }>
 
-export type ScraperResults = ExpandRecursively<{
+export type ScraperResponse = {
   flightsWithFares: FlightWithFares[]
-}>
+  errored: boolean
+  retries: number
+
+  // patched on after receiving
+  forKey?: QueryKey
+}
 
 // the "| undefined" piece makes these require to explicitly be defined
-export type FlightWithFares = ExpandRecursively<{
+export type FlightWithFares = {
   flightNo: string                       // "UA 123"
   departureDateTime: string              // "2022-04-01 15:12"
   arrivalDateTime: string                // "2022-04-01 15:12"
@@ -29,7 +35,7 @@ export type FlightWithFares = ExpandRecursively<{
   aircraft: string | undefined           // "737"
   fares: FlightFare[]
   amenities: FlightAmenities
-}>
+}
 
 export type FlightFare = {
   cabin: string                           // "economy" | "business" | "first"

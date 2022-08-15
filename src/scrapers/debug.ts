@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios"
 import * as fs from "fs/promises"
 import * as ts from "typescript/lib/typescript.js"
-import { ScraperQuery, ScraperResults } from "../types/scrapers"
+import { ScraperQuery, ScraperResponse } from "../types/scrapers"
 
 const main = (async () => {
   console.log("loading files")
@@ -17,7 +17,7 @@ const main = (async () => {
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: query }
   const startTime = Date.now()
   const config = (await fs.readFile(".env.local", "utf8")).split("\n").reduce((acc: Record<string, string>, line) => { const [key, value] = line.split("="); acc[key] = value; return acc }, {})
-  const raw = await axios.post<ScraperResults>(`${config.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": config.VITE_BROWSERLESS_AWS_PROXY_API_KEY } }).catch((err) => err)
+  const raw = await axios.post<ScraperResponse>(`${config.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": config.VITE_BROWSERLESS_AWS_PROXY_API_KEY } }).catch((err) => err)
 
   console.log(`completed in: ${(Date.now() - startTime).toLocaleString()} ms`)
   if (raw instanceof AxiosError && raw.response) {

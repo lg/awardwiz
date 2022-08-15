@@ -9,7 +9,7 @@ import { AwardSearchProgress, doesScraperSupportAirlineExclCashOnly, scraperConf
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
 
-export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers, scrapersForRoutes, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
+export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers, scrapersForRoutes, rawScraperResponse, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const airlineNameByCode = (code: string) => servingCarriers.find((carrier) => carrier.airlineCode === code)?.airlineName ?? code
 
   const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).concat(searchQuery.departureDate).join("-")
@@ -39,10 +39,20 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
   debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]): DebugTreeNode => {
     const queryKey: ReactQuery.QueryKey = [`awardAvailability-${key}-${scraperForRoute.departureDate}`]
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperForRoute.scraper)?.cashOnlyFares
+    const retries = rawScraperResponse.find((check) => check.forKey && ReactQuery.hashQueryKey(check.forKey) === ReactQuery.hashQueryKey(queryKey))?.retries ?? 0
+
     return {
       key,
       parentKey: `${scraperForRoute.origin}${scraperForRoute.destination}`,
-      text: <><Text code>{scraperForRoute.scraper}</Text>: {isCashOnlyScraper ? "Cash-to-points fares" : scraperForRoute.matchedAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}</>,
+      text: (
+        <>
+          <Text code>{scraperForRoute.scraper}</Text>:
+          { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperForRoute.matchedAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
+          { retries > 0
+            ? <Text style={{ fontSize: "0.75em", color: "#ff0000" }}><strong> ({retries} {retries === 1 ? "retry" : "retries"})</strong></Text>
+            : "" }
+        </>
+      ),
       stableIcon: <CarbonPaintBrush />,
       isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
       error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { expect } from "vitest"
 import moment_ from "moment"
-import { FlightFare, FlightWithFares, ScraperQuery, ScraperResults } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 import * as fs from "fs/promises"
 import ts from "typescript"
 import axios from "axios"
@@ -39,7 +39,7 @@ const runQuery = async (scraperName: string, route: string[], checkDate = moment
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
-  const raw = await axios.post<ScraperResults>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+  const raw = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
   return raw.data
 }
 
@@ -88,7 +88,7 @@ test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", as
   expect(results.flightsWithFares.length).toBe(0)
 })
 
-test.only.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
+test.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
   const futureDate = moment().add(10, "months").format("YYYY-MM-DD")
   const results = await runQuery(scraperName, scraper.popularRoute, futureDate)
   expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(1)

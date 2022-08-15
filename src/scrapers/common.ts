@@ -3,7 +3,7 @@
 /* eslint-disable no-await-in-loop */
 
 import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
-import type { FlightWithFares, ScraperQuery } from "../types/scrapers"
+import type { FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 
 export type ScraperFlowRule = {
   find: string
@@ -35,7 +35,7 @@ export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFar
 type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
 
 let curMeta: ScraperMetadata
-export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput) => {
+export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput): Promise<{ data: ScraperResponse }> => {
   curMeta = meta
   const scraperStartTime = Date.now()
   log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
