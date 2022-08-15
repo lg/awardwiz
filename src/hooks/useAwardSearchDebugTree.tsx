@@ -5,12 +5,12 @@ import Text from "antd/lib/typography/Text"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { AwardSearchProgress, doesScraperSupportAirlineExclCashOnly, scraperConfig, } from "./useAwardSearch"
+import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, scraperConfig, } from "./useAwardSearch"
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
 
-export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers, scrapersForRoutes, rawScraperResponse, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
-  const airlineNameByCode = (code: string) => servingCarriers.find((carrier) => carrier.airlineCode === code)?.airlineName ?? code
+export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
+  const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code
 
   const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).concat(searchQuery.departureDate).join("-")
   const debugTree: DebugTreeNode[] = []
@@ -24,30 +24,30 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
     error: undefined
   })
 
-  debugTree.push(...pairings.map((pairing): DebugTreeNode => {
-    const queryKey: ReactQuery.QueryKey = [`servingCarriers-${pairing.origin}-${pairing.destination}`]
+  debugTree.push(...datedRoutes.map((datedRoute): DebugTreeNode => {
+    const queryKey: ReactQuery.QueryKey = queryKeyForAirlineRoute(datedRoute)
     return {
-      key: `${pairing.origin}${pairing.destination}`,
+      key: `${datedRoute.origin}${datedRoute.destination}`,
       parentKey: debugTreeRootKey,
-      text: <>{pairing.origin} → {pairing.destination}</>,
+      text: <>{datedRoute.origin} → {datedRoute.destination}</>,
       stableIcon: <NodeIndexOutlined />,
       isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
       error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error
     }
   }))
 
-  debugTree.push(...Object.entries(scrapersForRoutes).map(([key, scraperForRoute]): DebugTreeNode => {
-    const queryKey: ReactQuery.QueryKey = [`awardAvailability-${key}-${scraperForRoute.departureDate}`]
-    const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperForRoute.scraper)?.cashOnlyFares
-    const retries = rawScraperResponse.find((check) => check.forKey && ReactQuery.hashQueryKey(check.forKey) === ReactQuery.hashQueryKey(queryKey))?.retries ?? 0
+  debugTree.push(...scrapersToRun.map((scraperToRun): DebugTreeNode => {
+    const queryKey = queryKeyForScraperResponse(scraperToRun)
+    const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperToRun.scraperName)?.cashOnlyFares
+    const retries = scraperResponses.find((check) => check.forKey && ReactQuery.hashQueryKey(check.forKey) === ReactQuery.hashQueryKey(queryKey))?.retries ?? 0
 
     return {
-      key,
-      parentKey: `${scraperForRoute.origin}${scraperForRoute.destination}`,
+      key: queryKey.toString(),
+      parentKey: `${scraperToRun.forDatedRoute.origin}${scraperToRun.forDatedRoute.destination}`,
       text: (
         <>
-          <Text code>{scraperForRoute.scraper}</Text>:
-          { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperForRoute.matchedAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
+          <Text code>{scraperToRun.scraperName}</Text>:
+          { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperToRun.forAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
           { retries > 0
             ? <Text style={{ fontSize: "0.75em", color: "#ff0000" }}><strong> ({retries} {retries === 1 ? "retry" : "retries"})</strong></Text>
             : "" }
@@ -59,14 +59,14 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
     }
   }))
 
-  pairings.forEach((pairing) => {
-    const airlinesForPairing = servingCarriers.filter((item) => item.origin === pairing.origin && item.destination === pairing.destination).map((item) => item.airlineCode)
-    if (airlinesForPairing.length === 0) {
-      if (!loadingQueriesKeys.some((item) => ReactQuery.hashQueryKey(item) === ReactQuery.hashQueryKey([`servingCarriers-${pairing.origin}-${pairing.destination}`]))) {  // dont display if still loading pairings
+  datedRoutes.forEach((datedRoute) => {
+    const airlineCodesForRoute = airlineRoutes.filter((item) => item.origin === datedRoute.origin && item.destination === datedRoute.destination).map((item) => item.airlineCode)
+    if (airlineCodesForRoute.length === 0) {
+      if (!loadingQueriesKeys.some((item) => ReactQuery.hashQueryKey(item) === ReactQuery.hashQueryKey(queryKeyForAirlineRoute(datedRoute)))) {  // dont display if still loading route
         debugTree.push({
-          key: `${pairing.origin}${pairing.destination}-no-carriers`,
-          parentKey: `${pairing.origin}${pairing.destination}`,
-          text: <>(No carriers serving this route)</>,
+          key: `${datedRoute.origin}${datedRoute.destination}-no-airlines`,
+          parentKey: `${datedRoute.origin}${datedRoute.destination}`,
+          text: <>(No airlines serving this route)</>,
           stableIcon: <CarbonWarningAlt />,
           isLoading: false,
           error: undefined
@@ -74,16 +74,16 @@ export const useAwardSearchDebugTree = ({ searchQuery, pairings, servingCarriers
       }
 
     } else {
-      const airlinesMissingScrapers = airlinesForPairing.filter((airline) => {
+      const airlinesMissingScrapers = airlineCodesForRoute.filter((code) => {
         return !scraperConfig.scrapers.some((scraper) => {
-          return doesScraperSupportAirlineExclCashOnly(scraper, airline)
+          return doesScraperSupportAirline(scraper, code, false)
         })
       })
 
       if (airlinesMissingScrapers.length > 0) {
         debugTree.push({
-          key: `${pairing.origin}${pairing.destination}-no-scraper`,
-          parentKey: `${pairing.origin}${pairing.destination}`,
+          key: `${datedRoute.origin}${datedRoute.destination}-no-scraper`,
+          parentKey: `${datedRoute.origin}${datedRoute.destination}`,
           text: <>Missing: {airlinesMissingScrapers.map((airline) => `${airlineNameByCode(airline)} (${airline})`).join(", ")}</>,
           stableIcon: <CarbonCircleDash />,
           isLoading: false,

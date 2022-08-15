@@ -9,11 +9,16 @@ export type BrowserlessQuery = {
   timeout?: number
 }
 
-export type ScraperQuery = ExpandRecursively<{
+export type ScraperQuery = {
   origin: string
   destination: string
   departureDate: string
-}>
+}
+
+export type BrowserlessPostData = {
+  code: string
+  context: ScraperQuery
+}
 
 export type ScraperResponse = {
   flightsWithFares: FlightWithFares[]
