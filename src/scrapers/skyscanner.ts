@@ -2,7 +2,7 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { randomUserAgent, waitFor, applyPageBlocks, ScraperMetadata, browserlessInit, Scraper, log } from "./common"
+import { waitFor, ScraperMetadata, browserlessInit, Scraper, log, prepPage } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
 const meta: ScraperMetadata = {
@@ -20,7 +20,7 @@ const meta: ScraperMetadata = {
 
 export const scraper: Scraper = async (page, query) => {
   const x = (["economy", "business", "first"] as string[]).map(async (cabin) => {
-    return scrapeClass(page, query, cabin)
+    return scrapeCabin(page, query, cabin)
   })
 
   const flights: FlightWithFares[] = [];
@@ -46,12 +46,11 @@ export const scraper: Scraper = async (page, query) => {
   return flights
 }
 
-const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string): Promise<FlightWithFares[]> => {
+const scrapeCabin = async (globalPage: Page, query: ScraperQuery, cabin: string): Promise<FlightWithFares[]> => {
   // This scrape is done in parallel, so create a new page
   const context = await globalPage.browser().createIncognitoBrowserContext()
   const page = await context.newPage()
-  await page.setUserAgent(randomUserAgent())
-  await applyPageBlocks(page, { blockInUrl: meta.blockUrls })
+  await prepPage(page, meta)    // use the common.ts page prepper
 
   let latestFlights: FlightWithFares[] = []
   let receivedCaptcha = false
@@ -88,7 +87,7 @@ const scrapeClass = async (globalPage: Page, query: ScraperQuery, cabin: string)
 
   if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
     log(`Captcha prevented results for ${cabin} cabin. Trying again...`)
-    return scrapeClass(globalPage, query, cabin)
+    return scrapeCabin(globalPage, query, cabin)
   }
 
   await page.close().catch(() => {})

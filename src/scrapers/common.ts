@@ -64,9 +64,15 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
   return { data: { flightsWithFares: result, errored, retries: retriesDone } }
 }
 
-const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
+export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
   if (!meta.noBlocking) await applyPageBlocks(pageToPrep, { blockInUrl: meta.blockUrls })
   if (!meta.noRandomUserAgent) await pageToPrep.setUserAgent(randomUserAgent())
+
+  pageToPrep.on("response", (res) => {
+    //if (res.url().startsWith("data:")) return
+    //log(`url coming in ${res.fromCache() ? "CACHED" : "uncached"}: ${res.url()}`)
+  })
+  await pageToPrep.setBypassCSP(true)
 }
 
 let retriesDone = 0
@@ -148,7 +154,6 @@ export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs =
   const responseProm = page.waitForResponse((res: HTTPResponse) => {
     // If this callback happens after the request is done, ignore it
     if (completed) return true
-    // if (!res.url().startsWith("data:")) log(`url coming in: ${res.url()}`)
 
     // Reset the gap timeout timer since we got a response
     clearTimeout(gapTimeoutTimer)
