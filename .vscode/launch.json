@@ -12,17 +12,20 @@
       "program": "${workspaceFolder}/src/scrapers/debug.ts",
       "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
       "outFiles": ["${workspaceFolder}/**/*.js"],
-      "internalConsoleOptions": "openOnSessionStart"
-    },
+      "internalConsoleOptions": "openOnSessionStart",
+      "args": ["${input:params}"]
+    }
+  ],
+  "inputs": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Scraper Local",
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "program": "${workspaceFolder}/src/scrapers/debug-local.ts",
-      "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
-      "internalConsoleOptions": "openOnSessionStart"
+      "id": "params",
+      "type": "command",
+      "command": "memento.promptString",
+      "args": {
+        "id": "params",
+        "description": "Parameters? (from, to, date, scraper, chromium|browserless-func|browserless-websockets, ip)",
+        "default": "YOW,YYZ,2022-10-20,aeroplan,browserless-func,10.0.1.1"
+      }
     }
   ]
 }
