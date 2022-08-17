@@ -16,6 +16,7 @@ type ScraperConfig = [string, {
   missingAttribs?: (keyof FlightWithFares)[]    // if we know a scraper is missing a certain field
   missingFareAttribs?: (keyof FlightFare)[]     // if we know a scraper is missing a certain fare field
   zeroMilesOk?: boolean    // use this for cash-only scrapers
+  longtermSearchEmptyOk?: boolean // use this to not expect any results for the 10 month check (exceptions still will fail the scraper)
 }][]
 
 const scrapers: ScraperConfig = [
@@ -24,7 +25,7 @@ const scrapers: ScraperConfig = [
   ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"] }],
   ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] }],
   ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"] }],
-  // ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"] }],
+  ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
   ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["skyscanner", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["united", { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
@@ -91,7 +92,7 @@ test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", as
 test.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
   const futureDate = moment().add(10, "months").format("YYYY-MM-DD")
   const results = await runQuery(scraperName, scraper.popularRoute, futureDate)
-  expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(1)
+  expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(scraper.longtermSearchEmptyOk ? 0 : 1)
   results.flightsWithFares.forEach((flight) => {
     const receivedDate = moment(flight.departureDateTime).format("YYYY-MM-DD")
     expect(receivedDate, `Expected date from results (${receivedDate}) to be the same as we searched (${futureDate})`).equals(futureDate)
