@@ -42,13 +42,13 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       title: "Amenities",
       render: (_text: string, flight) => (
         <>
-          <Tooltip title={flight.aircraft ?? "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0}>
+          <Tooltip title={flight.aircraft ?? "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
             <MdiAirplane style={{ verticalAlign: "middle", color: flight.aircraft ? "#000000" : "#dddddd" }} />
           </Tooltip>
-          <Tooltip title={triState(flight.amenities.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+          <Tooltip title={triState(flight.amenities.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
             <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />
           </Tooltip>
-          <Tooltip title={triState(flight.amenities.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0}>
+          <Tooltip title={triState(flight.amenities.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
             <MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(flight.amenities.hasPods, "#000000", "#dddddd", "#ffffff") }} />
           </Tooltip>
         </>
@@ -98,7 +98,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
           .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass ?? "?"})` : ` (${fare.bookingClass ?? "?"})`}</div>)
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
-        return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0}><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
+        return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
       },
       sorter: (recordA, recordB) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
