@@ -5,9 +5,10 @@ import Text from "antd/lib/typography/Text"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, scraperConfig, } from "./useAwardSearch"
+import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "./useAwardSearch"
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
+import ReactJson from "@textea/json-viewer"
 
 export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code
@@ -31,15 +32,16 @@ export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoute
       parentKey: debugTreeRootKey,
       text: <>{datedRoute.origin} → {datedRoute.destination}</>,
       stableIcon: <NodeIndexOutlined />,
-      isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
-      error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error
+      isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
+      error: errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
     }
   }))
 
   debugTree.push(...scrapersToRun.map((scraperToRun): DebugTreeNode => {
     const queryKey = queryKeyForScraperResponse(scraperToRun)
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperToRun.scraperName)?.cashOnlyFares
-    const retries = scraperResponses.find((check) => check.forKey && ReactQuery.hashQueryKey(check.forKey) === ReactQuery.hashQueryKey(queryKey))?.retries ?? 0
+    const response = scraperResponses.find((check) => check.forKey && queryKeysEqual(check.forKey, queryKey))
+    const retries = response?.retries ?? 0
 
     return {
       key: queryKey.toString(),
@@ -54,15 +56,17 @@ export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoute
         </>
       ),
       stableIcon: <CarbonPaintBrush />,
-      isLoading: loadingQueriesKeys.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKey)),
-      error: errors.find((query) => ReactQuery.hashQueryKey(query.queryKey) === ReactQuery.hashQueryKey(queryKey))?.error
+      isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
+      error: errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
+      detailsTitle: `${scraperToRun.scraperName} ${scraperToRun.forDatedRoute.origin} → ${scraperToRun.forDatedRoute.destination}`,
+      details: <ReactJson src={response ?? {}} enableClipboard={false} displayDataTypes={false} indentWidth={2} quotesOnKeys={false} shouldCollapse={(field) => ["forKey"].some((item) => item === field.name)} />
     }
   }))
 
   datedRoutes.forEach((datedRoute) => {
     const airlineCodesForRoute = airlineRoutes.filter((item) => item.origin === datedRoute.origin && item.destination === datedRoute.destination).map((item) => item.airlineCode)
     if (airlineCodesForRoute.length === 0) {
-      if (!loadingQueriesKeys.some((item) => ReactQuery.hashQueryKey(item) === ReactQuery.hashQueryKey(queryKeyForAirlineRoute(datedRoute)))) {  // dont display if still loading route
+      if (!loadingQueriesKeys.some((item) => queryKeysEqual(item, queryKeyForAirlineRoute(datedRoute)))) {  // dont display if still loading route
         debugTree.push({
           key: `${datedRoute.origin}${datedRoute.destination}-no-airlines`,
           parentKey: `${datedRoute.origin}${datedRoute.destination}`,

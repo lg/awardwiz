@@ -30,6 +30,7 @@ export type AwardSearchProgress = {
 
 export const queryKeyForAirlineRoute = (datedRoute: DatedRoute): ReactQuery.QueryKey => [`airlineRoutes-${datedRoute.origin}-${datedRoute.destination}`]
 export const queryKeyForScraperResponse = (scraperToRun: ScraperToRun): ReactQuery.QueryKey => [`awardAvailability-${scraperToRun.scraperName}-${scraperToRun.forDatedRoute.origin}-${scraperToRun.forDatedRoute.destination}-${scraperToRun.forDatedRoute.departureDate}`]
+export const queryKeysEqual = (a: ReactQuery.QueryKey, b: ReactQuery.QueryKey): boolean => ReactQuery.hashQueryKey(a) === ReactQuery.hashQueryKey(b)
 
 export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress => {
   const [stoppedQueries, setStoppedQueries] = React.useState<ReactQuery.QueryKey[]>([])
@@ -45,7 +46,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     queryKey: queryKeyForAirlineRoute(datedRoute),
     queryFn: fetchAirlineRoutes,
     meta: datedRoute,
-    enabled: !stoppedQueries.some((stoppedQuery) => ReactQuery.hashQueryKey(stoppedQuery) === ReactQuery.hashQueryKey(queryKeyForAirlineRoute(datedRoute)))
+    enabled: !stoppedQueries.some((stoppedQuery) => queryKeysEqual(stoppedQuery, queryKeyForAirlineRoute(datedRoute)))
   }))
   const airlineRouteQueries = ReactQuery.useQueries({ queries: airlineRouteQueriesOpts })
   const keyedAirlineRouteQueries = airlineRouteQueries.map((query, index) => ({ ...query, queryKey: airlineRouteQueriesOpts[index].queryKey! }))
@@ -80,7 +81,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     retry: 1,
     queryFn: fetchAwardAvailability,
     meta: scraperToRun,
-    enabled: !stoppedQueries.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(queryKeyForScraperResponse(scraperToRun)))
+    enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
   const scraperQueries = ReactQuery.useQueries({ queries: scraperQueriesOpts })
   const keyedScraperQueries = scraperQueries.map((query, index) => ({ ...query, queryKey: scraperQueriesOpts[index].queryKey! }))
@@ -102,7 +103,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   }, [scraperQueries])
 
   const loadingQueriesKeys = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey)
-  const errorsQueries = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.error ?? stoppedQueries.some((check) => ReactQuery.hashQueryKey(check) === ReactQuery.hashQueryKey(item.queryKey)))
+  const errorsQueries = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.error ?? stoppedQueries.some((check) => queryKeysEqual(check, item.queryKey)))
   const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? Error("stopped") }))
 
   const queryClient = useQueryClient()
