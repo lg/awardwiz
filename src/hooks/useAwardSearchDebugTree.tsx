@@ -11,6 +11,7 @@ import CarbonWarningAlt from "~icons/carbon/warning-alt"
 import ReactJson from "@textea/json-viewer"
 
 export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
+  const queryClient = ReactQuery.useQueryClient()
   const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code
 
   const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).concat(searchQuery.departureDate).join("-")
@@ -59,7 +60,16 @@ export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoute
       isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
       error: errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
       detailsTitle: `${scraperToRun.scraperName} ${scraperToRun.forDatedRoute.origin} → ${scraperToRun.forDatedRoute.destination}`,
-      details: <ReactJson src={response ?? {}} enableClipboard={false} displayDataTypes={false} indentWidth={2} quotesOnKeys={false} shouldCollapse={(field) => ["forKey"].some((item) => item === field.name)} />
+      details: (
+        <>
+          <div><button onClick={() => queryClient.resetQueries(queryKey)} style={{ marginBottom: 7 }}>Reload</button></div>
+          <div>
+            { response
+              ? <ReactJson src={response} enableClipboard={false} displayDataTypes={false} indentWidth={2} quotesOnKeys={false} shouldCollapse={(field) => ["forKey"].some((item) => item === field.name)} />
+              : "Loading..." }
+          </div>
+        </>
+      )
     }
   }))
 

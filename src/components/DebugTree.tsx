@@ -37,7 +37,7 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
     }
 
     const popover = (node.details && node.detailsTitle)
-      ? <Popover title={node.detailsTitle} content={node.details} trigger="click" placement="right" destroyTooltipOnHide autoAdjustOverflow overlayInnerStyle={{ height: 500, overflow: "scroll" }}>{title}</Popover>
+      ? <Popover title={node.detailsTitle} content={node.details} trigger="click" placement="right" destroyTooltipOnHide autoAdjustOverflow overlayInnerStyle={{ maxHeight: 500, overflow: "scroll" }}>{title}</Popover>
       : title
 
     let icon = node.stableIcon
