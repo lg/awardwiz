@@ -9,6 +9,7 @@ import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
 import ReactJson from "@textea/json-viewer"
+import { Badge } from "antd"
 
 export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const queryClient = ReactQuery.useQueryClient()
@@ -49,7 +50,9 @@ export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoute
       parentKey: `${scraperToRun.forDatedRoute.origin}${scraperToRun.forDatedRoute.destination}`,
       text: (
         <>
-          <Text code>{scraperToRun.scraperName}</Text>:
+          <Badge size="small" count={response?.flightsWithFares.length} offset={[-2, 5]} color="#888888">
+            <Text code>{scraperToRun.scraperName}</Text>
+          </Badge>:
           { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperToRun.forAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
           { retries > 0
             ? <Text style={{ fontSize: "0.75em", color: "#ff0000" }}><strong> ({retries} {retries === 1 ? "retry" : "retries"})</strong></Text>
