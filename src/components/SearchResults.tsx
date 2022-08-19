@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Table, Tag, Tooltip } from "antd"
+import { Badge, Table, Tag, Tooltip } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
@@ -14,7 +14,11 @@ const triState = (condition: boolean | undefined, trueVal: string, falseVal: str
   return condition ? trueVal : falseVal
 }
 
+type MarkedFare = { flightNo: string, date: string, cabin: string }
+
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
+  const [markedFares, setMarkedFares] = React.useState<MarkedFare[]>([])
+
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
     const faresForClass = fares.filter((fare) => fare.cabin === cabin)
     if (faresForClass.length === 0)
@@ -98,7 +102,25 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
           .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass ?? "?"})` : ` (${fare.bookingClass ?? "?"})`}</div>)
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
-        return <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide><Tag color={isSaverFare ? "green" : "gold"}>{milesStr}{` + ${cashStr}`}</Tag></Tooltip>
+
+        const isMarked = markedFares.some((check) => check.flightNo === record.flightNo && check.date === record.departureDateTime && check.cabin === column.key)
+        const clickedFare = () => {
+          if (isMarked) {
+            setMarkedFares(markedFares.filter((fare) => fare.flightNo !== record.flightNo || fare.date !== record.departureDateTime || fare.cabin !== column.key))
+          } else {
+            setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime, cabin: column.key }])
+          }
+        }
+
+        return (
+          <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
+            <Badge dot={isMarked} offset={[-8, 0]} color="gold">
+              <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
+                {milesStr}{` + ${cashStr}`}
+              </Tag>
+            </Badge>
+          </Tooltip>
+        )
       },
       sorter: (recordA, recordB) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
