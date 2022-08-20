@@ -6,6 +6,7 @@ import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
+import { retry } from "../helpers/common"
 
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
@@ -129,8 +130,17 @@ const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => 
 
 const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
   const datedRoute = meta as DatedRoute
-  const dataHtml = (await axios.post<string>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`, { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` }, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
-  const data: FlightRadar24Response = JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent ?? "")
+
+  const data = await retry(3, async () => {
+    const request = await axios.post<string>(
+      `${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`,
+      { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` },
+      { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }
+    )
+
+    const dataHtml = request.data
+    return JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent ?? "") as FlightRadar24Response
+  })
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
