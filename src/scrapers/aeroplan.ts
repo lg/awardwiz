@@ -25,7 +25,7 @@ export const scraper: Scraper = async (page, query) => {
     waitForResponse: (checkResponse: HTTPResponse) => {
       return checkResponse.url() === "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds" && checkResponse.request().method() === "POST"
     },
-    maxResponseGapMs: 5000,
+    maxResponseGapMs: 7000,
     waitMoreWhen: ["akamai-gw", "assets/"]
   })
   const raw = await response.json() as AeroplanResponse
