@@ -60,7 +60,7 @@
     },
     {
       "name": "delta",
-      "supportedAirlines": ["skyteam", "WS"],
+      "supportedAirlines": ["skyteam", "WS", "VS"],
       "nativeAirline": "DL"
     },
     {
@@ -70,12 +70,12 @@
     },
     {
       "name": "skyscanner",
+      "disabled": true,
       "supportedAirlines": [],
       "cashOnlyFares": true
     },
     {
       "name": "skiplagged",
-      "disabled": true,
       "supportedAirlines": [],
       "cashOnlyFares": true
     },
