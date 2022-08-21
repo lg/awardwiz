@@ -21,6 +21,7 @@ export default defineConfig({
       jsx: "react",
       defaultStyle: "vertical-align: text-bottom;"
     }),
+    // @ts-expect-error (until vite updates to fix the incompatibility, see: https://github.com/btd/rollup-plugin-visualizer/issues/124)
     visualizer({ open: process.env.SHOW_VIZ ? process.env.SHOW_VIZ === "true" : true }),
     watchAndRun([{
       name: "generate-ts-schemas",

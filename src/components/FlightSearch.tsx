@@ -26,7 +26,7 @@ export const FlightSearch = () => {
 
   React.useEffect(() => {
     localStorage.setItem("searchQuery", JSON.stringify(searchQuery))
-    const logSearch = async (query: object) => supabase.from("searches").insert([{ user_id: supabase.auth.session()?.user?.id, query }])
+    const logSearch = async (query: SearchQuery) => supabase.from("searches").insert([{ user_id: (await supabase.auth.getUser()).data.user?.id, query: JSON.stringify(query) }])
     void logSearch(searchQuery)
   }, [searchQuery])
 

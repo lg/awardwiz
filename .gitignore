@@ -29,3 +29,6 @@ stats.html
 src/**/*.schema.d.ts
 
 tmp.ts
+
+# for now config is fully local
+supabase/
