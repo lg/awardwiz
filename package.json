@@ -10,7 +10,7 @@
     "start": "npm run schemas && vite",
     "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,c8",
     "schemas": "npx json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
-    "prepare": "husky install",
+    "prepare": "npm exec -- husky install",
     "check": "npm run depcheck && npx eslint . && SHOW_VIZ=false npm run build -- --log-level=error && echo 'ok'",
     "lets-upgrade-packages": "npx npm-check -u"
   },
@@ -51,7 +51,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "husky": "^8.0.0",
+    "husky": "^8.0.1",
     "jsdom": "^20.0.0",
     "json-schema-to-typescript": "^11.0.2",
     "lint-staged": "^13.0.3",
