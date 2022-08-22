@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Badge, Table, Tag, Tooltip } from "antd"
+import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
@@ -7,6 +7,8 @@ import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
 import { useCloudState } from "../hooks/useCloudState"
+import awardwizImageUrl from "../wizard.png"
+import { FastTooltip } from "./FastTooltip"
 const moment = moment_
 
 const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
@@ -47,15 +49,15 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       title: "Amenities",
       render: (_text: string, flight) => (
         <>
-          <Tooltip title={flight.aircraft ?? "(Unknown aircraft)"} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
+          <FastTooltip title={flight.aircraft ?? "(Unknown aircraft)"}>
             <MdiAirplane style={{ verticalAlign: "middle", color: flight.aircraft ? "#000000" : "#dddddd" }} />
-          </Tooltip>
-          <Tooltip title={triState(flight.amenities.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
+          </FastTooltip>
+          <FastTooltip title={triState(flight.amenities.hasWiFi, "Has WiFi", "No WiFi", "WiFi unknown")}>
             <MaterialSymbolsWifiRounded style={{ verticalAlign: "middle", color: triState(flight.amenities.hasWiFi, "#000000", "#dddddd", "#ffffff"), paddingRight: 3, marginRight: 0 }} />
-          </Tooltip>
-          <Tooltip title={triState(flight.amenities.hasPods, "Has pods", "No pods", "Pods unknown")} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
+          </FastTooltip>
+          <FastTooltip title={triState(flight.amenities.hasPods, "Has pods", "No pods", "Pods unknown")}>
             <MaterialSymbolsAirlineSeatFlat style={{ verticalAlign: "middle", color: triState(flight.amenities.hasPods, "#000000", "#dddddd", "#ffffff") }} />
-          </Tooltip>
+          </FastTooltip>
         </>
       )
     },
@@ -116,13 +118,13 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         }
 
         return (
-          <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
+          <FastTooltip title={tooltipContent}>
             <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
               <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
                 {milesStr}{` + ${cashStr}`}
               </Tag>
             </Badge>
-          </Tooltip>
+          </FastTooltip>
         )
       },
       sorter: (recordA, recordB) => {
@@ -133,17 +135,19 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     }))
   ]
 
+  const emptyState = <Empty description="No flights" image={<img alt="empty" src={awardwizImageUrl} style={{ filter: "opacity(0.1)" }} />} />
   return (
-    <Table<FlightWithFares>
-      dataSource={results}
-      columns={columns}
-      rowKey={(record) => record.flightNo}
-      size="small"
-      loading={isLoading}
-      showSorterTooltip={false}
-      pagination={false}
-      className="search-results"
-      style={{ whiteSpace: "nowrap" }}
-    />
+    <ConfigProvider componentSize="small" renderEmpty={() => emptyState}>
+      <Table<FlightWithFares>
+        dataSource={results}
+        columns={columns}
+        rowKey={(record) => record.flightNo}
+        loading={isLoading}
+        showSorterTooltip={false}
+        pagination={false}
+        className="search-results"
+        style={{ whiteSpace: "nowrap" }}
+      />
+    </ConfigProvider>
   )
 }

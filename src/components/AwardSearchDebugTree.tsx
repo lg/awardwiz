@@ -1,17 +1,17 @@
 import React from "react"
 import * as ReactQuery from "@tanstack/react-query"
-import { DebugTreeNode } from "../components/DebugTree"
+import { DebugTree, DebugTreeNode } from "./DebugTree"
 import Text from "antd/lib/typography/Text"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "./useAwardSearch"
+import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "../hooks/useAwardSearch"
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
 import ReactJson from "@textea/json-viewer"
 import { Badge } from "antd"
 
-export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
+export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const queryClient = ReactQuery.useQueryClient()
   const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code
 
@@ -110,5 +110,5 @@ export const useAwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoute
     }
   })
 
-  return { debugTree, debugTreeRootKey }
+  return <DebugTree debugTree={debugTree} rootKey={debugTreeRootKey} />
 }
