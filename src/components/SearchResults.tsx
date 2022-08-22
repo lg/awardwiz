@@ -6,6 +6,7 @@ import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
+import { useCloudState } from "../hooks/useCloudState"
 const moment = moment_
 
 const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
@@ -17,7 +18,7 @@ const triState = (condition: boolean | undefined, trueVal: string, falseVal: str
 type MarkedFare = { flightNo: string, date: string, cabin: string }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
-  const [markedFares, setMarkedFares] = React.useState<MarkedFare[]>([])
+  const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
 
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
     const faresForClass = fares.filter((fare) => fare.cabin === cabin)
@@ -103,18 +104,20 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
         const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
 
-        const isMarked = markedFares.some((check) => check.flightNo === record.flightNo && check.date === record.departureDateTime && check.cabin === column.key)
+        const markedFare = (markedFares ?? []).find((check) => check.flightNo === record.flightNo && check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) && check.cabin === column.key)
         const clickedFare = () => {
-          if (isMarked) {
-            setMarkedFares(markedFares.filter((fare) => fare.flightNo !== record.flightNo || fare.date !== record.departureDateTime || fare.cabin !== column.key))
+          if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
+
+          if (markedFare) {
+            void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
           } else {
-            setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime, cabin: column.key }])
+            void setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), cabin: column.key }])    // add the marked fare
           }
         }
 
         return (
           <Tooltip title={tooltipContent} mouseEnterDelay={0} mouseLeaveDelay={0} destroyTooltipOnHide>
-            <Badge dot={isMarked} offset={[-8, 0]} color="gold">
+            <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
               <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
                 {milesStr}{` + ${cashStr}`}
               </Tag>

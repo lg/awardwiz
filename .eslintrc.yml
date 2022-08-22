@@ -84,3 +84,4 @@ rules:
   "@typescript-eslint/no-floating-promises": ["error"]
   "no-void": off
   "no-shadow": ["error", { "ignoreOnInitialization": true }]
+  "newline-per-chained-call": off
