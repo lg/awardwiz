@@ -3,7 +3,7 @@ import React, { ReactNode, useEffect } from "react"
 import Text from "antd/lib/typography/Text"
 import { LoadingOutlined, StopOutlined } from "@ant-design/icons"
 
-export type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactNode, isLoading: boolean, text: ReactNode, error: Error | undefined, details?: ReactNode, detailsTitle?: ReactNode }
+export type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactNode, isLoading: boolean, text: ReactNode, error: Error | undefined, details?: ReactNode }
 export type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: ReactNode, children: DebugTreeNodeComputed[] }
 
 const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
@@ -36,8 +36,8 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
       title = <span>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></span>
     }
 
-    const popover = (node.details && node.detailsTitle)
-      ? <Popover title={node.detailsTitle} content={node.details} trigger="click" placement="right" destroyTooltipOnHide autoAdjustOverflow overlayInnerStyle={{ maxHeight: 500, overflow: "scroll" }}>{title}</Popover>
+    const popover = node.details
+      ? <Popover content={node.details} trigger="click" placement="right" destroyTooltipOnHide autoAdjustOverflow overlayInnerStyle={{ minWidth: 100, minHeight: 100, maxWidth: 450, maxHeight: 500, overflow: "scroll" }}>{title}</Popover>
       : title
 
     let icon = node.stableIcon

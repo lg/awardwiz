@@ -35,6 +35,7 @@ export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFar
 type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
 
 let curMeta: ScraperMetadata
+const logLines: string[] = []
 export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput): Promise<{ data: ScraperResponse }> => {
   curMeta = meta
   const scraperStartTime = Date.now()
@@ -61,7 +62,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
   await params.browser?.close().catch(() => {})
 
   log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
-  return { data: { flightsWithFares: result, errored, retries: retriesDone } }
+  return { data: { flightsWithFares: result, errored, retries: retriesDone, log: logLines } }
 }
 
 export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
@@ -104,7 +105,11 @@ const runAttempt = async (page: Page, params: BrowserlessInput, scraperFunc: Scr
 }
 
 const randId = Math.round(Math.random() * 1000)
-export const log = (...args: any) => console.log(`[${(new Date()).toLocaleString()} ${curMeta.name}-${randId}] `, ...args)
+export const log = (...args: any) => {
+  const start = `[${(new Date()).toLocaleString()} ${curMeta.name}-${randId}]`
+  logLines.push([start, ...args].map((arg) => ((typeof arg === "string") ? arg : JSON.stringify(arg))).join(" "))
+  console.log(start, ...args)
+}
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
