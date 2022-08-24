@@ -56,7 +56,7 @@ const mainLocal = (async () => {
 
 if (mode === "browserless-func")
   void mainRemote().catch((e) => { console.log(e); process.exit(1) })
-if (mode === "browserless-websockets" || mode === "chromium")
+else
   void mainLocal().catch((e) => { console.log(e); process.exit(1) })
 
 export {}

@@ -91,42 +91,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col.key))).map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
-      render: (_text: string, record) => {
-        const smallestFare = lowestFare(record.fares, column.key)
-        if (!smallestFare)
-          return ""
-
-        const milesStr = Math.round(smallestFare.miles).toLocaleString()
-        const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash, maximumFractionDigits: 0 })
-
-        const tooltipContent = record.fares
-          .filter((fare) => fare.cabin === column.key)
-          .sort((a, b) => a.miles - b.miles)
-          .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass ?? "?"})` : ` (${fare.bookingClass ?? "?"})`}</div>)
-
-        const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === column.key)
-
-        const markedFare = (markedFares ?? []).find((check) => check.flightNo === record.flightNo && check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) && check.cabin === column.key)
-        const clickedFare = () => {
-          if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
-
-          if (markedFare) {
-            void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
-          } else {
-            void setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), cabin: column.key }])    // add the marked fare
-          }
-        }
-
-        return (
-          <FastTooltip title={tooltipContent}>
-            <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
-              <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
-                {milesStr}{` + ${cashStr}`}
-              </Tag>
-            </Badge>
-          </FastTooltip>
-        )
-      },
+      render: (_, record) => renderFare(record, column.key),
       sorter: (recordA, recordB) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
         const fareBMiles = lowestFare(recordB.fares, column.key)?.miles ?? Number.MAX_VALUE
@@ -134,6 +99,43 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       },
     }))
   ]
+
+  const renderFare = (record: FlightWithFares, cabin: string) => {
+    const smallestFare = lowestFare(record.fares, cabin)
+    if (!smallestFare)
+      return ""
+
+    const milesStr = Math.round(smallestFare.miles).toLocaleString()
+    const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash, maximumFractionDigits: 0 })
+
+    const tooltipContent = record.fares
+      .filter((fare) => fare.cabin === cabin)
+      .sort((a, b) => a.miles - b.miles)
+      .map((fare) => <div key={`${fare.scraper}${record.flightNo}${fare.cabin}${fare.miles}`}>{fare.scraper}: {Math.round(fare.miles).toLocaleString()}{fare.isSaverFare ? ` (saver, ${fare.bookingClass ?? "?"})` : ` (${fare.bookingClass ?? "?"})`}</div>)
+
+    const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === cabin)
+
+    const markedFare = (markedFares ?? []).find((check) => check.flightNo === record.flightNo && check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) && check.cabin === cabin)
+    const clickedFare = () => {
+      if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
+
+      if (markedFare) {
+        void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
+      } else {
+        void setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), cabin }])    // add the marked fare
+      }
+    }
+
+    return (
+      <FastTooltip title={tooltipContent}>
+        <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
+          <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
+            {milesStr}{` + ${cashStr}`}
+          </Tag>
+        </Badge>
+      </FastTooltip>
+    )
+  }
 
   const emptyState = <Empty description="No flights" image={<img alt="empty" src={awardwizImageUrl} style={{ filter: "opacity(0.1)" }} />} />
   return (

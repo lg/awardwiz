@@ -7,7 +7,8 @@ plugins:
   - promise
   - react-hooks
 extends:
-  - airbnb
+  - eslint:recommended
+  - plugin:import/recommended
   - plugin:import/typescript
   - plugin:@typescript-eslint/strict
   - plugin:react/recommended
@@ -85,3 +86,4 @@ rules:
   "no-void": off
   "no-shadow": ["error", { "ignoreOnInitialization": true }]
   "newline-per-chained-call": off
+  "import/named": off

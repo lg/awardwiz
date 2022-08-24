@@ -40,7 +40,7 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
   return (
     <Tabs tabBarExtraContent={buttons} size="small">
       <TabPane tab="Log" key="log">
-        { response ? <pre style={{ fontSize: 10, height: "100%" }}>{log}</pre> : "Loading..." }
+        { response ? <pre style={{ fontSize: 10, height: "100%" }}>{log}</pre> : "Loading log..." }
       </TabPane>
       <TabPane tab="Results" key="results">
         { response ? (
@@ -52,7 +52,7 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
             quotesOnKeys={false}
             shouldCollapse={(field) => ["forKey"].some((item) => item === field.name)}
           />
-        ) : "Loading..." }
+        ) : "Loading results..." }
       </TabPane>
     </Tabs>
   )

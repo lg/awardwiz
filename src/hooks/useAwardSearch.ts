@@ -147,12 +147,11 @@ const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionCont
   if (!data.result?.response.flight.data)
     return []
 
-  const airlineRoutes = data.result.response.flight.data
+  return data.result.response.flight.data
     .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name }))
     .filter((item): item is AirlineRoute => !!item.airlineName && !!item.airlineCode)    // dont take airlines who dont have a name/code
     .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
     .filter((item) => !scraperConfig.excludeAirlines?.includes(item.airlineCode!))
-  return airlineRoutes
 }
 
 export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string, includeCashOnly: boolean): boolean => {
@@ -216,11 +215,10 @@ const mergeFlightsByFlightNo = (flights: FlightWithFares[]) => {
     // If no match, also check for codeshares
     if (!existingFlight) {
       existingFlight = retFlights.find((retFlight) => retFlight.departureDateTime.substring(0, 16) === flight.departureDateTime.substring(0, 16) && retFlight.arrivalDateTime.substring(0, 16) === flight.arrivalDateTime.substring(0, 16))
-      if (existingFlight) {
-        // If the existing flight is from a cash-only scraper, take the new flight number, since other scrapers don't usually use codeshare flights
-        if (scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0].scraper)?.cashOnlyFares)
-          existingFlight.flightNo = flight.flightNo
-      }
+
+      // If the existing flight is from a cash-only scraper, take the new flight number, since other scrapers don't usually use codeshare flights
+      if (existingFlight && scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0].scraper)?.cashOnlyFares)
+        existingFlight.flightNo = flight.flightNo
     }
 
     if (existingFlight) {
