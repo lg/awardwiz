@@ -87,3 +87,4 @@ rules:
   "no-shadow": ["error", { "ignoreOnInitialization": true }]
   "newline-per-chained-call": off
   "import/named": off
+  "@typescript-eslint/no-throw-literal": off

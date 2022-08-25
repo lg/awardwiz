@@ -1,4 +1,4 @@
-import { Alert, Popover, Tree } from "antd"
+import { Popover, Tree } from "antd"
 import React, { ReactNode, useEffect } from "react"
 import Text from "antd/lib/typography/Text"
 import { LoadingOutlined, StopOutlined } from "@ant-design/icons"
@@ -30,9 +30,7 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
       setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, startTime: Date.now(), endTime: 0 } }))
 
     let title = <span style={{ color: node.error ? "red" : undefined }}>{node.text}</span>
-    if (node.error && node.error.message !== "stopped") {
-      title = <span>{title} <Alert showIcon message={node.error.message} type="error" /></span>
-    } else if (meta?.startTime && meta.endTime && !node.error) {
+    if (meta?.startTime && meta.endTime && !node.error) {
       title = <span>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></span>
     }
 
@@ -52,6 +50,12 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
   const rootNodeComputed = rootNode && computeNode(rootNode)
 
   return (
-    <Tree style={{ marginTop: 10 }} showIcon showLine={{ showLeafIcon: false }} expandedKeys={rootNodeComputed ? allKeys(rootNodeComputed, []) : []} treeData={rootNodeComputed ? [rootNodeComputed] : []} />
+    <Tree
+      style={{ marginTop: 10 }}
+      showIcon
+      showLine={{ showLeafIcon: false }}
+      expandedKeys={rootNodeComputed ? allKeys(rootNodeComputed, []) : []}
+      treeData={rootNodeComputed ? [rootNodeComputed] : []}
+    />
   )
 }

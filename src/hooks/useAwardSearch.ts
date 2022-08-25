@@ -15,6 +15,9 @@ const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
 export type ScraperToRun = { scraperName: string, forAirlines: string[], forDatedRoute: DatedRoute }
+export type UseQueryMetaWithHistory = { scraperToRun: ScraperToRun, prevLog: string[], curInternalRetries: number }
+
+export type ScraperError = { name: "ScraperError", message: string, log: string[] }
 
 export type AwardSearchProgress = {
   datedRoutes: DatedRoute[],                     // [{origin, destination, departureDate}]
@@ -81,7 +84,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     cacheTime: 1000 * 60 * 15,
     retry: 1,
     queryFn: fetchAwardAvailability,
-    meta: scraperToRun,
+    meta: { scraperToRun, prevLog: [], curInternalRetries: 0 } as UseQueryMetaWithHistory,
+    refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
   const scraperQueries = ReactQuery.useQueries({ queries: scraperQueriesOpts })
@@ -164,8 +168,10 @@ export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string,
   return includeCashOnly ? codes.includes(airlineCode) : (codes.includes(airlineCode) && !scraper.cashOnlyFares)
 }
 
-const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
-  const scraperToRun = meta as ScraperToRun
+const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
+  const meta = metaRaw as UseQueryMetaWithHistory
+  const scraperToRun = meta.scraperToRun
+
   const scraperPath = (name: string) => {
     const localPath = Object.keys(scraperCode).find((scraperKey) => scraperKey.includes(`${name}.ts`))
     if (!localPath) throw new Error(`Could not find scraper ${name}`)
@@ -179,8 +185,25 @@ const fetchAwardAvailability = async ({ signal, meta, queryKey }: ReactQuery.Que
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
   const postData: BrowserlessPostData = { code: jsCode, context: { ...scraperToRun.forDatedRoute } }
-  const scraperResponse = (await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })).data
+  const response = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }).catch((error) => {
+    throw { message: error.message, log: [ ...meta.prevLog, `*** Error calling scraper: ${error.messsage}` ], name: "ScraperError" } as ScraperError
+  })
+
+  const scraperResponse = response.data
   scraperResponse.forKey = queryKey
+
+  // Keep track of logs and retry counts from all attempts
+  meta.prevLog = [ ...meta.prevLog, ...scraperResponse.log ]
+  meta.curInternalRetries += scraperResponse.internalRetries
+
+  if (scraperResponse.errored) {
+    console.log(meta.prevLog)
+    throw { log: meta.prevLog, message: "Internal scraper error", name: "ScraperError" } as ScraperError
+  }
+
+  // Patch the response to contain logs and retry counts from all attempts
+  scraperResponse.log = [...meta.prevLog]
+  scraperResponse.internalRetries = meta.curInternalRetries
 
   return scraperResponse
 }

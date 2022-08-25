@@ -23,7 +23,7 @@ export type BrowserlessPostData = {
 export type ScraperResponse = {
   flightsWithFares: FlightWithFares[]
   errored: boolean
-  retries: number
+  internalRetries: number
   log: string[]
 
   // patched on after receiving

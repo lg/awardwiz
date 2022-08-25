@@ -33,10 +33,11 @@ export type ScraperMetadata = {
 
 export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFares[]>
 type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
+type BrowserlessOutput = { data: ScraperResponse, type: "application/json", headers: { "x-response-code": number } }
 
 let curMeta: ScraperMetadata
 const logLines: string[] = []
-export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput): Promise<{ data: ScraperResponse }> => {
+export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput): Promise<BrowserlessOutput> => {
   curMeta = meta
   const scraperStartTime = Date.now()
   log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
@@ -45,16 +46,14 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
 
   let timeoutTimer = -1
   const timeout = new Promise<undefined>((resolve) => {
-    timeoutTimer = setTimeout(resolve, (params.timeout ?? 30000) - 1000)
+    timeoutTimer = setTimeout(resolve, (params.timeout ?? 30000) - 5000)  // -5s for AWS to not cut off the request
   })
 
   let result = await Promise.race([runAttempt(params.page, params, scraperFunc, meta, undefined), timeout])
   const errored = result === undefined
   if (result === undefined) {
     log("* Ended in an error, getting screenshot *")
-    const path = `${meta.name}-${Date.now()}.png`
-    await params.page.screenshot({ path })
-    log(`* Screenshot saved to ${process.cwd()}/${path} *`)
+    await screenshot(params.page)
     result = []
   }
 
@@ -62,7 +61,17 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
   await params.browser?.close().catch(() => {})
 
   log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
-  return { data: { flightsWithFares: result, errored, retries: retriesDone, log: logLines } }
+  return {
+    data: { flightsWithFares: result, errored, internalRetries: retriesDone, log: logLines },
+    type: "application/json",
+    headers: { "x-response-code": errored ? 500 : 200 }
+  }
+}
+
+const screenshot = async (page: Page) => {
+  const path = `/tmp/${curMeta.name}-${Date.now()}.png`
+  await page.screenshot({ path })
+  log(`* Screenshot saved to ${path} *`)
 }
 
 export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
@@ -81,11 +90,7 @@ const runAttempt = async (page: Page, params: BrowserlessInput, scraperFunc: Scr
   const result = await scraperFunc(page, params.context).catch(async (e) => {
     if (page.isClosed()) return undefined
     log("* Error in scraper, taking screenshot *\n", e)
-
-    const filename = `${meta.name}-${Date.now()}.png`
-    await page.screenshot({ path: filename })
-    log(`* Screenshot saved to ${process.cwd()}/${filename} *`)
-
+    await screenshot(page)
     return undefined
   })
 
