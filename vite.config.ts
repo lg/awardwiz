@@ -2,6 +2,7 @@
 
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
+import vitePluginImp from "vite-plugin-imp"
 import Icons from "unplugin-icons/vite"
 import { visualizer } from "rollup-plugin-visualizer"
 
@@ -16,6 +17,14 @@ export default defineConfig({
 
   plugins: [
     react(),
+    vitePluginImp({
+      optimize: true,
+      libList: [{
+          libName: "antd",
+          libDirectory: "es",
+          style: (name) => `antd/es/${name}/style`
+      }]
+    }),
     Icons({
       compiler: "jsx",
       jsx: "react",
@@ -28,6 +37,14 @@ export default defineConfig({
       run: "npm run schemas"
     }])
   ],
+
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+      }
+    }
+  },
 
   test: {
     globals: true,
