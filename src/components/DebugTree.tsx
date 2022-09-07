@@ -34,9 +34,19 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
       title = <span>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></span>
     }
 
-    const popover = node.details
-      ? <Popover content={node.details} trigger="click" placement="right" destroyTooltipOnHide autoAdjustOverflow overlayInnerStyle={{ minWidth: 100, minHeight: 100, maxWidth: 450, maxHeight: 500, overflow: "scroll" }}>{title}</Popover>
-      : title
+    let popover = title
+    if (node.details) {
+      popover = <Popover
+        content={node.details}
+        trigger="click"
+        placement="right"
+        destroyTooltipOnHide
+        autoAdjustOverflow
+        overlayInnerStyle={{ minWidth: 100, minHeight: 100, maxWidth: 450, maxHeight: 500, overflow: "scroll" }}
+      >
+        {title}
+      </Popover>
+    }
 
     let icon = node.stableIcon
     if (node.isLoading) icon = <LoadingOutlined />
@@ -56,6 +66,8 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
       showLine={{ showLeafIcon: false }}
       expandedKeys={rootNodeComputed ? allKeys(rootNodeComputed, []) : []}
       treeData={rootNodeComputed ? [rootNodeComputed] : []}
+      selectable={false}
+      selectedKeys={[]}
     />
   )
 }
