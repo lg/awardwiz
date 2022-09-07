@@ -41,6 +41,9 @@ const runQuery = async (scraperName: string, route: string[], checkDate = moment
 
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
   const raw = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+
+  expect(raw.data.errored).toBe(false)
+
   return raw.data
 }
 
