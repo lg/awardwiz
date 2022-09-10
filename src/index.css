@@ -3,7 +3,7 @@
 }
 
 .search-results table {
-  width: auto;
+  width: auto !important;
   margin-top: 10px;
 }
 
