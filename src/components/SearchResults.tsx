@@ -1,7 +1,6 @@
 import * as React from "react"
 import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
-import moment_ from "moment"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
@@ -9,7 +8,7 @@ import MdiAirplane from "~icons/mdi/airplane"
 import { useCloudState } from "../hooks/useCloudState"
 import awardwizImageUrl from "../wizard.png"
 import { FastTooltip } from "./FastTooltip"
-const moment = moment_
+import { default as dayjs } from "dayjs"
 
 const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
   if (condition === undefined)
@@ -68,20 +67,20 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     },
     {
       key: "departure",
-      render: (_text: string, record) => moment(record.departureDateTime).format("M/D"),
+      render: (_text: string, record) => dayjs(record.departureDateTime).format("M/D"),
     },
     {
       title: "Departure",
       dataIndex: "departureDateTime",
-      render: (text: string) => moment(text).format("h:mm A"),
-      sorter: (recordA, recordB) => moment(recordA.departureDateTime).diff(moment(recordB.departureDateTime)),
+      render: (text: string) => dayjs(text).format("h:mm A"),
+      sorter: (recordA, recordB) => dayjs(recordA.departureDateTime).diff(dayjs(recordB.departureDateTime)),
       defaultSortOrder: "ascend",
     },
     {
       title: "Arrival",
       dataIndex: "arrivalDateTime",
-      render: (_text: string, record) => `${moment(record.arrivalDateTime).format("h:mm A")} ${moment(record.arrivalDateTime).isAfter(moment(record.departureDateTime), "day") ? " (+1)" : ""}`,
-      sorter: (recordA, recordB) => moment(recordA.arrivalDateTime).diff(moment(recordB.arrivalDateTime)),
+      render: (_text: string, record) => `${dayjs(record.arrivalDateTime).format("h:mm A")} ${dayjs(record.arrivalDateTime).isAfter(dayjs(record.departureDateTime), "day") ? " (+1)" : ""}`,
+      sorter: (recordA, recordB) => dayjs(recordA.arrivalDateTime).diff(dayjs(recordB.arrivalDateTime)),
     },
     {
       title: "Dest",

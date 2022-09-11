@@ -196,10 +196,8 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
   meta.prevLog = [ ...meta.prevLog, ...scraperResponse.log ]
   meta.curInternalRetries += scraperResponse.internalRetries
 
-  if (scraperResponse.errored) {
-    console.log(meta.prevLog)
+  if (scraperResponse.errored)
     throw { log: meta.prevLog, message: "Internal scraper error", name: "ScraperError" } as ScraperError
-  }
 
   // Patch the response to contain logs and retry counts from all attempts
   scraperResponse.log = [...meta.prevLog]

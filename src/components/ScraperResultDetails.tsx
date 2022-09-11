@@ -3,8 +3,7 @@ import * as ReactQuery from "@tanstack/react-query"
 import ReactJson from "@textea/json-viewer"
 import { ScraperResponse } from "../types/scrapers"
 import { Alert, Button, Tabs } from "antd"
-import moment_, { Moment } from "moment"
-const moment = moment_
+import { default as dayjs, Dayjs } from "dayjs"
 
 const { TabPane } = Tabs
 
@@ -18,15 +17,15 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
   const meta = queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKey)
   const rawLog = response?.log ?? meta?.error?.log ?? []
 
-  let initialTime: Moment
+  let initialTime: Dayjs
   const logLines = rawLog.map((line, i) => {
     const parts = line.match(/^\[(.*, .+ (?:AM|PM)).*?\] (.*)$/)
     if (!parts || parts.length !== 3) return line
-    if (i === 0) initialTime = moment(parts[1])
+    if (i === 0) initialTime = dayjs(parts[1])
 
     return (
       <div key={line}>
-        <span style={{ color: "red" }}>{moment(parts[1]).diff(initialTime, "seconds")}s </span>
+        <span style={{ color: "red" }}>{dayjs(parts[1]).diff(initialTime, "seconds")}s </span>
         { parts[2].startsWith("*") ? <span style={{ color: "red" }}>{parts[2]}</span> : parts[2] }
         <br />
       </div>

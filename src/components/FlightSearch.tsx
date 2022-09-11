@@ -1,20 +1,19 @@
 import * as React from "react"
-import moment_, { Moment } from "moment"
 import { SearchResults } from "./SearchResults"
 import { useAwardSearch } from "../hooks/useAwardSearch"
 import { AwardSearchDebugTree } from "./AwardSearchDebugTree"
 import { SearchQuery } from "../types/scrapers"
 import { supabase } from "./LoginScreen"
 import { FlightSearchForm } from "./FlightSearchForm"
-const moment = moment_
+import { default as dayjs, Dayjs } from "dayjs"
 
 export const FlightSearch = () => {
   console.log("render")
 
-  const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: moment().add("1", "day").format("YYYY-MM-DD") }
+  const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: dayjs().add(1, "day").format("YYYY-MM-DD") }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => {
     const receivedDate = JSON.parse(localStorage.getItem("searchQuery") ?? JSON.stringify(defaultSearchQuery))
-    if (moment(receivedDate.departureDate).isBefore(moment()))
+    if (dayjs(receivedDate.departureDate).isBefore(dayjs()))
       receivedDate.departureDate = defaultSearchQuery.departureDate
     return receivedDate
   })
@@ -26,10 +25,10 @@ export const FlightSearch = () => {
     void logSearch(searchQuery)
   }, [searchQuery])
 
-  const onSearchClick = React.useCallback(async (values: { origins: string[], destinations: string[], departureDate: Moment }) => {
+  const onSearchClick = React.useCallback(async (values: { origins: string[], destinations: string[], departureDate: Dayjs }) => {
     if (searchProgress.loadingQueriesKeys.length > 0)
       return searchProgress.stop()
-    return setSearchQuery({ ...values, departureDate: moment(values.departureDate).format("YYYY-MM-DD") })
+    return setSearchQuery({ ...values, departureDate: dayjs(values.departureDate).format("YYYY-MM-DD") })
   }, [searchProgress])
 
   return (

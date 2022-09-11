@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { expect } from "vitest"
-import moment_ from "moment"
 import { FlightFare, FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 import * as fs from "fs/promises"
 import ts from "typescript"
 import axios from "axios"
-const moment = moment_
+import { default as dayjs } from "dayjs"
 
 type Route = [orig: string, dest: string]
 type RouteWithExpectedFlight = [...route: Route, expectedFlight: string]
@@ -33,7 +32,7 @@ const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
 
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
-const runQuery = async (scraperName: string, route: string[], checkDate = moment().add(3, "months").format("YYYY-MM-DD")) => {
+const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
   const commonTS = await fs.readFile("src/scrapers/common.ts", "utf8")
   const scraperTS = await fs.readFile(`src/scrapers/${scraperName}.ts`, "utf8")
   const tsCode = scraperTS.replace(/import .* from "\.\/common"/, commonTS)
@@ -71,11 +70,11 @@ test.concurrent.each(scrapers)("basic search: %s", async (scraperName, scraper) 
 })
 
 test.concurrent.each(scrapers)("basic same-day search: %s", async (scraperName, scraper) => {
-  await runQuery(scraperName, scraper.popularRoute, moment().format("YYYY-MM-DD"))
+  await runQuery(scraperName, scraper.popularRoute, dayjs().format("YYYY-MM-DD"))
 })
 
 test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partnerRoute))("partner availability search: %s", async (scraperName, scraper) => {
-  let checkDate = moment().add(3, "months").format("YYYY-MM-DD")
+  let checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")
   let found = false
   do {
     // eslint-disable-next-line no-await-in-loop
@@ -83,8 +82,8 @@ test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partner
     const expectFlightNo = scraper.partnerRoute![2]
     found = !!results.flightsWithFares.find((flight) => flight.flightNo === expectFlightNo)
 
-    checkDate = moment(checkDate).add(1, "days").format("YYYY-MM-DD")
-  } while (moment(checkDate).isBefore(moment(checkDate).add(3, "days")) && !found)
+    checkDate = dayjs(checkDate).add(1, "days").format("YYYY-MM-DD")
+  } while (dayjs(checkDate).isBefore(dayjs(checkDate).add(3, "days")) && !found)
 
   expect(found, `Could not find flight ${scraper.partnerRoute![2]} ${scraper.partnerRoute![0]}->${scraper.partnerRoute![1]} on ${checkDate} or the following two days`).toBe(true)
 })
@@ -95,11 +94,11 @@ test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", as
 })
 
 test.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
-  const futureDate = moment().add(10, "months").format("YYYY-MM-DD")
+  const futureDate = dayjs().add(10, "months").format("YYYY-MM-DD")
   const results = await runQuery(scraperName, scraper.popularRoute, futureDate)
   expect(results.flightsWithFares.length).toBeGreaterThanOrEqual(scraper.longtermSearchEmptyOk ? 0 : 1)
   results.flightsWithFares.forEach((flight) => {
-    const receivedDate = moment(flight.departureDateTime).format("YYYY-MM-DD")
+    const receivedDate = dayjs(flight.departureDateTime).format("YYYY-MM-DD")
     expect(receivedDate, `Expected date from results (${receivedDate}) to be the same as we searched (${futureDate})`).equals(futureDate)
   })
 })
