@@ -51,11 +51,17 @@ export default defineConfig({
     maxConcurrency: 10,
     testTimeout: 60000, // incase we get in the test queue on browserless
     environment: "jsdom",
+    onConsoleLog: (log, type) => {
+      if (log.includes("Not implemented")) return false   // jsdom doesnt implement some methods that antd expects on dom elements
+      if (log.replace(/render/g, "").trim() === "") return false
+      return
+    },
     coverage: {
       reporter: ["lcovonly"],
       enabled: true,
       clean: true
     },
-    sequence: { shuffle: true }
+    sequence: { shuffle: true },
+    passWithNoTests: true
   }
 })

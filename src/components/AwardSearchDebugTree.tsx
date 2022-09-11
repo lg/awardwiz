@@ -34,7 +34,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
       text: <>{datedRoute.origin} → {datedRoute.destination}</>,
       stableIcon: <NodeIndexOutlined />,
       isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
-      error: errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
+      error: !!errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
     }
   }))
 
@@ -60,7 +60,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
       ),
       stableIcon: <CarbonPaintBrush />,
       isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
-      error: errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
+      error: !!errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
       details: <ScraperResultDetails response={response} queryKey={queryKey} />
     }
   }))

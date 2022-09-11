@@ -19,7 +19,7 @@ type ScraperConfig = [string, {
   longtermSearchEmptyOk?: boolean // use this to not expect any results for the 10 month check (exceptions still will fail the scraper)
 }][]
 
-const scrapers: ScraperConfig = [
+const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
   ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["NRT", "SFO", "JL 58"], plusOneDayRoute: ["SFO", "JFK"] }],
   ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
   ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"] }],
@@ -29,7 +29,7 @@ const scrapers: ScraperConfig = [
   ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["skyscanner", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["united", { popularRoute: ["SFO", "JFK"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
-]
+] : []
 
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
@@ -46,6 +46,8 @@ const runQuery = async (scraperName: string, route: string[], checkDate = moment
 
   return raw.data
 }
+
+test("pass", () => {})
 
 test.concurrent.each(scrapers)("basic search: %s", async (scraperName, scraper) => {
   const results = await runQuery(scraperName, scraper.popularRoute)
