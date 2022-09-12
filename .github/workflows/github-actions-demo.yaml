@@ -6,7 +6,8 @@ jobs:
     steps:
       - name: Check out repository code for ${{ github.repository }}
         uses: actions/checkout@v3
-      - name: List files in the repository
-        run: |
-          ls -al ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Install nodejs
+        uses: actions/setup-node@v3
+      - name: Run checks
+        run: npm run check
+      - run: echo "Done"
