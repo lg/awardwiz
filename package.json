@@ -8,7 +8,7 @@
     "build": "npm run schemas && tsc && vite build",
     "preview": "vite preview",
     "start": "npm run schemas && vite",
-    "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8",
+    "depcheck": "npx depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8",
     "schemas": "npx json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "npm exec -- husky install",
     "check": "npm run depcheck && npx eslint . && npm test -- run && SHOW_VIZ=false npm run build -- --log-level=error && echo 'ok'",
