@@ -1,16 +1,18 @@
-name: GitHub Actions Demo
+name: AwardWiz Push Actions
 on: [push]
-
-
+env:
+  VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+  VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 jobs:
-  Explore-GitHub-Actions:
+  run-checks:
     runs-on: ubuntu-latest
     environment: ci
     steps:
-      - name: Check out repository code for ${{ github.repository }}
-        uses: actions/checkout@v3
-      - name: Install nodejs
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
       - name: Install node dependencies
         run: npm install
       - name: Run checks
