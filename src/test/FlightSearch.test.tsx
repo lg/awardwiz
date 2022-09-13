@@ -13,6 +13,15 @@ beforeAll(() => {
 
 afterEach(() => { cleanup() })
 
+beforeAll(() => {
+  vi.mock("@supabase/supabase-js", () => ({
+    createClient: () => ({
+      auth: { getUser: () => Promise.resolve({ data: { user: { email: "abc@def.com" } } }) },
+      from: () => ({ select: vi.fn(), insert: vi.fn() }),
+    }),
+  }))
+})
+
 describe("FlightSearch", () => {
   const queryClient = new QueryClient()
   const wrapper = ({ children }: { children: ReactNode }) => (
