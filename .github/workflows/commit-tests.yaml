@@ -1,0 +1,16 @@
+name: Commit Tests
+on:
+  push:
+
+jobs:
+  run-checks:
+    name: run-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - run: npm install
+      - run: npm run check
