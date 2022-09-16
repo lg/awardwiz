@@ -20,7 +20,7 @@ jobs:
     name: run-checks
     needs: setup
     runs-on: ubuntu-latest
-    if: github.event.push
+    if: github.event_name == 'push'
     steps:
       - run: npm run check
 
@@ -33,6 +33,6 @@ jobs:
       VITE_LIVE_SCRAPER_TESTS: 1
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
-    if: github.event.schedule == '55 * * * *'
+    if: github.event.schedule == '55 * * * *' || github.event_name == 'push'
     steps:
       - run: npm run test-scrapers
