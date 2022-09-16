@@ -4,6 +4,7 @@
   "version": "2.0.0",
   "scripts": {
     "test": "vitest",
+    "test-scrapers": "VITE_LIVE_SCRAPER_TESTS=1 vitest scrapers",
     "coverage": "vitest run --coverage",
     "build": "npm run schemas && tsc && vite build",
     "preview": "vite preview",

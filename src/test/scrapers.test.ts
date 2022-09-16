@@ -5,6 +5,11 @@ import * as fs from "fs/promises"
 import ts from "typescript"
 import axios from "axios"
 import { default as dayjs } from "dayjs"
+import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 type Route = [orig: string, dest: string]
 type RouteWithExpectedFlight = [...route: Route, expectedFlight: string]
@@ -16,14 +21,15 @@ type ScraperConfig = [string, {
   missingFareAttribs?: (keyof FlightFare)[]     // if we know a scraper is missing a certain fare field
   zeroMilesOk?: boolean    // use this for cash-only scrapers
   longtermSearchEmptyOk?: boolean // use this to not expect any results for the 10 month check (exceptions still will fail the scraper)
+  sameDayTz?: string       // use this to specify a timezone for the same day check, otherwise will be America/Los_Angeles
 }][]
 
 const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
   ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["NRT", "SFO", "JL 58"], plusOneDayRoute: ["SFO", "JFK"] }],
-  ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
+  ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
   ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"] }],
   ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] }],
-  ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"] }],
+  ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"], sameDayTz: "America/New_York" }],
   ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
   ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["skyscanner", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
@@ -70,7 +76,7 @@ test.concurrent.each(scrapers)("basic search: %s", async (scraperName, scraper) 
 })
 
 test.concurrent.each(scrapers)("basic same-day search: %s", async (scraperName, scraper) => {
-  await runQuery(scraperName, scraper.popularRoute, dayjs().format("YYYY-MM-DD"))
+  await runQuery(scraperName, scraper.popularRoute, dayjs().tz(scraper.sameDayTz ?? "America/Los_Angeles").format("YYYY-MM-DD"))
 })
 
 test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partnerRoute))("partner availability search: %s", async (scraperName, scraper) => {
