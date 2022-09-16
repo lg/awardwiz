@@ -1,0 +1,38 @@
+name: AwardWiz Push Actions
+on:
+  push:
+  schedule:
+    - cron: '55 * * * *'
+
+jobs:
+  setup:
+    name: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - run: npm install
+
+  run-checks:
+    name: run-checks
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event.push
+    steps:
+      - run: npm run check
+
+  run-scraper-tests:
+    name: run-scraper-tests
+    needs: setup
+    runs-on: ubuntu-latest
+    environment: ci
+    env:
+      VITE_LIVE_SCRAPER_TESTS: 1
+      VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
+      VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
+    if: github.event.schedule == '55 * * * *'
+    steps:
+      - run: npm run test-scrapers
