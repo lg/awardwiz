@@ -7,6 +7,7 @@ import axios from "axios"
 import { default as dayjs } from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
+import { retry } from "../helpers/common"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -45,7 +46,12 @@ const runQuery = async (scraperName: string, route: string[], checkDate = dayjs(
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
-  const raw = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+
+  const raw = await retry(3, async () => {
+    const rawRet = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+    if (rawRet.data.errored) throw new Error("Errored in scraper")
+    return rawRet
+  })
 
   expect(raw.data.errored).toBe(false)
 
