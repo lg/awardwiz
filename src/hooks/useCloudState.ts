@@ -27,6 +27,8 @@ export const useCloudState = <T>(key: string, defaultValue: T) => {
     },
     onError: (err, newValue, context) => {    // set things back if there was an error
       queryClient.setQueryData(["cloudstate", key], context?.previousValue)
+      if (context?.previousValue === undefined)
+        throw new Error(`Unable to set default value of ${JSON.stringify(defaultValue)} for ${key}}`)
     },
     onSettled: (newValue) => {    // update all data (though should be unnecessary)
       return queryClient.invalidateQueries(["cloudstate", key])

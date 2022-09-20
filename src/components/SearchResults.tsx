@@ -20,9 +20,7 @@ const triState = (condition: boolean | undefined, trueVal: string, falseVal: str
 export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
-  //const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
-  const markedFares: MarkedFare[] = []
-  const setMarkedFares = (x: any) => {}
+  const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
 
   const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
     const faresForClass = fares.filter((fare) => fare.cabin === cabin)
