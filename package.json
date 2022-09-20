@@ -12,7 +12,7 @@
     "depcheck": "npx depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8",
     "schemas": "npx json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "npm exec -- husky install",
-    "check": "npm run depcheck && npx eslint . && npm test -- run && SHOW_VIZ=false npm run build -- --log-level=error && echo 'ok'",
+    "check": "npm run depcheck && echo 'linting' && npx eslint --cache . && npm test -- run && SHOW_VIZ=false npm run build -- --log-level=error && echo 'ok'",
     "lets-upgrade-packages": "npx npm-check -u"
   },
   "lint-staged": {
