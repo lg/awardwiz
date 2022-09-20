@@ -5,8 +5,6 @@ import { ScraperResponse } from "../types/scrapers"
 import { Alert, Button, Tabs } from "antd"
 import { default as dayjs, Dayjs } from "dayjs"
 
-const { TabPane } = Tabs
-
 type ScraperResultDetailsProps = {
   response: ScraperResponse | undefined
   queryKey: ReactQuery.QueryKey
@@ -52,10 +50,9 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
   }
 
   const buttons = <Button style={{ marginLeft: 100 }} onClick={() => queryClient.resetQueries(queryKey)} size="small">Reload</Button>
-  return (
-    <Tabs tabBarExtraContent={buttons} size="small">
-      <TabPane tab="Log" key="log">{log}</TabPane>
-      <TabPane tab={`Results (${response?.flightsWithFares.length ?? 0})`} key="results">{results}</TabPane>
-    </Tabs>
-  )
+  const tabItems = [
+    { label: "Log", key: "log", children: log },
+    { label: `Results (${response?.flightsWithFares.length ?? 0})`, key: "results", children: results },
+  ]
+  return (<Tabs tabBarExtraContent={buttons} size="small" items={tabItems} />)
 }
