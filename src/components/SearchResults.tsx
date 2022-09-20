@@ -16,7 +16,7 @@ const triState = (condition: boolean | undefined, trueVal: string, falseVal: str
   return condition ? trueVal : falseVal
 }
 
-type MarkedFare = { flightNo: string, date: string, cabin: string }
+export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
@@ -114,14 +114,17 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
     const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === cabin)
 
-    const markedFare = (markedFares ?? []).find((check) => check.flightNo === record.flightNo && check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) && check.cabin === cabin)
+    const markedFare = (markedFares ?? []).find((check) =>
+      check.checkFlightNo === record.flightNo &&
+      check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) &&
+      check.checkCabin === cabin)
     const clickedFare = () => {
       if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
 
       if (markedFare) {
         void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
       } else {
-        void setMarkedFares([...markedFares, { flightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), cabin }])    // add the marked fare
+        void setMarkedFares([...markedFares, { origin: record.origin, destination: record.destination, checkFlightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), checkCabin: cabin }])    // add the marked fare
       }
     }
 
