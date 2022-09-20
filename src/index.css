@@ -7,15 +7,10 @@
   margin-top: 10px;
 }
 
-.mapboxgl-ctrl-logo {
-  display: none !important;
+.flightswithfares-json-viewer {
+  font-size: 12px;
 }
 
-.react-json-view .variable-row, .react-json-view .object-key-val, .react-json-view .node-ellipsis {
-  padding-top: 1px !important;
-  padding-bottom: 1px !important;
-  font-size: 12px !important;
-}
-.react-json-view .icon-container svg {
-  vertical-align: middle !important;
+.flightswithfares-json-viewer .data-type-label {
+  display: none;
 }

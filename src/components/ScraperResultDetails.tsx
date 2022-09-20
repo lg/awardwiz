@@ -1,6 +1,6 @@
 import React from "react"
 import * as ReactQuery from "@tanstack/react-query"
-import ReactJson from "@textea/json-viewer"
+import { JsonViewer } from "@textea/json-viewer"
 import { ScraperResponse } from "../types/scrapers"
 import { Alert, Button, Tabs } from "antd"
 import { default as dayjs, Dayjs } from "dayjs"
@@ -38,13 +38,14 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
 
   let results = <Alert showIcon message="Loading..." type="info" />
   if (response) {
-    results = <ReactJson
-      src={response.flightsWithFares}
+    // Custom CSS in src/index.css
+    results = <JsonViewer
+      value={response.flightsWithFares}
       enableClipboard={false}
-      displayDataTypes={false}
-      indentWidth={2}
-      quotesOnKeys={false}
-      shouldCollapse={(field) => ["forKey"].some((item) => item === field.name)}
+      indentWidth={3}
+      editable={false}
+      rootName="flightsWithFares"
+      className="flightswithfares-json-viewer"
     />
   } else if (meta?.error) {
     results = <Alert showIcon message={meta.error.message} type="error" />
