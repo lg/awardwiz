@@ -1,6 +1,5 @@
-/* eslint-disable no-continue */
-/* eslint-disable no-constant-condition */
-/* eslint-disable no-await-in-loop */
+// TODO: stop using setTimeout manually and switch to a lib like p-timeout so cancelations are considered
+/* eslint-disable no-restricted-globals */
 
 import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
 import type { FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"

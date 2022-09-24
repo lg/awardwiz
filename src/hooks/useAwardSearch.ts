@@ -6,7 +6,7 @@ import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
-import { retry } from "../helpers/common"
+import pRetry from "p-retry"
 
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
@@ -29,7 +29,7 @@ export type AwardSearchProgress = {
   loadingQueriesKeys: ReactQuery.QueryKey[],
   errors: { queryKey: ReactQuery.QueryKey, error: Error }[]
 
-  stop: () => void
+  stop: () => Promise<void>
 }
 
 export const queryKeyForAirlineRoute = (datedRoute: DatedRoute): ReactQuery.QueryKey => [`airlineRoutes-${datedRoute.origin}-${datedRoute.destination}`]
@@ -37,6 +37,7 @@ export const queryKeyForScraperResponse = (scraperToRun: ScraperToRun): ReactQue
 export const queryKeysEqual = (a: ReactQuery.QueryKey, b: ReactQuery.QueryKey): boolean => ReactQuery.hashQueryKey(a) === ReactQuery.hashQueryKey(b)
 
 export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress => {
+  const queryClient = useQueryClient()
   const [stoppedQueries, setStoppedQueries] = React.useState<ReactQuery.QueryKey[]>([])
 
   // Take all origins and destinations and create a list of all possible pairs: [{origin, destination, departureDate}]
@@ -111,10 +112,9 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   const errorsQueries = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.error ?? stoppedQueries.some((check) => queryKeysEqual(check, item.queryKey)))
   const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? Error("stopped") }))
 
-  const queryClient = useQueryClient()
   const stop = async () => {
     setStoppedQueries([...loadingQueriesKeys])
-    loadingQueriesKeys.forEach((queryKey) => queryClient.cancelQueries(queryKey))
+    await Promise.all(loadingQueriesKeys.map((queryKey) => queryClient.cancelQueries(queryKey)))
   }
 
   return { searchResults: flights, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors, stop }
@@ -135,7 +135,7 @@ const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => 
 const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
   const datedRoute = meta as DatedRoute
 
-  const data = await retry(3, async () => {
+  const data = await pRetry(async () => {
     const request = await axios.post<string>(
       `${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`,
       { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` },
@@ -144,7 +144,7 @@ const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionCont
 
     const dataHtml = request.data
     return JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent ?? "") as FlightRadar24Response
-  })
+  }, { retries: 3, signal, factor: 1 })
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)

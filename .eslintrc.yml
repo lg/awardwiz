@@ -88,3 +88,12 @@ rules:
   "newline-per-chained-call": off
   "import/named": off
   "@typescript-eslint/no-throw-literal": off
+
+  "no-restricted-globals": ["error",
+    { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
+    { name: "setTimeout", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" }
+  ]
+  "no-restricted-properties": ["error",
+    { object: 'window', property: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
+    { object: "window", property: "setTimeout", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" }
+  ]
