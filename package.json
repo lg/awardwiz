@@ -38,6 +38,7 @@
   },
   "devDependencies": {
     "@iconify/json": "^2.1.111",
+    "@happy-dom/global-registrator": "^6.0.4",
     "@kitql/vite-plugin-watch-and-run": "^0.4.2",
     "@svgr/core": "^6.3.1",
     "@testing-library/jest-dom": "^5.16.5",
@@ -60,6 +61,7 @@
     "listr2": "^5.0.5",
     "puppeteer": "^18.0.5",
     "p-retry": "^5.1.1",
+    "p-wait-for": "^5.0.0",
     "rollup-plugin-visualizer": "^5.8.1",
     "unplugin-icons": "^0.14.10",
     "vite": "^3.1.3",
