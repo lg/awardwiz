@@ -1,5 +1,11 @@
-/* eslint-disable promise/no-nesting */
-export async function retry<T>(retries: number, fn: () => Promise<T>, err?: any): Promise<T> {
-  await new Promise((resolve) => { setTimeout(resolve, (5 - retries) * 1000) })
-  return !retries ? Promise.reject(err) : fn().catch((error) => retry(retries - 1, fn, error))
+import { Listr } from "listr2"
+
+export const runListrTask = async <T extends object>(title: string, task: () => Promise<T>, suffix?: (ret: T) => string) => {
+  let ret: T
+  await new Listr([{ title, task: async (ctx, taskObj) => {
+    ret = await task()
+    // eslint-disable-next-line no-param-reassign
+    if (suffix) taskObj.title = `${taskObj.title} ${suffix(ret)}`
+  } }], { registerSignalListeners: false, rendererOptions: { collapseErrors: false }}).run()
+  return ret!
 }
