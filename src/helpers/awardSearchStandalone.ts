@@ -10,6 +10,8 @@ import { ReactElement } from "react"
 if (!global.window)
   GlobalRegistrator.register()
 
+export const genQueryClient = () => new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, cacheTime: Infinity, retry: false } } })
+
 export const search = async (searchQuery: SearchQuery, queryClient: QueryClient) => {
   const wrapper = ({ children }: { children: ReactElement }) => QueryClientProvider({ client: queryClient, children })
   const { result } = renderHook(() => useAwardSearch(searchQuery), { wrapper })

@@ -2,10 +2,9 @@ import { createClient } from "@supabase/supabase-js"
 import type { Database } from "../types/supabase-types"
 import { MarkedFare } from "../components/SearchResults"
 import dayjs from "dayjs"
-import { search } from "../helpers/awardSearchStandalone"
+import { genQueryClient, search } from "../helpers/awardSearchStandalone"
 import { Listr } from "listr2"
 import { runListrTask } from "../helpers/common"
-import { QueryClient } from "@tanstack/react-query"
 
 const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_KEY)
 
@@ -36,7 +35,7 @@ let markedFares = markedFaresQuery.data!.flatMap((item) => {
 const toRemove = markedFares.filter((markedFare) => dayjs(markedFare.date).isBefore(dayjs().startOf("day")))
 markedFares = markedFares.filter((markedFare) => !toRemove.includes(markedFare))
 
-const qc = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, cacheTime: Infinity, retry: false } } })
+const qc = genQueryClient() // Use the same query client for all searches for caching
 await new Listr<{}>(
   markedFares.map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.email}`,
