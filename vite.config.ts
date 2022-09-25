@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react"
 import vitePluginImp from "vite-plugin-imp"
 import Icons from "unplugin-icons/vite"
 import { visualizer } from "rollup-plugin-visualizer"
-
+import importToCDN from "vite-plugin-cdn-import"
 import watchAndRun from "@kitql/vite-plugin-watch-and-run"
 import path from "path"
 
@@ -17,6 +17,9 @@ export default defineConfig({
 
   plugins: [
     react(),
+    importToCDN({
+      modules: [{ name: "typescript", var: "ts", path: "lib/typescript.min.js" }]
+    }),
     vitePluginImp({
       optimize: true,
       libList: [{
