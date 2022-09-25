@@ -27,7 +27,7 @@ type ScraperConfig = [string, {
 
 const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
   ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["NRT", "SFO", "JL 58"], plusOneDayRoute: ["SFO", "JFK"] }],
-  ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
+  ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["FRA", "MUC", "LH 108"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
   ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"] }],
   ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"] }],
   ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"], sameDayTz: "America/New_York" }],
