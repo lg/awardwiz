@@ -14,7 +14,9 @@
     "prepare": "npm exec -- husky install",
     "check": "npm run depcheck && echo 'linting' && npx eslint --cache . && npm test -- run && SHOW_VIZ=false npm run build -- --log-level=error && echo 'ok'",
     "lets-upgrade-packages": "npx npm-check -u",
-    "run-marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch npx vite-node src/workers/marked-fares.ts"
+
+    "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch npx vite-node src/workers/marked-fares.ts",
+    "preview-email-worker": "npx vite-node src/workers/preview-email.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"
@@ -28,7 +30,6 @@
     "@tanstack/react-query-devtools": "^4.3.9",
     "@tanstack/react-query-persist-client": "^4.3.9",
     "@textea/json-viewer": "^2.7.1",
-    "@types/nodemailer": "^6.4.6",
     "antd": "^4.23.2",
     "axios": "^0.27.2",
     "dayjs": "^1.11.5",
@@ -44,6 +45,7 @@
     "@svgr/core": "^6.3.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
+    "@types/nodemailer": "^6.4.6",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
     "@typescript-eslint/parser": "^5.38.0",
     "@vitejs/plugin-react": "^2.1.0",
@@ -54,6 +56,7 @@
     "eslint-plugin-promise": "^6.0.1",
     "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "handlebars": "^4.7.7",
     "husky": "^8.0.1",
     "jsdom": "^20.0.0",
     "json-schema-to-typescript": "^11.0.2",
