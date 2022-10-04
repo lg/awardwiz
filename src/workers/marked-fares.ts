@@ -2,9 +2,16 @@ import { createClient } from "@supabase/supabase-js"
 import type { Database } from "../types/supabase-types"
 import { MarkedFare } from "../components/SearchResults"
 import dayjs from "dayjs"
+import LocalizedFormat from "dayjs/plugin/localizedFormat"
 import { genQueryClient, search } from "../helpers/awardSearchStandalone"
 import { Listr } from "listr2"
 import { runListrTask } from "../helpers/common"
+import nodemailer from "nodemailer"
+import handlebars from "handlebars"
+import notificationEmail from "../../emails/notification.html?raw"
+import { sendNotificationEmail } from "../helpers/sendEmail"
+
+dayjs.extend(LocalizedFormat)
 
 const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_KEY)
 
@@ -35,6 +42,17 @@ let markedFares = markedFaresQuery.data!.flatMap((item) => {
 const toRemove = markedFares.filter((markedFare) => dayjs(markedFare.date).isBefore(dayjs().startOf("day")))
 markedFares = markedFares.filter((markedFare) => !toRemove.includes(markedFare))
 
+// Prep email transport
+const { transporter, template } = await runListrTask("Creating email transport...", async () => {
+  const testAccount = await nodemailer.createTestAccount()  // use this one for testing
+  const transporter = nodemailer.createTransport(`${testAccount.smtp.secure ? "smtps" : "smtp"}://${testAccount.user}:${testAccount.pass}@${testAccount.smtp.host}:${testAccount.smtp.port}`)
+  //const transporter = nodemailer.createTransport(import.meta.env.VITE_SMTP_CONNECTION_STRING)   // use this one for production
+
+  await transporter.verify()
+  const template = handlebars.compile(notificationEmail)
+  return { transporter, template }
+}, () => "ready")
+
 const qc = genQueryClient() // Use the same query client for all searches for caching
 await new Listr<{}>(
   markedFares.map((markedFare) => ({
@@ -47,6 +65,24 @@ await new Listr<{}>(
 
       // eslint-disable-next-line no-param-reassign
       taskObj.title = `${taskObj.title} ${goodResult ? "🎉" : ""}`
+
+      if (!goodResult)
+        return undefined
+
+      return taskObj.newListr<{}>({
+        title: "Sending notification email...",
+        task: async (ctx2, taskObj2) => {
+          // TODO: make the buttons work
+          const sendResult = await sendNotificationEmail(transporter, template, {
+            origin: markedFare.origin,
+            destination: markedFare.destination,
+            date: dayjs(markedFare.date).format("ll")
+          }, markedFare.email)
+
+          // eslint-disable-next-line no-param-reassign
+          taskObj2.title = `${taskObj2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
+        }
+      }, { rendererOptions: { collapse: false } })
     },
     retry: 3,
   })), { concurrent: 1, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
