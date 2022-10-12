@@ -51,8 +51,7 @@
     {
       "name": "aeroplan",
       "supportedAirlines": ["staralliance", "GF", "EY", "JU", "CX", "G3", "OY", "UL", "UK"],
-      "nativeAirline": "AC",
-      "disabled": true
+      "nativeAirline": "AC"
     },
     {
       "name": "alaska",

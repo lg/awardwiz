@@ -43,9 +43,13 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
 
   await prepPage(params.page, meta)
 
-  let timeoutTimer = -1
+  let timeoutTimer: NodeJS.Timeout | undefined
   const timeout = new Promise<undefined>((resolve) => {
-    timeoutTimer = setTimeout(resolve, (params.timeout ?? 30000) - 5000)  // -5s for AWS to not cut off the request
+    timeoutTimer = setTimeout(async () => {
+      log("* Master scraper timeout")
+      return resolve(undefined)
+    }, (params.timeout ?? 30000) - 1000)  // -1.0s for AWS to not cut off the request
+    // TODO: need to do request timeout, this timeout is just too short sometimes
   })
 
   let result = await Promise.race([runAttempt(params.page, params, scraperFunc, meta, undefined), timeout])
@@ -56,7 +60,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
     result = []
   }
 
-  if (timeoutTimer !== -1) clearTimeout(timeoutTimer)
+  if (timeoutTimer !== undefined) clearTimeout(timeoutTimer)
   await params.browser?.close().catch(() => {})
 
   log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
@@ -135,13 +139,13 @@ export const gotoPage = async (page: Page, url: string, waitUntil: PuppeteerLife
 //   - If the gap timeout happens or the expected child response doesn't happen, an error is thrown (and the entire scraper will be retried)
 //   - If the page is closed, everything ends gracefully
 type WaitForResponse = string | ((res: HTTPResponse) => boolean | Promise<boolean>)
-type GotoPageOptions = { page: Page, url: string, maxResponseGapMs?: number, waitForResponse: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent, waitMoreWhen?: string[] }
-export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs = 7000, waitForResponse, waitMoreWhen = [] }: GotoPageOptions) => {
+type GotoPageOptions = { page: Page, url: string, maxResponseGapMs?: number, waitForResponse: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent, waitMoreWhen?: string[], waitMax?: boolean }
+export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs = 7000, waitForResponse, waitMoreWhen = [], waitMax = false }: GotoPageOptions) => {
   let gapTimeoutTimer: number = -1
   let completed = false
 
   log(`going to url: ${url}`)
-  void page.goto(url, { timeout: 0 }).then((resp) => {
+  void page.goto(url, { timeout: 0 }).then((resp) => { // TODO: waituntil isnt used here, should it be?
     log("parent url finished loading")
     return resp ?? undefined
 
@@ -170,7 +174,9 @@ export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs =
       if (!waitMore) log("enabled waitextra!")
       waitMore = true
     }
-    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs + (waitMore ? 29000 - maxResponseGapMs : 0))
+    gapTimeoutTimer = !waitMax ? setTimeout(resolveFunc, maxResponseGapMs + (waitMore ? 29000 - maxResponseGapMs : 0)) : -1
+    // gapTimeoutTimer = setTimeout(resolveFunc, waitMore ? 29000 : maxResponseGapMs)) // <<<< better luck
+    // TODO: we really need async requests so we can take longer than 30s to fulfill some requests
 
     if (typeof waitForResponse === "string") return res.url() === waitForResponse
     return waitForResponse!(res)
