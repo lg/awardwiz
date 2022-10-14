@@ -69,9 +69,9 @@ export const scraper: Scraper = async (page, query) => {
 
   const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)
-      return undefined
+      return
     if (!result.fareProducts)   // this will sometimes be missing when a flight has already taken off for same-day flights
-      return undefined
+      return
 
     const flight: FlightWithFares = {
       departureDateTime: result.departureDateTime.substring(0, 19).replace("T", " "),

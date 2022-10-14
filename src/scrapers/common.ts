@@ -31,37 +31,37 @@ export type ScraperMetadata = {
 }
 
 export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFares[]>
-type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
+export type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
 type BrowserlessOutput = { data: ScraperResponse, type: "application/json", headers: { "x-response-code": number } }
 
-let curMeta: ScraperMetadata
+let currentMeta: ScraperMetadata
 const logLines: string[] = []
-export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scraper, params: BrowserlessInput): Promise<BrowserlessOutput> => {
-  curMeta = meta
+export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, input: BrowserlessInput): Promise<BrowserlessOutput> => {
+  currentMeta = meta
   const scraperStartTime = Date.now()
-  log(`*** Starting scraper with ${JSON.stringify(params.context)}}`)
+  log(`*** Starting scraper with ${JSON.stringify(input.context)}}`)
 
-  await prepPage(params.page, meta)
+  await prepPage(input.page, meta)
 
   let timeoutTimer: NodeJS.Timeout | undefined
-  const timeout = new Promise<undefined>((resolve) => {
+  const timeout = new Promise<void>((resolve) => {
     timeoutTimer = setTimeout(async () => {
       log("* Master scraper timeout")
-      return resolve(undefined)
-    }, (params.timeout ?? 30000) - 1000)  // -1.0s for AWS to not cut off the request
+      return resolve()
+    }, (input.timeout ?? 30000) - 1000)  // -1.0s for AWS to not cut off the request
     // TODO: need to do request timeout, this timeout is just too short sometimes
   })
 
-  let result = await Promise.race([runAttempt(params.page, params, scraperFunc, meta, undefined), timeout])
+  let result = await Promise.race([runAttempt(input.page, input, scraper, meta, undefined), timeout])
   const errored = result === undefined
   if (result === undefined) {
     log("* Ended in an error, getting screenshot *")
-    await screenshot(params.page)
+    await screenshot(input.page)
     result = []
   }
 
   if (timeoutTimer !== undefined) clearTimeout(timeoutTimer)
-  await params.browser?.close().catch(() => {})
+  await input.browser?.close().catch(() => {})
 
   log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
   return {
@@ -72,7 +72,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraperFunc: Scrape
 }
 
 const screenshot = async (page: Page) => {
-  const path = `/tmp/${curMeta.name}-${Date.now()}.png`
+  const path = `/tmp/${currentMeta.name}-${Date.now()}.png`
   await page.screenshot({ path })
   log(`* Screenshot saved to ${path} *`)
 }
@@ -81,42 +81,42 @@ export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
   if (!meta.noBlocking) await applyPageBlocks(pageToPrep, { blockInUrl: meta.blockUrls })
   if (!meta.noRandomUserAgent) await pageToPrep.setUserAgent(randomUserAgent())
 
-  pageToPrep.on("response", (res) => {
-    //if (res.url().startsWith("data:")) return
-    //log(`url coming in ${res.fromCache() ? "CACHED" : "uncached"}: ${res.url()}`)
-  })
+  // pageToPrep.on("response", (res) => {
+  //   if (res.url().startsWith("data:")) return
+  //   log(`url coming in ${res.fromCache() ? "CACHED" : "uncached"}: ${res.url()}`)
+  // })
   await pageToPrep.setBypassCSP(true)
 }
 
 let retriesDone = 0
-const runAttempt = async (page: Page, params: BrowserlessInput, scraperFunc: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[]> => {
-  const result = await scraperFunc(page, params.context).catch(async (e) => {
-    if (page.isClosed()) return undefined
-    log("* Error in scraper, taking screenshot *\n", e)
+const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[]> => {
+  const result = await scraper(page, input.context).catch(async (error) => {
+    if (page.isClosed()) return
+    log("* Error in scraper, taking screenshot *\n", error)
     await screenshot(page)
-    return undefined
+    return
   })
 
-  await page.close().catch((err) => {})
-  if (contextToClose) await contextToClose.close().catch((err) => {})
+  await page.close().catch((error) => {})
+  if (contextToClose) await contextToClose.close().catch((error) => {})
 
   if (result === undefined) {
     log("* Retrying *")
-    const context = await params.page.browser().createIncognitoBrowserContext()
-    const newPage = await context.newPage()
-    await prepPage(newPage, meta)
+    const context = await input.page.browser().createIncognitoBrowserContext()
+    const attemptPage = await context.newPage()
+    await prepPage(attemptPage, meta)
     retriesDone += 1
-    return runAttempt(newPage, params, scraperFunc, meta, context)
+    return runAttempt(attemptPage, input, scraper, meta, context)
   }
 
   return result
 }
 
 const randId = Math.round(Math.random() * 1000)
-export const log = (...args: any) => {
-  const start = `[${(new Date()).toLocaleString()} ${curMeta.name}-${randId}]`
-  logLines.push([start, ...args].map((arg) => ((typeof arg === "string") ? arg : JSON.stringify(arg))).join(" "))
-  console.log(start, ...args)
+export const log = (...toLog: any) => {
+  const start = `[${(new Date()).toLocaleString()} ${currentMeta.name}-${randId}]`
+  logLines.push([start, ...toLog].map((line) => ((typeof line === "string") ? line : JSON.stringify(line))).join(" "))
+  console.log(start, ...toLog)
 }
 
 export const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms) })
@@ -138,7 +138,7 @@ export const gotoPage = async (page: Page, url: string, waitUntil: PuppeteerLife
 //   - Responses coming in throughout the request will reset the gap timeout
 //   - If the gap timeout happens or the expected child response doesn't happen, an error is thrown (and the entire scraper will be retried)
 //   - If the page is closed, everything ends gracefully
-type WaitForResponse = string | ((res: HTTPResponse) => boolean | Promise<boolean>)
+type WaitForResponse = string | ((response: HTTPResponse) => boolean | Promise<boolean>)
 type GotoPageOptions = { page: Page, url: string, maxResponseGapMs?: number, waitForResponse: WaitForResponse, waitUntil?: PuppeteerLifeCycleEvent, waitMoreWhen?: string[], waitMax?: boolean }
 export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs = 7000, waitForResponse, waitMoreWhen = [], waitMax = false }: GotoPageOptions) => {
   let gapTimeoutTimer: number = -1
@@ -149,53 +149,53 @@ export const gotoPageAndWaitForResponse = async ({ url, page, maxResponseGapMs =
     log("parent url finished loading")
     return resp ?? undefined
 
-  }).catch((err) => {
-    if (page.isClosed()) return undefined
+  }).catch((error) => {
+    if (page.isClosed()) return
     if (completed) return "already completed"    // the request had already finished
-    log(`parent url error: ${err}`)
-    return (err as Error).message
+    log(`parent url error: ${error}`)
+    return (error as Error).message
   })
 
   // Gap timeout timer
-  let resolveFunc: TimerHandler
+  let gapTimeoutFunction: TimerHandler
   const gapTimeoutProm = new Promise<string>((resolve) => {
-    resolveFunc = () => { resolve("gap timeout") }
-    gapTimeoutTimer = setTimeout(resolveFunc, maxResponseGapMs)
+    gapTimeoutFunction = () => { resolve("gap timeout") }
+    gapTimeoutTimer = setTimeout(gapTimeoutFunction, maxResponseGapMs)
   })
 
   let waitMore = false
-  const responseProm = page.waitForResponse((res: HTTPResponse) => {
+  const responseProm = page.waitForResponse((response: HTTPResponse) => {
     // If this callback happens after the request is done, ignore it
     if (completed) return true
 
     // Reset the gap timeout timer since we got a response
     clearTimeout(gapTimeoutTimer)
-    if (waitMoreWhen.some((checkUrl) => res.url().includes(checkUrl))) {
+    if (waitMoreWhen.some((checkUrl) => response.url().includes(checkUrl))) {
       if (!waitMore) log("enabled waitextra!")
       waitMore = true
     }
-    gapTimeoutTimer = !waitMax ? setTimeout(resolveFunc, maxResponseGapMs + (waitMore ? 29000 - maxResponseGapMs : 0)) : -1
+    gapTimeoutTimer = !waitMax ? setTimeout(gapTimeoutFunction, maxResponseGapMs + (waitMore ? 29000 - maxResponseGapMs : 0)) : -1
     // gapTimeoutTimer = setTimeout(resolveFunc, waitMore ? 29000 : maxResponseGapMs)) // <<<< better luck
     // TODO: we really need async requests so we can take longer than 30s to fulfill some requests
 
-    if (typeof waitForResponse === "string") return res.url() === waitForResponse
-    return waitForResponse!(res)
+    if (typeof waitForResponse === "string") return response.url() === waitForResponse
+    return waitForResponse!(response)
   }, { timeout: 0 })
 
   // Either we get a response or a timeout
-  const ret = await Promise.race([responseProm, gapTimeoutProm])
+  const responseOrTimeout = await Promise.race([responseProm, gapTimeoutProm])
 
   // Ensure that events don't happen after we're completed
   completed = true
   if (gapTimeoutTimer !== -1) clearTimeout(gapTimeoutTimer)
 
   // Timeouts resolve as strings
-  if (typeof ret === "string") throw new Error(ret)
+  if (typeof responseOrTimeout === "string") throw new Error(responseOrTimeout)
 
   // Early catch errors
-  if (ret.status() !== 200) throw new Error(`Got status ${ret.status()}`)
+  if (responseOrTimeout.status() !== 200) throw new Error(`Got status ${responseOrTimeout.status()}`)
 
-  return ret
+  return responseOrTimeout
 }
 
 export const waitFor = async function waitFor(f: () => boolean) {
@@ -205,18 +205,18 @@ export const waitFor = async function waitFor(f: () => boolean) {
   return f()
 }
 
-export const retry = async <T>(maxAttempts: number, fn: () => Promise<T>): Promise<T> => {
+export const retry = async <T>(maxAttempts: number, toRetry: () => Promise<T>): Promise<T> => {
   const execute = async (attempt: number): Promise<T> => {
     try {
-      return await fn()
-    } catch (err) {
-      if ((err as Error).message === "max timeout") {
+      return await toRetry()
+    } catch (error) {
+      if ((error as Error).message === "max timeout") {
         log("Bailing out of retry because of max timeout")
-        throw err
+        throw error
       }
-      log(`Failed attempt (${(err as Error).message}). ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
+      log(`Failed attempt (${(error as Error).message}). ${attempt >= maxAttempts ? "Giving up" : "Will retry in 1s"}.`)
       if (attempt >= maxAttempts)
-        throw err
+        throw error
 
       await sleep(1000)
       return execute(attempt + 1)
@@ -245,32 +245,32 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
   const matchNextRule = async () => {
     if (skipIndexes.length === rules.length)
-      return undefined
+      return
     const matchAll = async () => {
       const startTime = Date.now()
 
       while (Date.now() - startTime < 10000) {
-        for (let i = 0; i < rules.length; i += 1) {
-          if (skipIndexes.includes(i))
+        for (const [ruleIndex, rule] of rules.entries()) {
+          if (skipIndexes.includes(ruleIndex))
             continue
-          let element: ElementHandle | null = null
+          let element: ElementHandle | undefined
           try {
-            element = await page.$(rules[i].find)
-          } catch (e) {
+            element = await page.$(rule.find) ?? undefined
+          } catch {
             // ignore error
           }
 
           if (!element)
             continue
-          return { index: i, element }
+          return { index: ruleIndex, element }
         }
         await sleep(100)
       }
-      return undefined
+      return
     }
     const match = await matchAll()
     if (!match)
-      return undefined
+      return
     if (!rules[match.index].reusable)
       skipIndexes.push(match.index)
     return { element: match.element!, rule: rules[match.index] }
@@ -281,7 +281,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     //await sleep(400)
 
     if (matchedRule.rule.andContainsText) {
-      const text = await matchedRule.element.evaluate((el) => el.textContent)
+      const text = await matchedRule.element.evaluate((matchedElement) => matchedElement.textContent)
       if (!text?.includes(matchedRule.rule.andContainsText)) {
         matchedRule = await matchNextRule()
         continue
@@ -297,7 +297,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
       if (matchedRule.rule.clickMethod === "offset55") {
         await matchedRule.element.click({ offset: { x: 5, y: 5 } })
       } else if (matchedRule.rule.clickMethod === "eval") {
-        await matchedRule.element.evaluate((el: any) => el.click())
+        await matchedRule.element.evaluate((matchedElement: any) => matchedElement.click())
       } else if (matchedRule.rule.clickMethod === "dont-click") {
         // do nothing
       } else {
@@ -310,7 +310,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
     if (matchedRule.rule.type) {
       await matchedRule.element.focus()
-      await page.waitForTimeout(10)
+      await sleep(10)
       await page.keyboard.type(matchedRule.rule.type)
     }
 

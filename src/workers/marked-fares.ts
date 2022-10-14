@@ -67,7 +67,7 @@ await new Listr<{}>(
       taskObj.title = `${taskObj.title} ${goodResult ? "🎉" : ""}`
 
       if (!goodResult)
-        return undefined
+        return
 
       return taskObj.newListr<{}>({
         title: "Sending notification email...",

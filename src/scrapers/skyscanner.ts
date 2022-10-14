@@ -2,7 +2,7 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { waitFor, ScraperMetadata, browserlessInit, Scraper, log, prepPage } from "./common"
+import { waitFor, ScraperMetadata, browserlessInit, Scraper, log, prepPage, sleep } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
 const meta: ScraperMetadata = {
@@ -72,7 +72,7 @@ const scrapeCabin = async (globalPage: Page, query: ScraperQuery, cabin: string)
 
   let raceDone = false
   const req = page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://www.skyscanner.com/slipstream/grp/v1/custom/public/acorn/funnel_events/clients.SearchResultsPage")).catch(() => {})
-  const timeout = page.waitForTimeout(15000).catch(() => {})
+  const timeout = sleep(15000).catch(() => {})
   const captchaed = waitFor(() => {
     if (raceDone) return true
     if (receivedCaptcha) {
@@ -102,21 +102,21 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
 
   return json.itineraries.map((itinerary) => {
     if (itinerary.leg_ids.length > 1)
-      return undefined
+      return
     const leg = json.legs.find((checkLeg) => checkLeg.id === itinerary.leg_ids[0])
     if (!leg)
       throw new Error(`Leg not found: ${itinerary.leg_ids[0]}`)
     if (leg.segment_ids.length !== 1)     // no connections
-      return undefined
+      return
     const segment = json.segments.find((checkSegment) => checkSegment.id === leg.segment_ids[0])
     if (!segment)
       throw new Error(`Segment not found: ${leg.segment_ids[0]}`)
 
     if (segment.marketing_carrier_id !== segment.operating_carrier_id)    // no codeshares
-      return undefined
+      return
 
     if (!itinerary.pricing_options[0].items[0].fares[0])        // pricing hasn't come in yet
-      return undefined
+      return
 
     const airlineCode = json.carriers.find((checkCarrier) => checkCarrier.id === segment.marketing_carrier_id)?.display_code
     const fareFamily = itinerary.pricing_options[0].items[0].fares[0].fare_family ?? ""

@@ -1,5 +1,5 @@
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
 import type { AAResponse, Slice } from "./samples/aa"
 
 const meta: ScraperMetadata = {
@@ -28,16 +28,16 @@ export const scraper: Scraper = async (page, query) => {
       "slices": [{
         "allCarriers": true,
         "cabin": "",
-        "connectionCity": null,
+        "connectionCity": undefined,
         "departureDate": query.departureDate,
         "destination": query.destination,
         "includeNearbyAirports": false,
-        "maxStops": null,
+        "maxStops": undefined,
         "origin": query.origin,
         "departureTime": "040001"
       }],
       "tripOptions": { "locale": "en_US", "searchType": "Award" },
-      "loyaltyInfo": null
+      "loyaltyInfo": undefined
     })
   })
   log("parsing")
@@ -62,8 +62,8 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
     const segment = slice.segments[0]
     const leg = segment.legs[0]
     const result: FlightWithFares = {
-      departureDateTime: segment.departureDateTime.replace(" ", "").replace("T", " ").substring(0, 16),
-      arrivalDateTime: segment.arrivalDateTime.replace(" ", "").replace("T", " ").substring(0, 16),
+      departureDateTime: segment.departureDateTime.replace(" ", "").replace("T", " ").slice(0, 16),
+      arrivalDateTime: segment.arrivalDateTime.replace(" ", "").replace("T", " ").slice(0, 16),
       origin: segment.origin.code,
       destination: segment.destination.code,
       flightNo: `${segment.flight.carrierCode} ${segment.flight.flightNumber}`,
@@ -83,25 +83,25 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
           scraper: "aa",
           bookingClass: product.extendedFareCode?.[0]
         }))
-        .reduce<FlightFare[]>((acc, fare) => {
+        .reduce<FlightFare[]>((lowestCabinFares, fare) => {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (fare.cabin === undefined)
             throw new Error(`Unknown cabin type on ${segment.flight.carrierCode} ${segment.flight.flightNumber}`)
 
-          const existing = acc.find((check) => check.cabin === fare.cabin)
+          const existing = lowestCabinFares.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
-            return acc
-          return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
+            return lowestCabinFares
+          return [...lowestCabinFares.filter((check) => check.cabin !== fare.cabin), fare]
         }, [])
     }
 
     if (slice.segments.length > 1)
-      return undefined
+      return
     if (slice.segments[0].origin.code !== query.origin || slice.segments[0].destination.code !== query.destination)
-      return undefined
+      return
 
     return result
   }).filter((result): result is FlightWithFares => !!result)
 )
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

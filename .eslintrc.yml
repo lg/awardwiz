@@ -6,6 +6,8 @@ plugins:
   - "@typescript-eslint"
   - promise
   - react-hooks
+  - unicorn
+  - deprecation
 extends:
   - eslint:recommended
   - plugin:import/recommended
@@ -14,6 +16,7 @@ extends:
   - plugin:react/recommended
   - plugin:promise/recommended
   - plugin:react-hooks/recommended
+  # - plugin:unicorn/all
 parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
@@ -94,6 +97,14 @@ rules:
   "newline-per-chained-call": off
   "import/named": off
   "@typescript-eslint/no-throw-literal": off
+
+  unicorn/no-array-reduce: off
+  unicorn/prefer-module: off  # scrapers need this so they can be imported from browserless
+  unicorn/numeric-separators-style: off  # 1_000 is just ugly
+  unicorn/no-useless-undefined: ["error", {"checkArguments": false}]  # it's ok to have a undefined as the last param
+  unicorn/prefer-switch: off # switch is too lengthy
+
+  "deprecation/deprecation": "warn"
 
   "no-restricted-globals": ["error",
     { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
