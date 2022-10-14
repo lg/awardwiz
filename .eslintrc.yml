@@ -22,6 +22,12 @@ parserOptions:
   sourceType: module
   project: ["./tsconfig.json"]
 rules:
+  # disabled due to performance issues
+  "import/namespace": off
+  "import/default": off
+  "import/no-named-as-default": off
+  "import/no-named-as-default-member": off
+
   quotes: ["error", "double"]
   semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
   max-len: off
