@@ -86,6 +86,7 @@
     },
     {
       "name": "united",
+      "disabled": true,
       "supportedAirlines": ["staralliance", "EI", "VW", "EN", "AD", "4B", "9K", "WK", "EW", "HA", "HO", "OA", "3M"],
       "nativeAirline": "UA"
     }
