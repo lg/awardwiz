@@ -1,5 +1,5 @@
 import type { FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { Trip, UnitedResponse } from "./samples/united"
 
 const meta: ScraperMetadata = {
@@ -7,64 +7,26 @@ const meta: ScraperMetadata = {
 }
 
 export const scraper: Scraper = async (page, query) => {
-  log("getting token")
-  const tokenReq = await gotoPage(page, "https://www.united.com/api/token/anonymous")
-  const tokenXml = await tokenReq!.text()
-  const token = tokenXml.match(/<hash>(.*)<\/hash>/)?.[1]
-  if (token === undefined)
-    throw new Error("Token missing from response")
+  log("going to search page")
+  await gotoPage(page, "https://www.united.com/en/us/book-flight/united-one-way", "networkidle2")
 
-  log("fetching availability")
-  const result = await pptrFetch(page, "https://www.united.com/api/flight/FetchFlights", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "accept": "application/json, text/plain, */*",
-      "accept-language": "en-US,en;q=0.9",
-      "x-authorization-api": `bearer ${token}`
-    },
-    body: JSON.stringify({
-      "SearchTypeSelection": 1,
-      "SortType": "stops_low",
-      "SortTypeDescending": false,
-      "Trips": [{
-        "Origin": query.origin,
-        "Destination": query.destination,
-        "DepartDate": query.departureDate,
-        "Index": 1,
-        "TripIndex": 1,
-        "SearchRadiusMilesOrigin": "-1",
-        "SearchRadiusMilesDestination": "-1",
-        "DepartTimeApprox": 0,
-        "SearchFiltersIn": {
-          "FareFamily": "ECONOMY",
-          "AirportsStop": null,
-          "AirportsStopToAvoid": null,
-          "StopCountMin": 0,
-          "StopCountMax": 0
-        }
-      }],
-      "CabinPreferenceMain": "economy",
-      "PaxInfoList": [{ "PaxType": 1 }],
-      "AwardTravel": true,
-      "NGRP": true,
-      "CalendarLengthOfStay": 0,
-      "PetCount": 0,
-      "CalendarFilters": { "Filters": { "PriceScheduleOptions": { "Stops": 0 } } },
-      "Characteristics": [
-        { "Code": "SOFT_LOGGED_IN", "Value": false },
-        { "Code": "UsePassedCartId", "Value": false }
-      ],
-      "FareType": "mixedtoggle"
-    })
-  }, 12000)
+  log("inputting search")
+  await processScraperFlowRules(page, [
+    { find: "label[for='bookingTypeMile22']", andWaitFor: "label[for='bookingTypeMile22'].atm-c-toggle__label--checked" },
+    { find: "input#originInput5", type: query.origin },
+    { find: "input#destinationInput6", type: query.destination },
+    { find: "input#DepartDate", type: query.departureDate },
+    { find: "button[class~='atm-u-margin-top-large']", done: true },
+  ])
 
-  log("parsing")
-  const raw = JSON.parse(result) as UnitedResponse
+  log("waiting for results")
+  const flightsResponse = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights")
+    .then((rawResponse) => rawResponse.json() as Promise<UnitedResponse>)
 
+  log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
-  if ((raw.data?.Trips || []).length > 0) {
-    const flights = standardizeResults(raw.data!.Trips[0])
+  if ((flightsResponse.data?.Trips || []).length > 0) {
+    const flights = standardizeResults(flightsResponse.data!.Trips[0])
     flightsWithFares.push(...flights)
   }
 
