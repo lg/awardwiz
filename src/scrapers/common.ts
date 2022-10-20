@@ -89,7 +89,7 @@ export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
 }
 
 let retriesDone = 0
-const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[]> => {
+const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[] | undefined> => {
   const result = await scraper(page, input.context).catch(async (error) => {
     if (page.isClosed()) return
     log("* Error in scraper, taking screenshot *\n", error)
@@ -101,6 +101,11 @@ const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper,
   if (contextToClose) await contextToClose.close().catch((error) => {})
 
   if (result === undefined) {
+    if (retriesDone >= 3) {
+      log("* Too many retries, giving up *")
+      return
+    }
+
     log("* Retrying *")
     const context = await input.page.browser().createIncognitoBrowserContext()
     const attemptPage = await context.newPage()
