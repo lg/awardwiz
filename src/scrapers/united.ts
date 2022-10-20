@@ -20,13 +20,29 @@ export const scraper: Scraper = async (page, query) => {
   ])
 
   log("waiting for results")
-  const flightsResponse = await page.waitForResponse("https://www.united.com/api/flight/FetchFlights")
-    .then((rawResponse) => rawResponse.json() as Promise<UnitedResponse>)
+  const fetchFlights = page.waitForResponse("https://www.united.com/api/flight/FetchFlights", { timeout: 10000 })
+    .then(async (rawResponse) => {
+      const responseText = await rawResponse.text()
+      if (responseText.includes("<H1>Access Denied</H1>"))
+        throw new Error("Access Denied for FetchFlights")
+      return JSON.parse(responseText) as UnitedResponse
+    })
+
+  const errorResponse = page.waitForSelector(".atm-c-alert--error .atm-c-btn__text")
+    .then((item) => (item?.evaluate((node) => node.textContent) ?? null))
+    .catch(() => null)
+  const response = await Promise.race([fetchFlights, errorResponse])
+
+  if (response === null || typeof response === "string") {
+    if (response?.includes("the airport is not served"))  // invalid airport code
+      return []
+    throw new Error(`Error fetching flights: ${response ?? "unknown"}`)
+  }
 
   log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
-  if ((flightsResponse.data?.Trips || []).length > 0) {
-    const flights = standardizeResults(flightsResponse.data!.Trips[0])
+  if ((response.data?.Trips || []).length > 0) {
+    const flights = standardizeResults(response.data!.Trips[0])
     flightsWithFares.push(...flights)
   }
 
