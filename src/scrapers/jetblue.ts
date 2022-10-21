@@ -1,6 +1,6 @@
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { browserlessInit, gotoPageAndWaitForResponse, log, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPageAndWaitForResponse, log, Scraper, ScraperMetadata } from "./common"
 import type { JetBlueResponse } from "./samples/jetblue"
 
 const meta: ScraperMetadata = {
@@ -14,10 +14,10 @@ export const scraper: Scraper = async (page, query) => {
     url: `https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&isMultiCity=false&noOfRoute=1&lang=en&adults=1&children=0&infants=0&sharedMarket=false&roundTripFaresFlag=false&usePoints=true`,
     waitForResponse: (checkResponse) => checkResponse.url() === "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" && checkResponse.request().method() === "POST",
     maxResponseGapMs: 10000,
-  }).catch((e) => {
-    if (e.message === "Got status 404")   // Jetblue sends a 404 when an airport code isn't known
-      return e.message
-    throw e
+  }).catch((error) => {
+    if (error.message === "Got status 404")   // Jetblue sends a 404 when an airport code isn't known
+      return error.message
+    throw error
   })
   if (response === "Got status 404")
     return []
@@ -49,18 +49,18 @@ const cabinClassToCabin: Record<string, string> = {
 
 const standardizeResults = (raw: JetBlueResponse) => {
   const results: FlightWithFares[] = []
-  raw.itinerary.forEach((itinerary) => {
+  for (const itinerary of raw.itinerary) {
     const durationText = itinerary.segments[0].duration.match(/.+?(\d+?)H(\d+?)M/)
     if (!durationText)
       throw new Error("Invalid duration for flight")
 
     const result: FlightWithFares = {
-      departureDateTime: itinerary.depart.substring(0, 19).replace("T", " "),
-      arrivalDateTime: itinerary.arrive.substring(0, 19).replace("T", " "),
+      departureDateTime: itinerary.depart.slice(0, 19).replace("T", " "),
+      arrivalDateTime: itinerary.arrive.slice(0, 19).replace("T", " "),
       origin: itinerary.from,
       destination: itinerary.to,
       flightNo: `${itinerary.segments[0].marketingAirlineCode} ${itinerary.segments[0].flightno}`,
-      duration: parseInt(durationText[1], 10) * 60 + parseInt(durationText[2], 10),
+      duration: Number.parseInt(durationText[1], 10) * 60 + Number.parseInt(durationText[2], 10),
       aircraft: itinerary.segments[0].aircraft,
       fares: [],
       amenities: {
@@ -71,41 +71,41 @@ const standardizeResults = (raw: JetBlueResponse) => {
 
     // Skip flights with connections
     if (itinerary.segments.length > 1)
-      return
+      continue
 
     const itineraryId = itinerary.id
-    raw.fareGroup.forEach((checkFare) => {
-      checkFare.bundleList.forEach((bundle) => {
+    for (const checkFare of raw.fareGroup) {
+      for (const bundle of checkFare.bundleList) {
         if (bundle.itineraryID !== itineraryId)
-          return
+          continue
         if (bundle.points === "N/A")
-          return
+          continue
 
         const cabin = cabinClassToCabin[bundle.cabinclass]
-        const miles = parseInt(bundle.points, 10)
+        const miles = Number.parseInt(bundle.points, 10)
         const fare: FlightFare = {
           miles,
-          cash: parseFloat(bundle.fareTax),
+          cash: Number.parseFloat(bundle.fareTax),
           currencyOfCash: raw.currency,
           cabin,
           bookingClass: itinerary.segments[0].bookingclass,
           scraper: "jetblue"
         }
 
-        let existingFare = result.fares.find((prevFare) => prevFare.cabin === cabin)
+        let existingFare = result.fares.find((previousFare) => previousFare.cabin === cabin)
         if (existingFare !== undefined) {
           if (miles < existingFare.miles)
             existingFare = { ...fare }
         } else {
           result.fares.push(fare)
         }
-      })
-    })
+      }
+    }
 
     results.push(result)
-  })
+  }
 
   return results
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

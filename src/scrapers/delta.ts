@@ -4,7 +4,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { DeltaResponse } from "./samples/delta"
 
 // Samples: AMS-DXB, JFK-AMS
@@ -17,9 +17,10 @@ const meta: ScraperMetadata = {
 export const scraper: Scraper = async (page, query) => {
   await gotoPage(page, "https://www.delta.com/flight-search/book-a-flight")
 
-  const formattedDate = `${query.departureDate.substring(5, 7)}/${query.departureDate.substring(8, 10)}/${query.departureDate.substring(0, 4)}`
+  const formattedDate = `${query.departureDate.slice(5, 7)}/${query.departureDate.slice(8, 10)}/${query.departureDate.slice(0, 4)}`
 
   log("processing scraper flow")
+  // eslint-disable-next-line unicorn/consistent-function-scoping
   const andThen = (airportCode: string): any => ([{
     find: "#search_input",
     type: airportCode,
@@ -35,7 +36,7 @@ export const scraper: Scraper = async (page, query) => {
       reusable: true
     }]
   }])
-  const ret = await processScraperFlowRules(page, [
+  const returnedError = await processScraperFlowRules(page, [
     { find: "#fromAirportName span.airport-code.d-block", andThen: andThen(query.origin) },
     { find: "#toAirportName span.airport-code.d-block", andThen: andThen(query.destination) },
     { find: "select[name='selectTripType']", selectValue: "ONE_WAY" },
@@ -54,17 +55,17 @@ export const scraper: Scraper = async (page, query) => {
       ]
     },
     { find: "#shopWithMiles" }
-  ]).catch((e) => {
-    if (e.message === "historical date" || e.message === "airport not found")
-      return e.message
-    throw e
+  ]).catch((error) => {
+    if (error.message === "historical date" || error.message === "airport not found")
+      return error.message
+    throw error
   })
 
-  if (ret === "historical date") {
+  if (returnedError === "historical date") {
     log("request was for a date in the past")
     return []
   }
-  if (ret === "airport not found") {
+  if (returnedError === "airport not found") {
     log("origin/destination airport not found")
     return []
   }
@@ -78,7 +79,7 @@ export const scraper: Scraper = async (page, query) => {
 
   if (result === "td.selected .naText") return []   // no results
   if (result === "#advance-search-global-err-msg") {
-    const errorText = await page.$eval("#advance-search-global-err-msg", (el: any) => el.innerText)
+    const errorText = await page.$eval("#advance-search-global-err-msg", (element: any) => element.textContent)
     if (errorText.includes("no results were found for your search"))  // another way for no results
       return []
     if (errorText.includes("there is a problem with the flight date(s) you have requested"))  // usually a same-day search
@@ -102,7 +103,7 @@ export const scraper: Scraper = async (page, query) => {
 
 const standardizeResults = (raw: DeltaResponse) => {
   const results: FlightWithFares[] = []
-  raw.itinerary.forEach((itinerary) => {
+  for (const itinerary of raw.itinerary) {
     const trip = itinerary.trip[0]
 
     const result: FlightWithFares = {
@@ -124,11 +125,11 @@ const standardizeResults = (raw: DeltaResponse) => {
           bookingClass: offer.brandInfoByFlightLegs[0].cos
         }))
         .filter((fare) => fare.cash !== -1 && fare.miles !== 0)
-        .reduce<FlightFare[]>((acc, fare) => {
-          const existing = acc.find((check) => check.cabin === fare.cabin)
+        .reduce<FlightFare[]>((bestForCabin, fare) => {
+          const existing = bestForCabin.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
-            return acc
-          return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
+            return bestForCabin
+          return [...bestForCabin.filter((check) => check.cabin !== fare.cabin), fare]
         }, []),
       amenities: {
         hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
@@ -137,14 +138,14 @@ const standardizeResults = (raw: DeltaResponse) => {
     }
 
     if (itinerary.trip[0].flightSegment.length > 1)
-      return
+      continue
     if (itinerary.trip[0].originAirportCode !== raw.tripOriginAirportCode || itinerary.trip[0].destAirportCode !== raw.tripDestinationAirportCode)
-      return
+      continue
 
     results.push(result)
-  })
+  }
 
   return results
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

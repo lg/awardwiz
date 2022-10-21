@@ -7,7 +7,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import { FlightWithFares, FlightFare } from "../types/scrapers"
-import { ScraperMetadata, Scraper, browserlessInit, gotoPageAndWaitForResponse } from "./common"
+import { ScraperMetadata, Scraper, browserlessInit, gotoPageAndWaitForResponse, BrowserlessInput } from "./common"
 import type { AeroplanResponse } from "./samples/aeroplan"
 
 const meta: ScraperMetadata = {
@@ -42,13 +42,13 @@ export const scraper: Scraper = async (page, query) => {
 
 const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDestination: string) => {
   const results: FlightWithFares[] = []
-  raw.data?.airBoundGroups.forEach((group) => {
+  for (const group of raw.data?.airBoundGroups ?? []) {
     const { flightId } = group.boundDetails.segments[0]
     const flightLookup = raw.dictionaries.flight[flightId as keyof typeof raw.dictionaries.flight]
 
     const result: FlightWithFares = {
-      departureDateTime: flightLookup.departure.dateTime.substring(0, 19).replace("T", " "),
-      arrivalDateTime: flightLookup.arrival.dateTime.substring(0, 19).replace("T", " "),
+      departureDateTime: flightLookup.departure.dateTime.slice(0, 19).replace("T", " "),
+      arrivalDateTime: flightLookup.arrival.dateTime.slice(0, 19).replace("T", " "),
       origin: flightLookup.departure.locationCode,
       destination: flightLookup.arrival.locationCode,
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
@@ -63,16 +63,16 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
 
     // Skip flights with connections
     if (group.boundDetails.segments.length > 1)
-      return
+      continue
 
     if (flightLookup.departure.locationCode !== origOrigin || flightLookup.arrival.locationCode !== origDestination)
-      return
+      continue
 
     const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft]
     if (!aircraft)
       throw new Error(`Unknown aircraft type: ${flightLookup.aircraftCode}`)
 
-    group.airBounds.forEach((fare) => {
+    for (const fare of group.airBounds) {
       const cabinShortToCabin: Record<string, string> = { eco: "economy", ecoPremium: "economy", business: "business", first: "first" }
       let cabin = cabinShortToCabin[fare.availabilityDetails[0].cabin]
       if (!cabin)
@@ -103,12 +103,12 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
       } else {
         result.fares.push(fareToAdd)
       }
-    })
+    }
 
     results.push(result)
-  })
+  }
 
   return results
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

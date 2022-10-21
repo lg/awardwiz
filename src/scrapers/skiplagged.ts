@@ -3,7 +3,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPageAndWaitForResponse, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPageAndWaitForResponse, Scraper, ScraperMetadata } from "./common"
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 const meta: ScraperMetadata = {
@@ -25,8 +25,8 @@ export const scraper: Scraper = async (page, query) => {
     const segment = flight.segments[0] as Segment
 
     return {
-      departureDateTime: segment.departure.time.replace("T", " ").substring(0, 16),
-      arrivalDateTime: segment.arrival.time.replace("T", " ").substring(0, 16),
+      departureDateTime: segment.departure.time.replace("T", " ").slice(0, 16),
+      arrivalDateTime: segment.arrival.time.replace("T", " ").slice(0, 16),
       origin: segment.departure.airport,
       destination: segment.arrival.airport,
       flightNo: `${segment.airline} ${segment.flight_number}`,
@@ -46,11 +46,11 @@ export const scraper: Scraper = async (page, query) => {
           scraper: "skiplagged",
           bookingClass: undefined
         }))
-        .reduce<FlightFare[]>((acc, fare) => {
-          const existing = acc.find((check) => check.cabin === fare.cabin)
+        .reduce<FlightFare[]>((bestForCabin, fare) => {
+          const existing = bestForCabin.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
-            return acc
-          return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
+            return bestForCabin
+          return [...bestForCabin.filter((check) => check.cabin !== fare.cabin), fare]
         }, [])
     } as FlightWithFares
 
@@ -59,4 +59,4 @@ export const scraper: Scraper = async (page, query) => {
   return flightsWithFares
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

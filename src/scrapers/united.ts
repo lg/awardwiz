@@ -1,5 +1,5 @@
 import type { FlightWithFares } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { Trip, UnitedResponse } from "./samples/united"
 
 const meta: ScraperMetadata = {
@@ -33,11 +33,12 @@ export const scraper: Scraper = async (page, query) => {
     })
 
   const errorResponse = page.waitForSelector(".atm-c-alert--error .atm-c-btn__text")
-    .then((item) => (item?.evaluate((node) => node.textContent) ?? null))
-    .catch(() => null)
+    .then((item) => (item?.evaluate((node) => node.textContent ?? undefined)))
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    .catch(() => undefined)
   const response = await Promise.race([fetchFlights, errorResponse])
 
-  if (response === null || typeof response === "string") {
+  if (response === undefined || typeof response === "string") {
     if (response?.includes("the airport is not served"))  // invalid airport code
       return []
     throw new Error(`Error fetching flights: ${response ?? "unknown"}`)
@@ -55,7 +56,7 @@ export const scraper: Scraper = async (page, query) => {
 
 const standardizeResults = (unitedTrip: Trip) => {
   const results: FlightWithFares[] = []
-  unitedTrip.Flights.forEach((flight) => {
+  for (const flight of unitedTrip.Flights) {
     const result: FlightWithFares = {
       departureDateTime: `${flight.DepartDateTime}:00`,
       arrivalDateTime: `${flight.DestinationDateTime}:00`,
@@ -73,18 +74,18 @@ const standardizeResults = (unitedTrip: Trip) => {
 
     // Make sure we're only getting the airports we requested
     if (flight.Origin !== (unitedTrip.RequestedOrigin || unitedTrip.Origin))
-      return
+      continue
     if (flight.Destination !== (unitedTrip.RequestedDestination || unitedTrip.Destination))
-      return
+      continue
 
     // United's API has a way of returning flights with more connections than asked
     if (flight.Connections.length > 0)
-      return
+      continue
 
     // Convert united format to standardized miles and cash formats
-    flight.Products.forEach((product) => {
+    for (const product of flight.Products) {
       if (product.Prices.length === 0)
-        return
+        continue
 
       const miles = product.Prices[0].Amount
       const cash = product.Prices.length >= 2 ? product.Prices[1].Amount : 0
@@ -98,16 +99,16 @@ const standardizeResults = (unitedTrip: Trip) => {
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
       if (existingFare !== undefined) {
         if (miles < existingFare.miles)
-          existingFare = { ...{ cabin, miles, cash, currencyOfCash, bookingClass, scraper: "united" } }
+          existingFare = { cabin, miles, cash, currencyOfCash, bookingClass, scraper: "united" }
       } else {
         result.fares.push({ cabin, miles, cash, currencyOfCash, bookingClass, scraper: "united" })
       }
-    })
+    }
 
     results.push(result)
-  })
+  }
 
   return results
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

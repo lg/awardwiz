@@ -2,7 +2,7 @@
 
 import { HTTPResponse, Page } from "puppeteer"
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { waitFor, ScraperMetadata, browserlessInit, Scraper, log, prepPage, sleep } from "./common"
+import { waitFor, ScraperMetadata, browserlessInit, Scraper, log, prepPage, sleep, BrowserlessInput } from "./common"
 import type { SkyScannerResponse } from "./samples/skyscanner"
 
 const meta: ScraperMetadata = {
@@ -23,25 +23,26 @@ export const scraper: Scraper = async (page, query) => {
     return scrapeCabin(page, query, cabin)
   })
 
-  const flights: FlightWithFares[] = [];
-  (await Promise.all(x)).flat().forEach((flight) => {
+  const flights: FlightWithFares[] = []
+  const cabinResults = await Promise.all(x)
+  for (const flight of cabinResults.flat()) {
     const existingFlight = flights.find((f) => f.flightNo === flight.flightNo)
     if (!existingFlight) {
       flights.push(flight)
-      return
+      continue
     }
 
-    flight.fares.forEach((fare) => {
+    for (const fare of flight.fares) {
       const existingCabinFare = existingFlight.fares.find((f) => f.cabin === fare.cabin)
       if (!existingCabinFare) {
         existingFlight.fares.push(fare)
-        return
+        continue
       }
 
       if (fare.cash < existingCabinFare.cash)
         existingCabinFare.cash = fare.cash
-    })
-  })
+    }
+  }
 
   return flights
 }
@@ -68,10 +69,10 @@ const scrapeCabin = async (globalPage: Page, query: ScraperQuery, cabin: string)
     }
   })
 
-  page.goto(`https://www.skyscanner.com/transport/flights/${query.origin.toLowerCase()}/${query.destination.toLowerCase()}/${query.departureDate.substring(2, 4)}${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}/?adults=1&adultsv2=1&cabinclass=${cabin}&children=0&childrenv2=&inboundaltsenabled=false&infants=0&outboundaltsenabled=false&preferdirects=true&ref=home&rtn=0`).catch(() => {})
+  page.goto(`https://www.skyscanner.com/transport/flights/${query.origin.toLowerCase()}/${query.destination.toLowerCase()}/${query.departureDate.slice(2, 4)}${query.departureDate.slice(5, 7)}${query.departureDate.slice(8, 10)}/?adults=1&adultsv2=1&cabinclass=${cabin}&children=0&childrenv2=&inboundaltsenabled=false&infants=0&outboundaltsenabled=false&preferdirects=true&ref=home&rtn=0`).catch(() => {})
 
   let raceDone = false
-  const req = page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://www.skyscanner.com/slipstream/grp/v1/custom/public/acorn/funnel_events/clients.SearchResultsPage")).catch(() => {})
+  const response = page.waitForResponse((checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://www.skyscanner.com/slipstream/grp/v1/custom/public/acorn/funnel_events/clients.SearchResultsPage")).catch(() => {})
   const timeout = sleep(15000).catch(() => {})
   const captchaed = waitFor(() => {
     if (raceDone) return true
@@ -82,7 +83,7 @@ const scrapeCabin = async (globalPage: Page, query: ScraperQuery, cabin: string)
     return raceDone
   })
 
-  await Promise.race([req, timeout, captchaed])    // note there's a catch() for all puppeteer requests, incl the page.goto
+  await Promise.race([response, timeout, captchaed])    // note there's a catch() for all puppeteer requests, incl the page.goto
   raceDone = true
 
   if ((receivedCaptcha as boolean) && latestFlights.length === 0) {
@@ -123,12 +124,12 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
 
     let actualCabin = cabin
     if (cabin === "first") {
-      if (fareFamily.match(/FIRSTORBUS|FIRSTBUSFR|BUSINESS-FIRST/)) {
+      if (/FIRSTORBUS|FIRSTBUSFR|BUSINESS-FIRST/.test(fareFamily)) {
         actualCabin = "business"
       } else if (airlineCode === "AS" || airlineCode === "HA") {
         // Alaska/Hawaiian don't have a real first class
         actualCabin = "business"
-      } else if (airlineCode === "AA" && !fareFamily.match(/FLAGSHIP/)) {
+      } else if (airlineCode === "AA" && !fareFamily.includes("FLAGSHIP")) {
         // On true 'first' AA flights, it's marked as 'flagship first'
         actualCabin = "business"
       } else {
@@ -137,8 +138,8 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
     }
 
     return {
-      departureDateTime: segment.departure.replace("T", " ").substring(0, 16),
-      arrivalDateTime: segment.arrival.replace("T", " ").substring(0, 16),
+      departureDateTime: segment.departure.replace("T", " ").slice(0, 16),
+      arrivalDateTime: segment.arrival.replace("T", " ").slice(0, 16),
       origin: json.places.find((checkPlace) => checkPlace.id === segment.origin_place_id && checkPlace.type === "Airport")?.display_code,
       destination: json.places.find((checkPlace) => checkPlace.id === segment.destination_place_id && checkPlace.type === "Airport")?.display_code,
       flightNo: `${airlineCode} ${segment.marketing_flight_number}`,
@@ -158,15 +159,15 @@ const standardizeFlights = (json: SkyScannerResponse, cabin: string): FlightWith
           scraper: "skyscanner",
           bookingClass: pricingOption.items[0].fares[0].booking_code
         }))
-        .reduce<FlightFare[]>((acc, fare) => {
-          const existing = acc.find((check) => check.cabin === fare.cabin)
+        .reduce<FlightFare[]>((bestForCabin, fare) => {
+          const existing = bestForCabin.find((check) => check.cabin === fare.cabin)
           if (existing && existing.miles < fare.miles)
-            return acc
-          return acc.filter((check) => check.cabin !== fare.cabin).concat([fare])
+            return bestForCabin
+          return [...bestForCabin.filter((check) => check.cabin !== fare.cabin), fare]
         }, [])
     } as FlightWithFares
 
   }).filter((flight): flight is FlightWithFares => !!flight)
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

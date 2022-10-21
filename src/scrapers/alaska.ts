@@ -1,5 +1,6 @@
+/* eslint-disable unicorn/consistent-function-scoping */
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-import { browserlessInit, gotoPage, log, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPage, log, Scraper, ScraperMetadata } from "./common"
 
 const meta: ScraperMetadata = {
   name: "alaska",
@@ -31,28 +32,28 @@ export const scraper: Scraper = async (page, query) => {
 
   log("parsing")
   await page.setContent(htmlResponse)
-  const res = await page.$$eval(".optionList > li", (elements: Element[]) => {
+  const parsedResults = await page.$$eval(".optionList > li", (elements: Element[]) => {
     // @ts-expect-error
-    const queryEl = (rootEl: Element | Document, selector: string, getAttrib: string): string | undefined => rootEl.querySelector(selector)?.[getAttrib]
-    const queryElMatch = (rootEl: Element | Document, selector: string, getAttrib: string, match: RegExp): RegExpMatchArray | undefined => queryEl(rootEl, selector, getAttrib)?.match(match) ?? undefined
-    const zeroPad = (num: string | number) => (num.toString().length === 1 ? `0${num}` : num)
+    const queryElement = (root: Element | Document, selector: string, getAttrib: string): string | undefined => root.querySelector(selector)?.[getAttrib]
+    const queryElementMatch = (root: Element | Document, selector: string, getAttrib: string, match: RegExp): RegExpMatchArray | undefined => queryElement(root, selector, getAttrib)?.match(match) ?? undefined
+    const zeroPad = (numberToPad: string | number) => (numberToPad.toString().length === 1 ? `0${numberToPad}` : numberToPad)
     const time12to24 = (time: string) => { const d = new Date(`1/1/2020 ${time}`); return `${zeroPad(d.getHours())}:${zeroPad(d.getMinutes())}` }
     const addToDate = (date: string, days: number) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().split("T")[0] }
 
     return elements.map((element): FlightWithFares | undefined => {
-      const flightNo = queryElMatch(element, ".optionHeaderFltNum", "innerText", /Flight (.+)/)?.[1]
+      const flightNo = queryElementMatch(element, ".optionHeaderFltNum", "innerText", /Flight (.+)/)?.[1]
       if (!flightNo)      // instead of a flight number, Alaska says "2 flights*" in this spot
         return undefined
 
-      const airlineCode = queryElMatch(element, ".optionHeader > img", "src", /logos\/partners\/airlines\/mow\/(\S\S)/)?.[1]
-      const origin = queryElMatch(element, ".optionDeparts .optionCityCode", "innerText", /(\S\S\S)/)?.[1]
-      const destination = queryElMatch(element, ".left .optionCityCode", "innerText", /(\S\S\S)/)?.[1]
-      const detailsUrl = queryElMatch(element, ".right .optionLink", "href", /(\S+)/)?.[1]
+      const airlineCode = queryElementMatch(element, ".optionHeader > img", "src", /logos\/partners\/airlines\/mow\/(\S\S)/)?.[1]
+      const origin = queryElementMatch(element, ".optionDeparts .optionCityCode", "innerText", /(\S{3})/)?.[1]
+      const destination = queryElementMatch(element, ".left .optionCityCode", "innerText", /(\S{3})/)?.[1]
+      const detailsUrl = queryElementMatch(element, ".right .optionLink", "href", /(\S+)/)?.[1]
 
-      const departureDate = queryEl(element.ownerDocument, "input[name='SearchFields.DepartureDate']", "value")
-      const departureTime = queryElMatch(element, ".optionDeparts .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
-      const arrivalTime = queryElMatch(element, ".left .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
-      const addDays = queryElMatch(element, ".left .optionTime .arrivalDaysDifferent", "innerText", /(\d+?) day/)
+      const departureDate = queryElement(element.ownerDocument, "input[name='SearchFields.DepartureDate']", "value")
+      const departureTime = queryElementMatch(element, ".optionDeparts .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
+      const arrivalTime = queryElementMatch(element, ".left .optionTime .b", "innerText", /(\d+?):(\d+?) (am|pm)/)
+      const addDays = queryElementMatch(element, ".left .optionTime .arrivalDaysDifferent", "innerText", /(\d+?) day/)
 
       if (!airlineCode || !origin || !destination || !departureDate || !departureTime || !arrivalTime || !detailsUrl)
         throw new Error(`Invalid data for flight number ${flightNo}!`)
@@ -62,7 +63,7 @@ export const scraper: Scraper = async (page, query) => {
         origin,
         destination,
         departureDateTime: `${departureDate} ${time12to24(departureTime[0])}:00`,
-        arrivalDateTime: `${addDays ? addToDate(departureDate, parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
+        arrivalDateTime: `${addDays ? addToDate(departureDate, Number.parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
         duration: 0,                    // filled in properly in the next step
         aircraft: detailsUrl,           // filled in properly in the next step
         amenities: {
@@ -70,39 +71,39 @@ export const scraper: Scraper = async (page, query) => {
           hasPods: undefined,
         },
         fares: Object.values(element.querySelectorAll(".fare-ctn div[style='display: block;']:not(.fareNotSelectedDisabled)")).map((fare) => {
-          const milesAndCash = queryElMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\s\S]*\$(.+)/)
-          const cabin = queryElMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
+          const milesAndCash = queryElementMatch(fare, ".farepriceaward", "innerText", /(.+?)k \+[\S\s]*\$(.+)/)
+          const cabin = queryElementMatch(fare, ".farefam", "innerText", /(Main|Partner Business|First Class)/)?.[1]
           if (!milesAndCash || !cabin)
             throw new Error(`Invalid fare data for flight number ${flightNo}!`)
 
           const flightFare: FlightFare = {
-            cash: parseFloat(milesAndCash[2]),
+            cash: Number.parseFloat(milesAndCash[2]),
             currencyOfCash: "USD",
             cabin: airlineCode === "AS" ? { Main: "economy", "First Class": "business" }[cabin]! : { Main: "economy", "Partner Business": "business", "First Class": "first" }[cabin]!,
-            miles: parseFloat(milesAndCash[1]) * 1000,
+            miles: Number.parseFloat(milesAndCash[1]) * 1000,
             bookingClass: undefined,          // TODO: get it from somewhere, can't find it
             scraper: "alaska"
           }
           return flightFare
         })
       }
-    }).filter((flight) => flight)
+    }).filter((flight) => !!flight)
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
   // Get the aircraft type for each flight from the details page
   log("getting aircraft details")
   const flights: FlightWithFares[] = []
-  for await (const flight of res) {
+  for await (const flight of parsedResults) {
     await gotoPage(page, flight.aircraft!)
 
     const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
     const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)
     if (!durationMatch)
       throw new Error(`Invalid duration '${durationDetails[0]}' for flight number ${flight.flightNo}!`)
-    const duration = durationMatch.length === 3 ? parseInt(durationMatch[1], 10) * 60 + parseInt(durationMatch[2], 10) : parseInt(durationMatch[1], 10)
+    const duration = durationMatch.length === 3 ? Number.parseInt(durationMatch[1], 10) * 60 + Number.parseInt(durationMatch[2], 10) : Number.parseInt(durationMatch[1], 10)
 
     const aircraftDetails = await page.$$eval(".detailinfo", (items: Element[]) => items.map((item) => item.textContent))
-    const aircraft = aircraftDetails[1]?.replace(/\n|\t|\r/g, "")
+    const aircraft = aircraftDetails[1]?.replace(/[\t\n\r]/g, "")
     if (!aircraft)
       throw new Error(`Invalid aircraft type for flight number ${flight.flightNo}!`)
 
@@ -112,4 +113,4 @@ export const scraper: Scraper = async (page, query) => {
   return flights
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

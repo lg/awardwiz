@@ -1,5 +1,5 @@
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, equipmentTypeLookup, gotoPage, log, processScraperFlowRules, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, equipmentTypeLookup, gotoPage, log, processScraperFlowRules, Scraper, ScraperFlowRule, ScraperMetadata } from "./common"
 import type { SouthwestResponse } from "./samples/southwest"
 
 const meta: ScraperMetadata = {
@@ -32,7 +32,7 @@ export const scraper: Scraper = async (page, query) => {
     genAirportSearchRule(query.destination, "input#destinationAirportCode"),
     {
       find: "input#departureDate",
-      type: `${parseInt(query.departureDate.substring(5, 7), 10)}/${parseInt(query.departureDate.substring(8, 10), 10)}`,
+      type: `${Number.parseInt(query.departureDate.slice(5, 7), 10)}/${Number.parseInt(query.departureDate.slice(8, 10), 10)}`,
       andThen: [
         { find: `button[id*='${query.departureDate}']`, andWaitFor: ".overlay-background[style='']", done: true },
         { find: "button[aria-label='Next Month'][disabled]", throw: "date not found" },
@@ -40,10 +40,10 @@ export const scraper: Scraper = async (page, query) => {
       ]
     }
   ] as ScraperFlowRule[]
-  const scraperFlowResult = await processScraperFlowRules(page, items.sort((a, b) => Math.random() - 0.5)).catch((e) => {
-    if (e.message === "airport not found" || e.message === "date not found")
-      return e.message
-    throw e
+  const scraperFlowResult = await processScraperFlowRules(page, items.sort((a, b) => Math.random() - 0.5)).catch((error) => {
+    if (error.message === "airport not found" || error.message === "date not found")
+      return error.message
+    throw error
   })
 
   if (scraperFlowResult === "airport not found" || scraperFlowResult === "date not found") {
@@ -53,7 +53,7 @@ export const scraper: Scraper = async (page, query) => {
 
   // Clicking the southwest find button sometimes will redirect back with an error (usually botting)
   log("clicking submit button")
-  await page.waitForSelector("#form-mixin--submit-button").then((el: any) => el.click())
+  await page.waitForSelector("#form-mixin--submit-button").then((submitButtonElement: any) => submitButtonElement.click())
 
   log("waiting for response")
   const raw = await page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 5000 })
@@ -74,8 +74,8 @@ export const scraper: Scraper = async (page, query) => {
       return
 
     const flight: FlightWithFares = {
-      departureDateTime: result.departureDateTime.substring(0, 19).replace("T", " "),
-      arrivalDateTime: result.arrivalDateTime.substring(0, 19).replace("T", " "),
+      departureDateTime: result.departureDateTime.slice(0, 19).replace("T", " "),
+      arrivalDateTime: result.arrivalDateTime.slice(0, 19).replace("T", " "),
       origin: result.originationAirportCode,
       destination: result.destinationAirportCode,
       flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
@@ -92,9 +92,9 @@ export const scraper: Scraper = async (page, query) => {
         return lowestFare
       const fare: FlightFare = {
         cabin: "economy",
-        miles: parseInt(product.fare.totalFare.value, 10),
+        miles: Number.parseInt(product.fare.totalFare.value, 10),
         bookingClass: product.productId.split(",")[1],
-        cash: parseFloat(product.fare.totalTaxesAndFees.value),
+        cash: Number.parseFloat(product.fare.totalTaxesAndFees.value),
         currencyOfCash: product.fare.totalTaxesAndFees.currencyCode,
         scraper: "southwest"
       }
@@ -113,4 +113,4 @@ export const scraper: Scraper = async (page, query) => {
   return flights
 }
 
-module.exports = (params: any) => browserlessInit(meta, scraper, params)
+module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)
