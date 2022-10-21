@@ -34,7 +34,7 @@ const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
   ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
   ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
   ["skyscanner", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
-  // ["united", { popularRoute: ["SFO", "EWR"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
+  ["united", { popularRoute: ["SFO", "EWR"], partnerRoute: ["NRT", "CGK", "NH 835"], plusOneDayRoute: ["SFO", "EWR"] }],
 ] : []
 
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }

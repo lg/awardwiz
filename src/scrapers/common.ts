@@ -245,7 +245,7 @@ export const applyPageBlocks = async (page: Page, options?: StartScraperOptions)
   await client.send("Network.setBlockedURLs", { urls: blockedResources })
 }
 
-export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[]): Promise<string> => {
+export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule[], withDelays: boolean = false): Promise<string> => {
   const skipIndexes: number[] = []
 
   const matchNextRule = async () => {
@@ -283,7 +283,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
 
   let matchedRule = await matchNextRule()
   while (matchedRule) {
-    //await sleep(400)
+    if (withDelays) await sleep(75 + (Math.random() * 50))
 
     if (matchedRule.rule.andContainsText) {
       const text = await matchedRule.element.evaluate((matchedElement) => matchedElement.textContent)
@@ -300,13 +300,13 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     // Do not click on the element in certain cases
     if (!matchedRule.rule.selectValue) {
       if (matchedRule.rule.clickMethod === "offset55") {
-        await matchedRule.element.click({ offset: { x: 5, y: 5 } })
+        await matchedRule.element.click({ offset: { x: 5, y: 5 }, delay: withDelays ? 50 + (Math.random() * 100) : 0 })
       } else if (matchedRule.rule.clickMethod === "eval") {
         await matchedRule.element.evaluate((matchedElement: any) => matchedElement.click())
       } else if (matchedRule.rule.clickMethod === "dont-click") {
         // do nothing
       } else {
-        await matchedRule.element.click()
+        await matchedRule.element.click({ delay: withDelays ? 50 + (Math.random() * 100) : 0 })
       }
     }
 
@@ -316,7 +316,7 @@ export const processScraperFlowRules = async (page: Page, rules: ScraperFlowRule
     if (matchedRule.rule.type) {
       await matchedRule.element.focus()
       await sleep(10)
-      await page.keyboard.type(matchedRule.rule.type)
+      await page.keyboard.type(matchedRule.rule.type, { delay: withDelays ? 300 + (Math.random() * 100) : undefined })
     }
 
     if (matchedRule.rule.selectValue) {

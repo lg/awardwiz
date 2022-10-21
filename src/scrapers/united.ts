@@ -3,7 +3,8 @@ import { browserlessInit, gotoPage, log, processScraperFlowRules, Scraper, Scrap
 import type { Trip, UnitedResponse } from "./samples/united"
 
 const meta: ScraperMetadata = {
-  name: "united"
+  name: "united",
+  noBlocking: true
 }
 
 export const scraper: Scraper = async (page, query) => {
@@ -16,6 +17,9 @@ export const scraper: Scraper = async (page, query) => {
     { find: "input#originInput5", type: query.origin },
     { find: "input#destinationInput6", type: query.destination },
     { find: "input#DepartDate", type: query.departureDate },
+  ].sort((a, b) => Math.random() - 0.5), true)
+
+  await processScraperFlowRules(page, [
     { find: "button[class~='atm-u-margin-top-large']", done: true },
   ])
 
