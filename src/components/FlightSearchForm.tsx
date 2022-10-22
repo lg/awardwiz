@@ -35,7 +35,7 @@ export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: Fl
       <Button icon={<RightOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => addDay(1)} />
 
       <Form.Item wrapperCol={{ offset: 2, span: 3 }} style={{ marginLeft: 10 }}>
-        <Button type="primary" onFocus={(e) => e.currentTarget.blur()} htmlType="submit" icon={isSearching ? <LoadingOutlined /> : <SearchOutlined />}>
+        <Button type="primary" onFocus={(event) => event.currentTarget.blur()} htmlType="submit" icon={isSearching ? <LoadingOutlined /> : <SearchOutlined />}>
           {isSearching ? "Stop" : "Search"}
         </Button>
       </Form.Item>

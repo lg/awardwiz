@@ -1,11 +1,11 @@
 import { Listr } from "listr2"
 
-export const runListrTask = async <T extends object>(title: string, task: () => Promise<T>, suffix?: (ret: T) => string) => {
-  let ret: T
-  await new Listr([{ title, task: async (ctx, taskObj) => {
-    ret = await task()
+export const runListrTask = async <T extends object>(title: string, task: () => Promise<T>, suffix?: (returnValue: T) => string) => {
+  let returnTask: T
+  await new Listr([{ title, task: async (_context, taskObject) => {
+    returnTask = await task()
     // eslint-disable-next-line no-param-reassign
-    if (suffix) taskObj.title = `${taskObj.title} ${suffix(ret)}`
+    if (suffix) taskObject.title = `${taskObject.title} ${suffix(returnTask)}`
   } }], { registerSignalListeners: false, rendererOptions: { collapseErrors: false }}).run()
-  return ret!
+  return returnTask!
 }

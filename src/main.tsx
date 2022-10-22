@@ -33,7 +33,7 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
 }
 
 // enabling strict mode will cause problems with reactquery canceling queries when components unmount
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.querySelector("#root")!).render(
   <QueryClientProvider client={queryClient}>
     <LoginScreen>
       <FlightSearch />

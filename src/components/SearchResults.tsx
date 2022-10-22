@@ -1,4 +1,3 @@
-/* eslint-disable */
 import * as React from "react"
 import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
@@ -11,27 +10,27 @@ import awardwizImageUrl from "../wizard.png"
 import { FastTooltip } from "./FastTooltip"
 import { default as dayjs } from "dayjs"
 
-const triState = (condition: boolean | undefined, trueVal: string, falseVal: string, undefinedVal: string) => {
+const triState = (condition: boolean | undefined, trueValue: string, falseValue: string, undefinedValue: string) => {
   if (condition === undefined)
-    return undefinedVal
-  return condition ? trueVal : falseVal
+    return undefinedValue
+  return condition ? trueValue : falseValue
 }
 
 export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string }
 
+const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | undefined => {
+  const faresForClass = fares.filter((fare) => fare.cabin === cabin)
+  if (faresForClass.length === 0)
+    return undefined
+  return faresForClass.reduce((smallest, currentFare) => (currentFare.miles < smallest.miles ? currentFare : smallest))
+}
+
+const airlineLogoUrl = (airlineCode: string) => {
+  return airlineCode === "WN" ? "https://www.southwest.com/favicon.ico" : `https://www.gstatic.com/flights/airline_logos/35px/${airlineCode}.png`
+}
+
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
-
-  const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | null => {
-    const faresForClass = fares.filter((fare) => fare.cabin === cabin)
-    if (faresForClass.length === 0)
-      return null
-    return faresForClass.reduce((smallest, cur) => (cur.miles < smallest.miles ? cur : smallest))
-  }
-
-  const airlineLogoUrl = (airlineCode: string) => {
-    return airlineCode === "WN" ? "https://www.southwest.com/favicon.ico" : `https://www.gstatic.com/flights/airline_logos/35px/${airlineCode}.png`
-  }
 
   const columns: ColumnsType<FlightWithFares> = [
     {
@@ -40,7 +39,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       sorter: (recordA, recordB) => recordA.flightNo.localeCompare(recordB.flightNo),
       render: (flightNo: string, flight) => (
         <>
-          <img style={{ height: 16, marginBottom: 3, borderRadius: 3 }} src={airlineLogoUrl(flightNo.substring(0, 2))} alt={flightNo.substring(0, 2)} />
+          <img style={{ height: 16, marginBottom: 3, borderRadius: 3 }} src={airlineLogoUrl(flightNo.slice(0, 2))} alt={flightNo.slice(0, 2)} />
           <span style={{ marginLeft: 8 }}>{flightNo}</span>
         </>
       )
@@ -88,7 +87,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       dataIndex: "destination",
       sorter: (recordA, recordB) => recordA.destination.localeCompare(recordB.destination),
     },
-    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((res) => res.fares.some((fare) => fare.cabin === col.key))).map((column): ColumnType<FlightWithFares> => ({
+    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((searchResult) => searchResult.fares.some((fare) => fare.cabin === col.key))).map((column): ColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
       render: (_, record) => renderFare(record, column.key),
@@ -105,8 +104,8 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
     if (!smallestFare)
       return ""
 
-    const milesStr = Math.round(smallestFare.miles).toLocaleString()
-    const cashStr = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash, maximumFractionDigits: 0 })
+    const milesText = Math.round(smallestFare.miles).toLocaleString()
+    const cashText = smallestFare.cash.toLocaleString("en-US", { style: "currency", currency: smallestFare.currencyOfCash, maximumFractionDigits: 0 })
 
     const tooltipContent = record.fares
       .filter((fare) => fare.cabin === cabin)
@@ -117,7 +116,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
     const markedFare = (markedFares ?? []).find((check) =>
       check.checkFlightNo === record.flightNo &&
-      check.date.substring(0, 10) === record.departureDateTime.substring(0, 10) &&
+      check.date.slice(0, 10) === record.departureDateTime.slice(0, 10) &&
       check.checkCabin === cabin)
     const clickedFare = () => {
       if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
@@ -125,7 +124,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       if (markedFare) {
         void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
       } else {
-        void setMarkedFares([...markedFares, { origin: record.origin, destination: record.destination, checkFlightNo: record.flightNo, date: record.departureDateTime.substring(0, 10), checkCabin: cabin }])    // add the marked fare
+        void setMarkedFares([...markedFares, { origin: record.origin, destination: record.destination, checkFlightNo: record.flightNo, date: record.departureDateTime.slice(0, 10), checkCabin: cabin }])    // add the marked fare
       }
     }
 
@@ -133,7 +132,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       <FastTooltip title={tooltipContent}>
         <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
           <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
-            {milesStr}{` + ${cashStr}`}
+            {milesText}{` + ${cashText}`}
           </Tag>
         </Badge>
       </FastTooltip>

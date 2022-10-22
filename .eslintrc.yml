@@ -16,7 +16,7 @@ extends:
   - plugin:react/recommended
   - plugin:promise/recommended
   - plugin:react-hooks/recommended
-  # - plugin:unicorn/all
+  - plugin:unicorn/all
 parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
@@ -24,6 +24,9 @@ parserOptions:
   ecmaVersion: latest
   sourceType: module
   project: ["./tsconfig.json"]
+settings:
+  react:
+    version: detect
 rules:
   # disabled due to performance issues
   "import/namespace": off
@@ -102,7 +105,11 @@ rules:
   unicorn/prefer-module: off  # scrapers need this so they can be imported from browserless
   unicorn/numeric-separators-style: off  # 1_000 is just ugly
   unicorn/no-useless-undefined: ["error", {"checkArguments": false}]  # it's ok to have a undefined as the last param
-  unicorn/prefer-switch: off # switch is too lengthy
+  unicorn/prefer-switch: off  # switch is too lengthy
+  unicorn/filename-case: off  # for now
+  unicorn/no-keyword-prefix: off  # unnecessarily prevents things like 'newValue'
+  unicorn/prevent-abbreviations: ["error", {"checkFilenames": false, "allowList": {"Env": true, "Props": true, "props": true, "Opts": true}}]
+  unicorn/no-array-push-push: ["error", {"ignore": ["debugTree"]}]  # debugTree is usually a big map, so it's cleaner to use multiple pushes
 
   "deprecation/deprecation": "warn"
 

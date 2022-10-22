@@ -9,7 +9,7 @@ export type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: React
 const allKeys = (item: {key: string, children: unknown[]}, collectedKeys: string[]): string[] => {
   if (item.children.length > 0)
     collectedKeys.push(item.key)
-  item.children.forEach((child) => allKeys(child as {key: string, children: unknown[]}, collectedKeys))
+  for (const child of item.children) allKeys(child as {key: string, children: unknown[]}, collectedKeys)
   return collectedKeys
 }
 
@@ -21,13 +21,13 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
   const computeNode = (node: DebugTreeNode): DebugTreeNodeComputed => {
     const meta = nodeMeta[node.key]
     if (!meta)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: defaultNodeMeta }))
+      setNodeMeta((previous) => ({ ...previous, [node.key]: defaultNodeMeta }))
     if (node.isLoading && !meta?.startTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { startTime: Date.now(), endTime: 0 } }))
+      setNodeMeta((previous) => ({ ...previous, [node.key]: { startTime: Date.now(), endTime: 0 } }))
     if (!node.isLoading && meta?.startTime && !meta.endTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, endTime: Date.now() } }))
+      setNodeMeta((previous) => ({ ...previous, [node.key]: { ...meta, endTime: Date.now() } }))
     if (node.isLoading && meta?.endTime)
-      setNodeMeta((prev) => ({ ...prev, [node.key]: { ...meta, startTime: Date.now(), endTime: 0 } }))
+      setNodeMeta((previous) => ({ ...previous, [node.key]: { ...meta, startTime: Date.now(), endTime: 0 } }))
 
     let title = <span style={{ color: node.error ? "red" : undefined }}>{node.text}</span>
     if (meta?.startTime && meta.endTime && !node.error) {

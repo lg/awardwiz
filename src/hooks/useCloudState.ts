@@ -13,7 +13,7 @@ export const useCloudState = <T>(key: string, defaultValue: T) => {
 
     if (existingResult.data?.value)
       return existingResult.data.value as unknown as T
-    throw Error(existingResult.error?.message ?? `Could not get ${key} for user`)
+    throw new Error(existingResult.error?.message ?? `Could not get ${key} for user`)
   })
 
   const mutation = useMutation(async (newValue: T) => {
@@ -25,7 +25,7 @@ export const useCloudState = <T>(key: string, defaultValue: T) => {
       queryClient.setQueryData(["cloudstate", key], newValue)
       return { previousValue, newValue }
     },
-    onError: (err, newValue, context) => {    // set things back if there was an error
+    onError: (error, newValue, context) => {    // set things back if there was an error
       queryClient.setQueryData(["cloudstate", key], context?.previousValue)
       if (context?.previousValue === undefined)
         throw new Error(`Unable to set default value of ${JSON.stringify(defaultValue)} for ${key}}`)

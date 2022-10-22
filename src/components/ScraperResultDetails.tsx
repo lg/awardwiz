@@ -16,10 +16,11 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
   const rawLog = response?.log ?? meta?.error?.log ?? []
 
   let initialTime: Dayjs
-  const logLines = rawLog.map((line, i) => {
+  const logLines = rawLog.map((line, lineNumber) => {
+    // eslint-disable-next-line unicorn/better-regex
     const parts = line.match(/^\[(.*, .+ (?:AM|PM)).*?\] (.*)$/)
     if (!parts || parts.length !== 3) return line
-    if (i === 0) initialTime = dayjs(parts[1])
+    if (lineNumber === 0) initialTime = dayjs(parts[1])
 
     return (
       <div key={line}>

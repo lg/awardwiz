@@ -41,9 +41,9 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
       id_token: credentialResponse.credential,
       issuer: "https://accounts.google.com",
       provider: "google"
-    }, { headers: { "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, "apikey": `${import.meta.env.VITE_SUPABASE_ANON_KEY}` } }).catch((e) => {
-      setMessage({ type: "error", text: `Failed to log into Supabase: ${e.response?.data?.message || e.response?.data?.msg || e.message}` })
-      throw e
+    }, { headers: { "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, "apikey": `${import.meta.env.VITE_SUPABASE_ANON_KEY}` } }).catch((error) => {
+      setMessage({ type: "error", text: `Failed to log into Supabase: ${error.response?.data?.message || error.response?.data?.msg || error.message}` })
+      throw error
     })
     if (!response.data.user.email) { setMessage({ type: "error", text: "Could not get email address from auth provider" }); return }
     await supabase.auth.setSession(response.data.refresh_token)

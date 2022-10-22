@@ -6,7 +6,7 @@ import vitePluginImp from "vite-plugin-imp"
 import Icons from "unplugin-icons/vite"
 import { visualizer } from "rollup-plugin-visualizer"
 import watchAndRun from "@kitql/vite-plugin-watch-and-run"
-import path from "path"
+import path from "node:path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -52,7 +52,7 @@ export default defineConfig({
     environment: "jsdom",
     onConsoleLog: (log, type) => {
       if (log.includes("Not implemented")) return false   // jsdom doesnt implement some methods that antd expects on dom elements
-      if (log.replace(/render/g, "").trim() === "") return false
+      if (log.replaceAll("render", "").trim() === "") return false
       return
     },
     coverage: {

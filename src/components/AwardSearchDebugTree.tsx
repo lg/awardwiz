@@ -14,7 +14,7 @@ import { ScraperResultDetails } from "./ScraperResultDetails"
 export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code
 
-  const debugTreeRootKey = searchQuery.origins.concat(searchQuery.destinations).concat(searchQuery.departureDate).join("-")
+  const debugTreeRootKey = [...searchQuery.origins, ...searchQuery.destinations, ...searchQuery.departureDate].join("-")
   const debugTree: DebugTreeNode[] = []
 
   debugTree.push({
@@ -65,7 +65,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
     }
   }))
 
-  datedRoutes.forEach((datedRoute) => {
+  for (const datedRoute of datedRoutes) {
     const airlineCodesForRoute = airlineRoutes.filter((item) => item.origin === datedRoute.origin && item.destination === datedRoute.destination).map((item) => item.airlineCode)
     if (airlineCodesForRoute.length === 0) {
       if (!loadingQueriesKeys.some((item) => queryKeysEqual(item, queryKeyForAirlineRoute(datedRoute)))) {  // dont display if still loading route
@@ -97,7 +97,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
         })
       }
     }
-  })
+  }
 
   return <DebugTree debugTree={debugTree} rootKey={debugTreeRootKey} />
 }

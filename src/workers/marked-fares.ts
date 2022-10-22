@@ -22,7 +22,7 @@ const markedFaresQuery = await runListrTask("Getting all marked fares...", async
     .eq("key", "markedFares")
     .not("value", "eq", "[]")
     .throwOnError()
-}, (ret) => `${ret.data!.length} found`)
+}, (returnData) => `${returnData.data!.length} found`)
 
 const emailsQuery = await runListrTask("Getting all emails...", async () => {
   return supabase
@@ -39,8 +39,8 @@ let markedFares = markedFaresQuery.data!.flatMap((item) => {
 })
 
 // Remove all fares from the past
-const toRemove = markedFares.filter((markedFare) => dayjs(markedFare.date).isBefore(dayjs().startOf("day")))
-markedFares = markedFares.filter((markedFare) => !toRemove.includes(markedFare))
+const toRemove = new Set(markedFares.filter((markedFare) => dayjs(markedFare.date).isBefore(dayjs().startOf("day"))))
+markedFares = markedFares.filter((markedFare) => !toRemove.has(markedFare))
 
 // Prep email transport
 const { transporter, template } = await runListrTask("Creating email transport...", async () => {
@@ -57,21 +57,21 @@ const qc = genQueryClient() // Use the same query client for all searches for ca
 await new Listr<{}>(
   markedFares.map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.email}`,
-    task: async (ctx, taskObj) => {
+    task: async (_context, task) => {
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
       const goodResult = results.searchResults.find((result) =>
         result.flightNo === markedFare.checkFlightNo
         && result.fares.find((fare) => fare.cabin === markedFare.checkCabin && fare.isSaverFare))
 
       // eslint-disable-next-line no-param-reassign
-      taskObj.title = `${taskObj.title} ${goodResult ? "🎉" : ""}`
+      task.title = `${task.title} ${goodResult ? "🎉" : ""}`
 
       if (!goodResult)
         return
 
-      return taskObj.newListr<{}>({
+      return task.newListr<{}>({
         title: "Sending notification email...",
-        task: async (ctx2, taskObj2) => {
+        task: async (_context2, task2) => {
           // TODO: make the buttons work
           const sendResult = await sendNotificationEmail(transporter, template, {
             origin: markedFare.origin,
@@ -80,7 +80,7 @@ await new Listr<{}>(
           }, markedFare.email)
 
           // eslint-disable-next-line no-param-reassign
-          taskObj2.title = `${taskObj2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
+          task2.title = `${task2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
         }
       }, { rendererOptions: { collapse: false } })
     },

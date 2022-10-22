@@ -10,7 +10,7 @@ import { ReactElement } from "react"
 if (!global.window)
   GlobalRegistrator.register()
 
-export const genQueryClient = () => new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, cacheTime: Infinity, retry: false } } })
+export const genQueryClient = () => new QueryClient({ defaultOptions: { queries: { staleTime: Number.POSITIVE_INFINITY, cacheTime: Number.POSITIVE_INFINITY, retry: false } } })
 
 export const search = async (searchQuery: SearchQuery, queryClient: QueryClient) => {
   const wrapper = ({ children }: { children: ReactElement }) => QueryClientProvider({ client: queryClient, children })

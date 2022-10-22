@@ -58,24 +58,24 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Returns the list of scraper-airline-route-date that'll be necessary to run: [{scraper, matchedAirlines[]}]
   const { scrapersToRun, airlineRoutes } = React.useMemo(() => {
-    const stableAirlineRoutes = airlineRouteQueries.map((query) => query.data).flat().filter((item): item is AirlineRoute => !!item)
+    const stableAirlineRoutes = airlineRouteQueries.flatMap((query) => query.data).filter((item): item is AirlineRoute => !!item)
 
-    const scrapersToRunRet = stableAirlineRoutes.reduce<ScraperToRun[]>((acc, airlineRoute) => {
+    const scrapersToRunReturn = stableAirlineRoutes.reduce<ScraperToRun[]>((results, airlineRoute) => {
       const datedRoute: DatedRoute = { origin: airlineRoute.origin, destination: airlineRoute.destination, departureDate: searchQuery.departureDate }
       const compatibleScrapers = scraperConfig.scrapers.filter((checkScraper) => doesScraperSupportAirline(checkScraper, airlineRoute.airlineCode, true))
-      compatibleScrapers.forEach((scraper) => {
-        const existingItem = acc.find((item) => item.scraperName === scraper.name && item.forDatedRoute.origin === datedRoute.origin && item.forDatedRoute.destination === datedRoute.destination)
+      for (const scraper of compatibleScrapers) {
+        const existingItem = results.find((item) => item.scraperName === scraper.name && item.forDatedRoute.origin === datedRoute.origin && item.forDatedRoute.destination === datedRoute.destination)
         if (existingItem) {
           if (!existingItem.forAirlines.includes(airlineRoute.airlineCode))
             existingItem.forAirlines.push(airlineRoute.airlineCode)
         } else {
-          acc.push({ scraperName: scraper.name, forAirlines: [airlineRoute.airlineCode], forDatedRoute: datedRoute })
+          results.push({ scraperName: scraper.name, forAirlines: [airlineRoute.airlineCode], forDatedRoute: datedRoute })
         }
-      })
-      return acc
+      }
+      return results
     }, [])
 
-    return { scrapersToRun: scrapersToRunRet, airlineRoutes: stableAirlineRoutes }
+    return { scrapersToRun: scrapersToRunReturn, airlineRoutes: stableAirlineRoutes }
   }, [airlineRouteQueries, searchQuery.departureDate])
 
   // Returns the scraper results from all scrapers: [{ flightsWithFares: { flightNo, origin, amenities, ... }, errored, ]
@@ -94,8 +94,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const { flights, scraperResponses } = React.useMemo(() => {
-    const scraperResponses = scraperQueries.map((query) => query.data).flat().filter((item): item is ScraperResponse => !!item)
-    const flightsWithFares = scraperResponses.map((response) => response.flightsWithFares).flat()
+    const scraperResponses = scraperQueries.flatMap((query) => query.data).filter((item): item is ScraperResponse => !!item)
+    const flightsWithFares = scraperResponses.flatMap((response) => response.flightsWithFares)
 
     const flightsIn = flightsWithFares.map((flight) => reduceFaresToBestPerCabin(flight))
     const flightsOut = mergeFlightsByFlightNo(flightsIn)
@@ -110,7 +110,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   const loadingQueriesKeys = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.isFetching).map((item) => item.queryKey)
   const errorsQueries = [keyedAirlineRouteQueries, keyedScraperQueries].flat().filter((item) => item.error ?? stoppedQueries.some((check) => queryKeysEqual(check, item.queryKey)))
-  const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? Error("stopped") }))
+  const errors = errorsQueries.map((query) => ({ queryKey: query.queryKey, error: (query.error as Error | undefined) ?? new Error("stopped") }))
 
   const stop = async () => {
     setStoppedQueries([...loadingQueriesKeys])
@@ -124,10 +124,10 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
 const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => {
   const scraperFares: Record<string, FlightFare | undefined> = {}
-  flight.fares.forEach((fare) => {
+  for (const fare of flight.fares) {
     if (!scraperFares[`${fare.scraper}${fare.cabin}`] || fare.miles < scraperFares[`${fare.scraper}${fare.cabin}`]!.miles)
       scraperFares[`${fare.scraper}${fare.cabin}`] = fare
-  })
+  }
 
   return { ...flight, fares: Object.values(scraperFares) as FlightFare[] }
 }
@@ -161,11 +161,10 @@ const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionCont
 export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string, includeCashOnly: boolean): boolean => {
   if (scraper.disabled)
     return false
-  const codes = scraper.supportedAirlines     // initial list of airline codes from the scraper's config
-    .concat(scraper.cashOnlyFares ? [airlineCode] : [])   // cash-only scrapers run for all airlines
-    .flatMap((code) => scraperConfig.airlineGroups?.[code as keyof ScrapersConfig["airlineGroups"]] ?? code)  // expand references airline groups inplace
+  const codes = new Set([...scraper.supportedAirlines, ...(scraper.cashOnlyFares ? [airlineCode] : [])]   // cash-only scrapers run for all airlines
+    .flatMap((code) => scraperConfig.airlineGroups?.[code as keyof ScrapersConfig["airlineGroups"]] ?? code))  // expand references airline groups inplace
 
-  return includeCashOnly ? codes.includes(airlineCode) : (codes.includes(airlineCode) && !scraper.cashOnlyFares)
+  return includeCashOnly ? codes.has(airlineCode) : (codes.has(airlineCode) && !scraper.cashOnlyFares)
 }
 
 const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
@@ -212,7 +211,7 @@ const removeCashFaresFromUnsupportedAirlines = (flight: FlightWithFares): Flight
   ...flight,
   fares: flight.fares.filter((fare) => {
     if (scraperConfig.scrapers.find((scraper) => scraper.name === fare.scraper)?.cashOnlyFares)
-      return !scraperConfig.chaseUnsupportedAirlines?.includes(flight.flightNo.substring(0, 2))
+      return !scraperConfig.chaseUnsupportedAirlines?.includes(flight.flightNo.slice(0, 2))
     return true
   })
 })
@@ -228,14 +227,14 @@ const convertCashToMilesForCashOnlyScrapers = (flight: FlightWithFares) => ({
 
 // Merges properties of FlightWithFares into unique FlightWithFares by flightNo
 const mergeFlightsByFlightNo = (flights: FlightWithFares[]) => {
-  const retFlights: FlightWithFares[] = []
-  flights.forEach((flight) => {
+  const returnFlights: FlightWithFares[] = []
+  for (const flight of flights) {
     // Try to first match by flight number
-    let existingFlight = retFlights.find((retFlight) => retFlight.flightNo === flight.flightNo)
+    let existingFlight = returnFlights.find((returnFlight) => returnFlight.flightNo === flight.flightNo)
 
     // If no match, also check for codeshares
     if (!existingFlight) {
-      existingFlight = retFlights.find((retFlight) => retFlight.departureDateTime.substring(0, 16) === flight.departureDateTime.substring(0, 16) && retFlight.arrivalDateTime.substring(0, 16) === flight.arrivalDateTime.substring(0, 16))
+      existingFlight = returnFlights.find((returnFlight) => returnFlight.departureDateTime.slice(0, 16) === flight.departureDateTime.slice(0, 16) && returnFlight.arrivalDateTime.slice(0, 16) === flight.arrivalDateTime.slice(0, 16))
 
       // If the existing flight is from a cash-only scraper, take the new flight number, since other scrapers don't usually use codeshare flights
       if (existingFlight && scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0].scraper)?.cashOnlyFares)
@@ -258,17 +257,17 @@ const mergeFlightsByFlightNo = (flights: FlightWithFares[]) => {
       // Append in the fares
       existingFlight.fares.push(...flight.fares)
     } else {
-      retFlights.push(flight)
+      returnFlights.push(flight)
     }
-  })
+  }
 
-  return retFlights
+  return returnFlights
 }
 
 const calculateAmenities = (flight: FlightWithFares) => {
-  const amenities = scraperConfig.airlineAmenities?.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.substring(0, 2))
-  const hasPods = amenities?.podsAircraft?.some((checkStr) => ((flight.aircraft ?? "").includes(checkStr) || checkStr === "*"))
-  const hasWifi = amenities?.wifiAircraft?.some((checkStr) => ((flight.aircraft ?? "").includes(checkStr) || checkStr === "*"))
+  const amenities = scraperConfig.airlineAmenities?.find((checkAmenity) => checkAmenity.airlineCode === flight.flightNo.slice(0, 2))
+  const hasPods = amenities?.podsAircraft?.some((checkText) => ((flight.aircraft ?? "").includes(checkText) || checkText === "*"))
+  const hasWifi = amenities?.wifiAircraft?.some((checkText) => ((flight.aircraft ?? "").includes(checkText) || checkText === "*"))
   return { ...flight, amenities: { ...flight.amenities, hasPods: flight.amenities.hasPods ?? hasPods, hasWiFi: flight.amenities.hasWiFi ?? hasWifi } }
 }
 
@@ -279,15 +278,15 @@ const calculateSaverAwards = (flight: FlightWithFares) => {
     // If the airline has partners that we know about in the JSON, use that as the fare's saver award true/false
     const saverBookingClasses = Object.keys(scraperConfig.saverBookingClasses ?? {}).map((key) => {
       const keys = scraperConfig.airlineGroups?.[key as keyof ScrapersConfig["airlineGroups"]] ?? [key]   // Combine in groups
-      return keys.some((checkKey) => checkKey === flight.flightNo.substring(0, 2)) ? scraperConfig.saverBookingClasses?.[key as keyof ScrapersConfig["saverBookingClasses"]] : undefined
+      return keys.includes(flight.flightNo.slice(0, 2)) ? scraperConfig.saverBookingClasses?.[key as keyof ScrapersConfig["saverBookingClasses"]] : undefined
     }).filter((bookingClasses): bookingClasses is string[] => !!bookingClasses).flat()    // join all matches
 
     if (isSaver === undefined && saverBookingClasses.length > 0)
-      isSaver = saverBookingClasses.some((checkBookingClass) => fare.bookingClass === checkBookingClass)
+      isSaver = saverBookingClasses.includes(fare.bookingClass!)
 
     // If the scraper returned an airline's availability and it's not the scraper's native airline, assume it's a saver award
     const scraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === fare.scraper)!
-    if (isSaver === undefined && scraper.nativeAirline && flight.flightNo.substring(0, 2) !== scraper.nativeAirline)
+    if (isSaver === undefined && scraper.nativeAirline && flight.flightNo.slice(0, 2) !== scraper.nativeAirline)
       isSaver = true
 
     return { ...fare, isSaverFare: isSaver }

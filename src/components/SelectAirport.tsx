@@ -1,11 +1,11 @@
 import * as React from "react"
 import { Select, Tag } from "antd"
-import { useAirportsDb } from "../hooks/useAirportsDb"
+import { useAirportsDatabase } from "../hooks/useAirportsDb"
 
 const SelectAirportTag = ({ ...props }) => <Tag style={{ marginRight: 3 }} {...props}>{props.value}</Tag>
 
 export const SelectAirport = ({ ...props }) => {
-  const airportsDb = useAirportsDb()
+  const airportsDatabase = useAirportsDatabase()
 
   return (
     <>
@@ -13,7 +13,7 @@ export const SelectAirport = ({ ...props }) => {
         mode="multiple"
         tagRender={SelectAirportTag}
         tokenSeparators={[",", " ", "/"]}
-        options={airportsDb.options}
+        options={airportsDatabase.options}
         optionFilterProp="value"
         {...props}
       />
