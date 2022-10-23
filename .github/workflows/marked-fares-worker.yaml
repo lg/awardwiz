@@ -1,0 +1,23 @@
+name: Marked Fares Worker
+on:
+  push:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+
+jobs:
+  marked-fares-worker:
+    name: marked-fares-worker
+    runs-on: ubuntu-latest
+    environment: ci
+    env:
+      VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
+      VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - run: npm install
+      - run: npm run marked-fares-worker

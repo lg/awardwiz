@@ -55,7 +55,7 @@ const { transporter, template } = await runListrTask("Creating email transport..
 
 const qc = genQueryClient() // Use the same query client for all searches for caching
 await new Listr<{}>(
-  markedFares.map((markedFare) => ({
+  markedFares.filter((markedFare) => markedFare.email === "trivex@gmail.com").map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.email}`,
     task: async (_context, task) => {
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
@@ -85,7 +85,7 @@ await new Listr<{}>(
       }, { rendererOptions: { collapse: false } })
     },
     retry: 3,
-  })), { concurrent: 1, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
+  })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
 ).run()
 
 qc.clear()  // Needed to not have reactquery stall the process from quitting due to cache times
