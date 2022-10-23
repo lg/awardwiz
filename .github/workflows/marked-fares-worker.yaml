@@ -8,13 +8,14 @@ jobs:
   marked-fares-worker:
     name: marked-fares-worker
     runs-on: ubuntu-latest
-    environment: ci
+    timeout-minutes: 5
+    environment: workers
     env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-    timeout-minutes: 5
+      VITE_SUPABASE_SERVICE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_KEY }}
+      VITE_SMTP_CONNECTION_STRING: ${{ secrets.VITE_SMTP_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3

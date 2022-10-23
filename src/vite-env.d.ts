@@ -31,9 +31,6 @@ interface ImportMetaEnv {
   /** The mailer SMTP connection string (use a free SendGrid account if you need one)
    * ex. smtps://username%40gmail.com:password@smtp.sendgrid.net:465 */
   readonly VITE_SMTP_CONNECTION_STRING: string
-
-  /** The mailer SMTP 'from' address (use a format like '"AwardWiz" <no-reply@awardwiz.com>') */
-  readonly VITE_SMTP_FROM_ADDRESS: string
 }
 
 // eslint-disable-next-line no-unused-vars

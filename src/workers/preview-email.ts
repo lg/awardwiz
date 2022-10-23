@@ -15,7 +15,7 @@ const template = handlebars.compile(notificationEmail)
 
 console.log("sending email")
 const info = await transporter.sendMail({
-  from: import.meta.env.VITE_SMTP_FROM_ADDRESS,
+  from: "\"AwardWiz\" <no-reply@awardwiz.com>",
   to: "trivex@gmail.com",
   subject: "AwardWiz Notification",
   priority: "high",

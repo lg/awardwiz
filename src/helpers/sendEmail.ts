@@ -2,7 +2,7 @@ import nodemailer from "nodemailer"
 
 export const sendNotificationEmail = async (transporter: nodemailer.Transporter, template: HandlebarsTemplateDelegate, templateVariables: { origin: string, destination: string, date: string }, toAddress: string) => {
   return transporter.sendMail({
-    from: import.meta.env.VITE_SMTP_FROM_ADDRESS,
+    from: "\"AwardWiz\" <no-reply@awardwiz.com>",
     to: toAddress,
     subject: "AwardWiz Notification",
     priority: "high",

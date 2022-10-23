@@ -13,6 +13,9 @@ import { sendNotificationEmail } from "../helpers/sendEmail"
 
 dayjs.extend(LocalizedFormat)
 
+for (const key of ["VITE_SUPABASE_URL", "VITE_SUPABASE_SERVICE_KEY", "VITE_BROWSERLESS_AWS_PROXY_URL", "VITE_BROWSERLESS_AWS_PROXY_API_KEY"])
+  if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
+
 const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_KEY)
 
 const markedFaresQuery = await runListrTask("Getting all marked fares...", async () => {
@@ -44,14 +47,18 @@ markedFares = markedFares.filter((markedFare) => !toRemove.has(markedFare))
 
 // Prep email transport
 const { transporter, template } = await runListrTask("Creating email transport...", async () => {
-  const testAccount = await nodemailer.createTestAccount()  // use this one for testing
-  const transporter = nodemailer.createTransport(`${testAccount.smtp.secure ? "smtps" : "smtp"}://${testAccount.user}:${testAccount.pass}@${testAccount.smtp.host}:${testAccount.smtp.port}`)
-  //const transporter = nodemailer.createTransport(import.meta.env.VITE_SMTP_CONNECTION_STRING)   // use this one for production
+  let transporter
+  if (import.meta.env.VITE_SMTP_CONNECTION_STRING) {
+    transporter = nodemailer.createTransport(import.meta.env.VITE_SMTP_CONNECTION_STRING)
+  } else {
+    const testAccount = await nodemailer.createTestAccount()  // use this one for testing
+    transporter = nodemailer.createTransport(`${testAccount.smtp.secure ? "smtps" : "smtp"}://${testAccount.user}:${testAccount.pass}@${testAccount.smtp.host}:${testAccount.smtp.port}`)
+  }
 
   await transporter.verify()
   const template = handlebars.compile(notificationEmail)
   return { transporter, template }
-}, () => "ready")
+}, () => import.meta.env.VITE_SMTP_CONNECTION_STRING ? "using prod SMTP" : "\u001B[33musing test account\u001B[0m")
 
 const qc = genQueryClient() // Use the same query client for all searches for caching
 await new Listr<{}>(
