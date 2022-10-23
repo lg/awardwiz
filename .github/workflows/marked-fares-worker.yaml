@@ -8,8 +8,7 @@ jobs:
   marked-fares-worker:
     name: marked-fares-worker
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
+    environment: ci
     env:
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
