@@ -95,5 +95,5 @@ await new Listr<{}>(
   })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
 ).run()
 
-qc.clear()  // Needed to not have reactquery stall the process from quitting due to cache times
+qc.clear(); qc.unmount()  // Needed to not have reactquery stall the process from quitting due to cache times
 console.log("done")
