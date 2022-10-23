@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Marked Fares Worker",
+      "request": "launch",
+      "runtimeArgs": [
+        "exec",
+        "vite-node",
+        "src/workers/marked-fares.ts"
+      ],
+      "runtimeExecutable": "pnpm",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Scraper Remote",

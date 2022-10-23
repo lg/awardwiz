@@ -95,5 +95,7 @@ await new Listr<{}>(
   })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
 ).run()
 
-qc.clear(); qc.unmount()  // Needed to not have reactquery stall the process from quitting due to cache times
 console.log("done")
+
+// eslint-disable-next-line unicorn/no-process-exit
+process.exit(0)   // TODO: this shouldn't be needed, but there's a leak somewhere with the ReactQuery QueryClient or nearby
