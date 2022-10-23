@@ -27,6 +27,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
       VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
@@ -34,13 +35,12 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.4
       - uses: actions/setup-node@v3
         with:
           cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - name: Setup Pages
         uses: actions/configure-pages@v2

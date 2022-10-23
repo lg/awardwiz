@@ -11,6 +11,7 @@ jobs:
     timeout-minutes: 5
     environment: workers
     env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
@@ -18,9 +19,9 @@ jobs:
       VITE_SMTP_CONNECTION_STRING: ${{ secrets.VITE_SMTP_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.4
       - uses: actions/setup-node@v3
         with:
           cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm run marked-fares-worker

@@ -2,6 +2,7 @@
   "name": "awardwiz",
   "private": true,
   "version": "2.0.0",
+  "packageManager": "pnpm@7.14.0",
   "scripts": {
     "test": "vitest",
     "test-scrapers": "VITE_LIVE_SCRAPER_TESTS=1 vitest scrapers",
@@ -9,13 +10,13 @@
     "build": "pnpm run schemas && tsc && vite build",
     "preview": "vite preview",
     "start": "pnpm run schemas && vite",
-    "depcheck": "pnpm exec depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node",
-    "schemas": "pnpm exec json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
-    "prepare": "pnpm exec -- husky install",
-    "check": "pnpm run depcheck && echo 'linting' && pnpm exec eslint --cache . && pnpm test -- run && SHOW_VIZ=false pnpm run build -- --log-level=error && echo 'ok'",
-    "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm pnpm exec npm-check -u",
-    "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch pnpm exec vite-node src/workers/marked-fares.ts",
-    "preview-email-worker": "pnpm exec vite-node src/workers/preview-email.ts"
+    "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node",
+    "schemas": "json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
+    "prepare": "husky install",
+    "check": "pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test -- run && SHOW_VIZ=false pnpm run build -- --log-level=error && echo 'ok'",
+    "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm npm-check -u",
+    "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch vite-node src/workers/marked-fares.ts",
+    "preview-email-worker": "vite-node src/workers/preview-email.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"

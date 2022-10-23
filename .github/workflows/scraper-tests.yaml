@@ -10,14 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: ci
     env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
       VITE_LIVE_SCRAPER_TESTS: 1
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
     steps:
       - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2.2.4
       - uses: actions/setup-node@v3
         with:
           cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile
       - run: pnpm run test-scrapers
