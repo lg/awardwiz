@@ -8,7 +8,7 @@ export const useCloudState = <T>(key: string, defaultValue: T) => {
 
   const value = useQuery(["cloudstate", key], async () => {
     const existingResult = await supabase.from("cloudstate").select().eq("key", key).maybeSingle()
-    if (existingResult.error === undefined && existingResult.data === undefined)
+    if (existingResult.error === null && existingResult.data === undefined)
       return mutation.mutate(defaultValue)            // set the default value if not in the db
 
     if (existingResult.data?.value)

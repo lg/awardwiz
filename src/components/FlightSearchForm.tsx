@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Button, Form } from "antd"
 import { SearchQuery } from "../types/scrapers"
 import { LeftOutlined, LoadingOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"

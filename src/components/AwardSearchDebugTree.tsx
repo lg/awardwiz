@@ -1,4 +1,3 @@
-import React from "react"
 import * as ReactQuery from "@tanstack/react-query"
 import { DebugTree, DebugTreeNode } from "./DebugTree"
 import Text from "antd/lib/typography/Text"

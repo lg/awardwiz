@@ -1,4 +1,3 @@
-import React from "react"
 import * as ReactQuery from "@tanstack/react-query"
 import { JsonViewer } from "@textea/json-viewer"
 import { ScraperResponse } from "../types/scrapers"

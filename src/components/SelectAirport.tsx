@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Select, Tag } from "antd"
 import { useAirportsDatabase } from "../hooks/useAirportsDb"
 

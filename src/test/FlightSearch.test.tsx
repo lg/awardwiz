@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react"
+import { ReactNode } from "react"
 import { describe, expect, it } from "vitest"
 import { render, cleanup } from "@testing-library/react"
 import "@testing-library/jest-dom"

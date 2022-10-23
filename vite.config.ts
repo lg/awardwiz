@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react"
 import vitePluginImp from "vite-plugin-imp"
 import Icons from "unplugin-icons/vite"
 import { visualizer } from "rollup-plugin-visualizer"
-import watchAndRun from "@kitql/vite-plugin-watch-and-run"
+import watchAndRun from "vite-plugin-watch-and-run"
 import path from "node:path"
 
 // https://vitejs.dev/config/

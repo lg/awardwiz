@@ -46,7 +46,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
       throw error
     })
     if (!response.data.user.email) { setMessage({ type: "error", text: "Could not get email address from auth provider" }); return }
-    await supabase.auth.setSession(response.data.refresh_token)
+    await supabase.auth.setSession({ refresh_token: response.data.refresh_token, access_token: response.data.access_token })
   }
 
   // Logged in view

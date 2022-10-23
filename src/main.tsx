@@ -1,5 +1,4 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
+import { createRoot } from "react-dom/client"
 import * as ReactQuery from "@tanstack/react-query"
 
 import { persistQueryClient } from "@tanstack/react-query-persist-client"
@@ -33,7 +32,7 @@ if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
 }
 
 // enabling strict mode will cause problems with reactquery canceling queries when components unmount
-ReactDOM.createRoot(document.querySelector("#root")!).render(
+createRoot(document.querySelector("#root")!).render(
   <QueryClientProvider client={queryClient}>
     <LoginScreen>
       <FlightSearch />

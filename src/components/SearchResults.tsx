@@ -1,4 +1,3 @@
-import * as React from "react"
 import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
 import { ColumnsType, ColumnType } from "antd/lib/table"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
