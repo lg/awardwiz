@@ -3,7 +3,7 @@
 
 import { HTTPResponse } from "puppeteer"
 import type { FlightFare, FlightWithFares } from "../types/scrapers"
-import { browserlessInit, BrowserlessInput, gotoPageAndWaitForResponse, Scraper, ScraperMetadata } from "./common"
+import { browserlessInit, BrowserlessInput, gotoPageAndWaitForResponse, Scraper, ScraperMetadata, pptrFetch, log } from "./common"
 import type { SkipLaggedResponse, Segment } from "./samples/skiplagged"
 
 const meta: ScraperMetadata = {
@@ -17,7 +17,17 @@ export const scraper: Scraper = async (page, query) => {
     waitForResponse: (checkResponse: HTTPResponse) => checkResponse.url().startsWith("https://skiplagged.com/api/search.php")
   })
 
-  const json: SkipLaggedResponse = await response.json()
+  let json: SkipLaggedResponse = await response.json()
+
+  // There's a bug on skiplagged where if you search for a same-day flight, it can sometimes show you flights
+  // a week in the future. In this case, force an xhr to the endpoint with the right date.
+  let receivedDate
+  try { receivedDate = json.flights[Object.keys(json.flights)[0]].segments[0].departure.time.split("T")[0] ?? query.departureDate } catch { receivedDate = query.departureDate }
+  if (receivedDate !== query.departureDate) {
+    log("Skiplagged returned the wrong date's flights, forcing xhr with proper date")
+    const rawResponseForProperDate = await pptrFetch(page, `https://skiplagged.com/api/search.php?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&return=&format=v3&counts%5Badults%5D=1&counts%5Bchildren%5D=0`, {})
+    json = JSON.parse(rawResponseForProperDate)
+  }
 
   const flightsWithFares: FlightWithFares[] = Object.entries(json.flights).map(([id, flight]) => {
     if (flight.count !== 1 || flight.segments.length !== 1)

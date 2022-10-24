@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-ts-expect-error */
-import axios, { AxiosError } from "axios"
+import { AxiosError } from "axios"
 import * as fs from "node:fs/promises"
-import ts from "typescript/lib/typescript.js"
 import { ScraperQuery, ScraperResponse } from "../types/scrapers"
 
 const [origin, destination, departureDate, scraper, mode, ip] = process.argv[2].split(",")
@@ -13,6 +12,7 @@ const mainRemote = (async () => {
   const scraperTS = await fs.readFile(`src/scrapers/${query.scraper}.ts`, "utf8")
 
   console.log("building")
+  const ts = require("typescript/lib/typescript.js")
   const tsCode = scraperTS.replace(/import .* from "\.\/common"/, commonTS)
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
 
@@ -21,6 +21,8 @@ const mainRemote = (async () => {
   const startTime = Date.now()
   const environment = await fs.readFile(".env.local", "utf8")
   const config = environment.split("\n").reduce((result: Record<string, string>, line) => { const [key, value] = line.split("="); result[key] = value; return result }, {})
+  const axios = await import("axios")
+  // @ts-ignore
   const raw = await axios.post<ScraperResponse>(`${config.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": config.VITE_BROWSERLESS_AWS_PROXY_API_KEY } }).catch((error) => error)
 
   console.log(`completed in: ${(Date.now() - startTime).toLocaleString()} ms`)
@@ -59,9 +61,9 @@ const mainLocal = (async () => {
 // eslint-disable-next-line unicorn/prefer-ternary
 if (mode === "browserless-func")
   // @ts-ignore
-  await mainRemote()
+  void mainRemote()
 else
   // @ts-ignore
-  await mainLocal()
+  void mainLocal()
 
 export {}
