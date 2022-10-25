@@ -32,7 +32,7 @@ export type ScraperMetadata = {
 
 export type Scraper = (page: Page, query: ScraperQuery) => Promise<FlightWithFares[]>
 export type BrowserlessInput = { page: Page, context: any, browser?: any, timeout?: number }
-type BrowserlessOutput = { data: ScraperResponse, type: "application/json", headers: { "x-response-code": number } }
+type BrowserlessOutput = { data: ScraperResponse, type: "application/json", headers: Record<string, string | number> }
 
 let currentMeta: ScraperMetadata
 const logLines: string[] = []
@@ -44,11 +44,11 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   await prepPage(input.page, meta)
 
   let timeoutTimer: NodeJS.Timeout | undefined
-  const timeout = new Promise<void>((resolve) => {
+  const timeout = new Promise<undefined>((resolve) => {
     timeoutTimer = setTimeout(async () => {
       log("* Master scraper timeout")
-      return resolve()
-    }, (input.timeout ?? 30000) - 1000)  // -1.0s for AWS to not cut off the request
+      return resolve(undefined)
+    }, (input.timeout ?? 30000) - 3000)  // -3.0s for AWS to not cut off the request
     // TODO: need to do request timeout, this timeout is just too short sometimes
   })
 
@@ -56,7 +56,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   const errored = result === undefined
   if (result === undefined) {
     log("* Ended in an error, getting screenshot *")
-    await screenshot(input.page)
+    await screenshot(input.page).catch(() => {})
     result = []
   }
 
@@ -67,7 +67,10 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   return {
     data: { flightsWithFares: result, errored, internalRetries: retriesDone, log: logLines },
     type: "application/json",
-    headers: { "x-response-code": errored ? 500 : 200 }
+    headers: {
+      "x-response-code": errored ? 500 : 200,
+      "Access-Control-Allow-Origin": "*"
+    }
   }
 }
 
