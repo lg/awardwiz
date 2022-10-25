@@ -41,7 +41,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
     const queryKey = queryKeyForScraperResponse(scraperToRun)
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperToRun.scraperName)?.cashOnlyFares
     const response = scraperResponses.find((check) => check.forKey && queryKeysEqual(check.forKey, queryKey))
-    const retries = response?.internalRetries ?? 0
+    const retries = response?.retries ?? 0
 
     return {
       key: queryKey.toString(),

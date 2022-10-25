@@ -48,7 +48,7 @@ export default defineConfig({
   test: {
     globals: true,
     maxConcurrency: 10,
-    testTimeout: 60000, // incase we get in the test queue on browserless
+    testTimeout: 3 * 60000, // incase we get in the test queue on browserless
     environment: "jsdom",
     onConsoleLog: (log, type) => {
       if (log.includes("Not implemented")) return false   // jsdom doesnt implement some methods that antd expects on dom elements

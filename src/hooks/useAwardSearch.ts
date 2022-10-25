@@ -15,7 +15,7 @@ const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
 export type ScraperToRun = { scraperName: string, forAirlines: string[], forDatedRoute: DatedRoute }
-export type UseQueryMetaWithHistory = { scraperToRun: ScraperToRun, prevLog: string[], curInternalRetries: number }
+export type UseQueryMetaWithHistory = { scraperToRun: ScraperToRun, prevLog: string[], curRetries: number }
 
 export type ScraperError = { name: "ScraperError", message: string, log: string[] }
 
@@ -85,7 +85,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     cacheTime: 1000 * 60 * 15,
     retry: 1,
     queryFn: fetchAwardAvailability,
-    meta: { scraperToRun, prevLog: [], curInternalRetries: 0 } as UseQueryMetaWithHistory,
+    meta: { scraperToRun, prevLog: [], curRetries: -1 } as UseQueryMetaWithHistory,
     refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
@@ -193,14 +193,14 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
 
   // Keep track of logs and retry counts from all attempts
   meta.prevLog = [ ...meta.prevLog, ...scraperResponse.log ]
-  meta.curInternalRetries += scraperResponse.internalRetries
+  meta.curRetries += 1
 
   if (scraperResponse.errored)
     throw { log: meta.prevLog, message: "Internal scraper error", name: "ScraperError" } as ScraperError
 
   // Patch the response to contain logs and retry counts from all attempts
   scraperResponse.log = [...meta.prevLog]
-  scraperResponse.internalRetries = meta.curInternalRetries
+  scraperResponse.retries = meta.curRetries
 
   return scraperResponse
 }

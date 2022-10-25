@@ -105,7 +105,7 @@ rules:
   unicorn/no-array-reduce: off
   unicorn/prefer-module: off  # scrapers need this so they can be imported from browserless
   unicorn/numeric-separators-style: off  # 1_000 is just ugly
-  unicorn/no-useless-undefined: ["error", {"checkArguments": false}]  # it's ok to have a undefined as the last param
+  unicorn/no-useless-undefined: off  # doesnt work for void types on catch
   unicorn/prefer-switch: off  # switch is too lengthy
   unicorn/filename-case: off  # for now
   unicorn/no-keyword-prefix: off  # unnecessarily prevents things like 'newValue'

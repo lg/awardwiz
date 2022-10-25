@@ -14,11 +14,11 @@ export type BrowserlessPostData = {
 export type ScraperResponse = {
   flightsWithFares: FlightWithFares[]
   errored: boolean
-  internalRetries: number
   log: string[]
 
   // patched on after receiving
   forKey?: QueryKey
+  retries?: number
 }
 
 // the "| undefined" piece makes these require to explicitly be defined

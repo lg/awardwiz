@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { expect } from "vitest"
+import { expect, test } from "vitest"
 import { FlightFare, FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 import * as fs from "node:fs/promises"
 import ts from "typescript"
@@ -7,7 +7,6 @@ import axios from "axios"
 import { default as dayjs } from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
-import pRetry from "p-retry"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -47,15 +46,10 @@ const runQuery = async (scraperName: string, route: string[], checkDate = dayjs(
 
   const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
 
-  const raw = await pRetry(async () => {
-    const scraperResponse = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
-    if (scraperResponse.data.errored) throw new Error("Errored in scraper")
-    return scraperResponse
-  }, { factor: 1, retries: 3 })
 
-  expect(raw.data.errored).toBe(false)
-
-  return raw.data
+  const scraperResponse = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+  if (scraperResponse.data.errored) throw new Error("Errored in scraper")
+  return scraperResponse.data
 }
 
 test("pass", () => {})
@@ -81,11 +75,11 @@ test.concurrent.each(scrapers)("basic search: %s", async (scraperName, scraper) 
       expect(undefinedFareKeys, `Expected flight \n\n${JSON.stringify(flight)}\n\n and fare \n\n${JSON.stringify(fare)}\n\n to not have any undefined keys`).toEqual([])
     }
   }
-})
+}, { retry: 5 })
 
 test.concurrent.each(scrapers)("basic same-day search: %s", async (scraperName, scraper) => {
   await runQuery(scraperName, scraper.popularRoute, dayjs().tz(scraper.sameDayTz ?? "America/Los_Angeles").format("YYYY-MM-DD"))
-})
+}, { retry: 5 })
 
 test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partnerRoute))("partner availability search: %s", async (scraperName, scraper) => {
   let checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")
@@ -100,12 +94,12 @@ test.concurrent.each(scrapers.filter(([scraperName, scraper]) => scraper.partner
   } while (dayjs(checkDate).isBefore(dayjs(checkDate).add(3, "days")) && !found)
 
   expect(found, `Could not find flight ${scraper.partnerRoute![2]} ${scraper.partnerRoute![0]}->${scraper.partnerRoute![1]} on ${checkDate} or the following two days`).toBe(true)
-})
+}, { retry: 5 })
 
 test.concurrent.each(scrapers)("fails gracefully with unserved airports: %s", async (scraperName, scraper) => {
   const results = await runQuery(scraperName, ["SFO", "OGS"])
   expect(results.flightsWithFares.length).toBe(0)
-})
+}, { retry: 5 })
 
 test.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
   const futureDate = dayjs().add(10, "months").format("YYYY-MM-DD")
@@ -115,7 +109,7 @@ test.concurrent.each(scrapers)("can search 10 months from now: %s", async (scrap
     const receivedDate = dayjs(flight.departureDateTime).format("YYYY-MM-DD")
     expect(receivedDate, `Expected date from results (${receivedDate}) to be the same as we searched (${futureDate})`).equals(futureDate)
   }
-})
+}, { retry: 5 })
 
 // more:
 //   // it.todo("can distinguish a 3-class domestic vs 2-class domestic", async () => {})

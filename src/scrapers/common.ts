@@ -63,12 +63,11 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   if (timeoutTimer !== undefined) clearTimeout(timeoutTimer)
   await input.browser?.close().catch(() => {})
 
-  log(`*** Completed scraper after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s) and ${retriesDone} retry(s)`)
+  log(`*** Completed scraper ${ errored ? "with error " : ""}after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
   return {
-    data: { flightsWithFares: result, errored, internalRetries: retriesDone, log: logLines },
+    data: { flightsWithFares: result, errored, log: logLines },
     type: "application/json",
     headers: {
-      "x-response-code": errored ? 500 : 200,
       "Access-Control-Allow-Origin": "*"
     }
   }
@@ -91,31 +90,16 @@ export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
   await pageToPrep.setBypassCSP(true)
 }
 
-let retriesDone = 0
 const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[] | undefined> => {
   const result = await scraper(page, input.context).catch(async (error) => {
-    if (page.isClosed()) return
+    if (page.isClosed()) return undefined
     log("* Error in scraper, taking screenshot *\n", error)
     await screenshot(page)
-    return
+    return undefined
   })
 
   await page.close().catch((error) => {})
   if (contextToClose) await contextToClose.close().catch((error) => {})
-
-  if (result === undefined) {
-    if (retriesDone >= 3) {
-      log("* Too many retries, giving up *")
-      return
-    }
-
-    log("* Retrying *")
-    const context = await input.page.browser().createIncognitoBrowserContext()
-    const attemptPage = await context.newPage()
-    await prepPage(attemptPage, meta)
-    retriesDone += 1
-    return runAttempt(attemptPage, input, scraper, meta, context)
-  }
 
   return result
 }
