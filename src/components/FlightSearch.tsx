@@ -3,7 +3,6 @@ import { SearchResults } from "./SearchResults"
 import { useAwardSearch } from "../hooks/useAwardSearch"
 import { AwardSearchDebugTree } from "./AwardSearchDebugTree"
 import { SearchQuery } from "../types/scrapers"
-import { supabase } from "./LoginScreen"
 import { FlightSearchForm } from "./FlightSearchForm"
 import { default as dayjs, Dayjs } from "dayjs"
 
@@ -18,15 +17,6 @@ export const FlightSearch = () => {
     return receivedDate
   })
   const searchProgress = useAwardSearch(searchQuery)
-
-  React.useEffect(() => {
-    localStorage.setItem("searchQuery", JSON.stringify(searchQuery))
-    const logSearch = async (query: SearchQuery) => {
-      const user = await supabase.auth.getUser()
-      return supabase.from("searches").insert([{ user_id: user.data.user?.id, query: JSON.stringify(query) }])
-    }
-    void logSearch(searchQuery)
-  }, [searchQuery])
 
   const onSearchClick = React.useCallback(async (values: { origins: string[], destinations: string[], departureDate: Dayjs }) => {
     if (searchProgress.loadingQueriesKeys.length > 0)
