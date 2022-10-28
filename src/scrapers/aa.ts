@@ -79,7 +79,7 @@ const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFar
           cash: product.perPassengerTaxesAndFees.amount,
           currencyOfCash: product.perPassengerTaxesAndFees.currency,
           miles: product.perPassengerAwardPoints,
-          cabin: { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "business", "BUSINESS": "business" }[product.productType]!,
+          cabin: { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "first", "BUSINESS": "business" }[product.productType]!,
           scraper: "aa",
           bookingClass: product.extendedFareCode?.[0]
         }))
