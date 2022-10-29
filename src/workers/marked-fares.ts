@@ -9,7 +9,6 @@ import { runListrTask } from "../helpers/common"
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
 import notificationEmail from "../../emails/notification.html?raw"
-import { sendNotificationEmail } from "../helpers/sendEmail"
 
 dayjs.extend(LocalizedFormat)
 
@@ -17,6 +16,23 @@ for (const key of ["VITE_SUPABASE_URL", "VITE_SUPABASE_SERVICE_KEY", "VITE_BROWS
   if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
 
 const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_KEY)
+
+const sendNotificationEmail = async (transporter: nodemailer.Transporter, html: string, toAddress: string) => {
+  return transporter.sendMail({
+    from: "\"AwardWiz\" <no-reply@awardwiz.com>",
+    to: toAddress,
+    subject: "AwardWiz Notification",
+    priority: "high",
+    html,
+    attachments: [{
+      filename: "wizard.png",
+      path: "src/wizard.png",
+      cid: "wizard.png",
+    }]
+  })
+}
+
+//////////////////////////////////////
 
 const markedFaresQuery = await runListrTask("Getting all marked fares...", async () => {
   return supabase
@@ -80,11 +96,14 @@ await new Listr<{}>(
         title: "Sending notification email...",
         task: async (_context2, task2) => {
           // TODO: make the buttons work
-          const sendResult = await sendNotificationEmail(transporter, template, {
+          const sendResult = await sendNotificationEmail(transporter, template({
             origin: markedFare.origin,
             destination: markedFare.destination,
-            date: dayjs(markedFare.date).format("ll")
-          }, markedFare.email)
+            date: dayjs(markedFare.date).format("ll"),
+            cabin: `${markedFare.checkCabin.charAt(0).toUpperCase()}${markedFare.checkCabin.slice(1)}`,
+            availability: "AVAILABLE",
+            availability_color: "#00aa00"
+          }), markedFare.email)
 
           // eslint-disable-next-line no-param-reassign
           task2.title = `${task2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
