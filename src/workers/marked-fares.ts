@@ -82,33 +82,57 @@ await new Listr<{}>(
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.email}`,
     task: async (_context, task) => {
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
-      const goodResult = results.searchResults.find((result) =>
+      const foundSaver = results.searchResults.some((result) =>
         result.flightNo === markedFare.checkFlightNo
         && result.fares.find((fare) => fare.cabin === markedFare.checkCabin && fare.isSaverFare))
 
-      // eslint-disable-next-line no-param-reassign
-      task.title = `${task.title} ${goodResult ? "🎉" : ""}`
-
-      if (!goodResult)
+      if ((markedFare.curAvailable ?? false) === foundSaver)
         return
 
-      return task.newListr<{}>({
+      // eslint-disable-next-line no-param-reassign
+      task.title = `${task.title}: ${markedFare.curAvailable ? "available" : "unavailable"} ➡️ ${foundSaver ? "available 🎉" : "unavailable 👎"}`
+
+      return task.newListr<{}>([{
         title: "Sending notification email...",
         task: async (_context2, task2) => {
           // TODO: make the buttons work
           const sendResult = await sendNotificationEmail(transporter, template({
             origin: markedFare.origin,
             destination: markedFare.destination,
-            date: dayjs(markedFare.date).format("ll"),
+            date: dayjs(markedFare.date).format("ddd ll"),
             cabin: `${markedFare.checkCabin.charAt(0).toUpperCase()}${markedFare.checkCabin.slice(1)}`,
-            availability: "AVAILABLE",
-            availability_color: "#00aa00"
+            availability: foundSaver ? "AVAILABLE" : "UNAVAILABLE",
+            availability_color: foundSaver ? "#00aa00" : "#aa0000"
           }), markedFare.email)
 
           // eslint-disable-next-line no-param-reassign
           task2.title = `${task2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
         }
-      }, { rendererOptions: { collapse: false } })
+      }, {
+        title: "Updating db...",
+        task: async (_context2, task2) => {
+          const userMarkedFares = await supabase
+            .from("cloudstate")
+            .select("user_id, value")
+            .eq("key", "markedFares")
+            .eq("user_id", markedFare.userId)
+            .single()
+
+          const newMarkedFare: MarkedFare = userMarkedFares.data?.value
+            .find((checkMarkedFare: any) => Object.keys(checkMarkedFare).every((checkKey) => (checkMarkedFare as Record<string, any>)[checkKey] === (markedFare as Record<string, any>)[checkKey]))
+          newMarkedFare.curAvailable = foundSaver
+
+          await supabase
+            .from("cloudstate")
+            .update({value: userMarkedFares.data?.value})
+            .eq("key", "markedFares")
+            .eq("user_id", markedFare.userId)
+            .throwOnError()
+
+          // eslint-disable-next-line no-param-reassign
+          task2.title = `${task2.title} ok`
+        }
+      }], { rendererOptions: { collapse: false } })
     },
     retry: 3,
   })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }

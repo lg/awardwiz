@@ -15,7 +15,7 @@ const triState = (condition: boolean | undefined, trueValue: string, falseValue:
   return condition ? trueValue : falseValue
 }
 
-export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string }
+export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string, curAvailable: boolean | undefined }
 
 const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | undefined => {
   const faresForClass = fares.filter((fare) => fare.cabin === cabin)
@@ -123,7 +123,14 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       if (markedFare) {
         void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
       } else {
-        void setMarkedFares([...markedFares, { origin: record.origin, destination: record.destination, checkFlightNo: record.flightNo, date: record.departureDateTime.slice(0, 10), checkCabin: cabin }])    // add the marked fare
+        void setMarkedFares([...markedFares, {
+          origin: record.origin,
+          destination: record.destination,
+          checkFlightNo: record.flightNo,
+          date: record.departureDateTime.slice(0, 10),
+          checkCabin: cabin,
+          curAvailable: isSaverFare
+        }])    // add the marked fare
       }
     }
 
