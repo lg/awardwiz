@@ -7,7 +7,6 @@ import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
 import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "../hooks/useAwardSearch"
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
-import { Badge } from "antd"
 import { ScraperResultDetails } from "./ScraperResultDetails"
 
 export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
@@ -48,9 +47,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
       parentKey: `${scraperToRun.forDatedRoute.origin}${scraperToRun.forDatedRoute.destination}`,
       text: (
         <>
-          <Badge size="small" count={response?.flightsWithFares.length} offset={[-2, 5]} color="#888888">
-            <Text code>{scraperToRun.scraperName}</Text>
-          </Badge>:
+          <Text code>{scraperToRun.scraperName}</Text>:
           { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperToRun.forAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
           { retries > 0
             ? <Text style={{ fontSize: "0.75em", color: "#ff0000" }}><strong> ({retries} {retries === 1 ? "retry" : "retries"})</strong></Text>
