@@ -6,7 +6,6 @@ import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
-import pRetry from "p-retry"
 
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 
@@ -51,6 +50,9 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     queryKey: queryKeyForAirlineRoute(datedRoute),
     queryFn: fetchAirlineRoutes,
     meta: datedRoute,
+    staleTime: 1000 * 60 * 60 * 24 * 30,
+    cacheTime: 1000 * 60 * 60 * 24 * 30,
+    retry: 3,
     enabled: !stoppedQueries.some((stoppedQuery) => queryKeysEqual(stoppedQuery, queryKeyForAirlineRoute(datedRoute)))
   }))
   const airlineRouteQueries = ReactQuery.useQueries({ queries: airlineRouteQueriesOpts })
@@ -135,16 +137,16 @@ const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => 
 const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
   const datedRoute = meta as DatedRoute
 
-  const data = await pRetry(async () => {
-    const request = await axios.post<string>(
-      `${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`,
-      { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` },
-      { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }
-    )
+  const request = await axios.post<string>(
+    `${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`,
+    { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` },
+    { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }
+  )
 
-    const dataHtml = request.data
-    return JSON.parse(new DOMParser().parseFromString(dataHtml, "text/html").documentElement.textContent ?? "") as FlightRadar24Response
-  }, { retries: 3, signal, factor: 1 })
+  if (request.data.includes("Our engineers are working hard"))    // some pairings like FRA-SJC return errors
+    return []
+
+  const data = JSON.parse(new DOMParser().parseFromString(request.data, "text/html").documentElement.textContent ?? "") as FlightRadar24Response
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
