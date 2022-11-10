@@ -83,7 +83,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     queryKey: queryKeyForScraperResponse(scraperToRun),
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
-    retry: 1,
+    retry: 5,
     queryFn: fetchAwardAvailability,
     meta: { scraperToRun, prevLog: [], curRetries: -1 } as UseQueryMetaWithHistory,
     refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
