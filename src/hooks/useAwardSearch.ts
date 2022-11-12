@@ -171,6 +171,7 @@ export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string,
 
 const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
   const meta = metaRaw as UseQueryMetaWithHistory
+  meta.curRetries += 1  // starts at -1
   const scraperToRun = meta.scraperToRun
 
   const scraperPath = (name: string) => {
@@ -193,9 +194,8 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
   const scraperResponse = response.data
   scraperResponse.forKey = queryKey
 
-  // Keep track of logs and retry counts from all attempts
+  // Keep track of logs from all attempts
   meta.prevLog = [ ...meta.prevLog, ...scraperResponse.log ]
-  meta.curRetries += 1
 
   if (scraperResponse.errored)
     throw { log: meta.prevLog, message: "Internal scraper error", name: "ScraperError" } as ScraperError
