@@ -18,6 +18,9 @@ export const FlightSearch = () => {
   })
   const searchProgress = useAwardSearch(searchQuery)
 
+  // Save last query in browser
+  React.useEffect(() => localStorage.setItem("searchQuery", JSON.stringify(searchQuery)), [searchQuery])
+
   const onSearchClick = React.useCallback(async (values: { origins: string[], destinations: string[], departureDate: Dayjs }) => {
     if (searchProgress.loadingQueriesKeys.length > 0)
       return searchProgress.stop()
