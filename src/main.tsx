@@ -3,7 +3,6 @@ import * as ReactQuery from "@tanstack/react-query"
 
 import { persistQueryClient } from "@tanstack/react-query-persist-client"
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 
 import "./index.css"
 import { FlightSearch } from "./components/FlightSearch"
@@ -37,7 +36,5 @@ createRoot(document.querySelector("#root")!).render(
     <LoginScreen>
       <FlightSearch />
     </LoginScreen>
-
-    {import.meta.env.VITE_REACT_QUERY_DEV_TOOLS === "true" && <ReactQueryDevtools initialIsOpen={false} />}
   </QueryClientProvider>
 )
