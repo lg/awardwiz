@@ -1,6 +1,8 @@
 name: Marked Fares Worker
 on:
   push:
+    branches: ["master"]
+
   schedule:
     - cron: '*/10 * * * *' # every 10 minutes
 

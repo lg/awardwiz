@@ -14,12 +14,12 @@ beforeAll(() => {
 afterEach(() => { cleanup() })
 
 beforeAll(() => {
-  vi.mock("@supabase/supabase-js", () => ({
-    createClient: () => ({
-      auth: { getUser: () => Promise.resolve({ data: { user: { email: "abc@def.com" } } }) },
-      from: () => ({ select: vi.fn(), insert: vi.fn() }),
-    }),
-  }))
+  // vi.mock("@supabase/supabase-js", () => ({
+  //   createClient: () => ({
+  //     auth: { getUser: () => Promise.resolve({ data: { user: { email: "abc@def.com" } } }) },
+  //     from: () => ({ select: vi.fn(), insert: vi.fn() }),
+  //   }),
+  // }))
 })
 
 describe("FlightSearch", () => {

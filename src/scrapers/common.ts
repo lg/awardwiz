@@ -4,10 +4,6 @@
 import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
 import type { FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 
-// TODO: really need a packer or something to compile this in versus hardcoding vars here
-const SUPABASE_URL = "https://cycyxyznituxggpyyppn.supabase.co/rest/v1/scraper_runs"
-const SUPABASE_KEY_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5Y3l4eXpuaXR1eGdncHl5cHBuIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NTM4NjM0NDgsImV4cCI6MTk2OTQzOTQ0OH0.NsZaMOLiXOg5rxWi92tWkxyOZp3csyLeiXob-DsDeys"
-
 export type ScraperFlowRule = {
   find: string
   type?: string
@@ -69,26 +65,28 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
 
   log(`*** Completed scraper ${ errored ? "with error " : ""}after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
 
+  // TODO: implement
+  // eslint-disable-next-line no-unused-vars
   const fetch = require("node-fetch") // available from browserless
-  void fetch(SUPABASE_URL, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_KEY_ANON,
-      "Authorization": `Bearer ${SUPABASE_KEY_ANON}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      scraper_name: meta.name,
-      search_origin: input.context.origin,
-      search_destination: input.context.destination,
-      search_departure_date: input.context.departureDate,
-      start_utc: new Date(scraperStartTime).toUTCString(),
-      duration_ms: Date.now() - scraperStartTime,
-      status: errored ? "failure" : "success",
-      results: result,
-      log: logLines.join("\n"),
-    })
-  })
+  // void fetch(SUPABASE_URL, {
+  //   method: "POST",
+  //   headers: {
+  //     "apikey": SUPABASE_KEY_ANON,
+  //     "Authorization": `Bearer ${SUPABASE_KEY_ANON}`,
+  //     "Content-Type": "application/json"
+  //   },
+  //   body: JSON.stringify({
+  //     scraper_name: meta.name,
+  //     search_origin: input.context.origin,
+  //     search_destination: input.context.destination,
+  //     search_departure_date: input.context.departureDate,
+  //     start_utc: new Date(scraperStartTime).toUTCString(),
+  //     duration_ms: Date.now() - scraperStartTime,
+  //     status: errored ? "failure" : "success",
+  //     results: result,
+  //     log: logLines.join("\n"),
+  //   })
+  // })
 
   return {
     data: { flightsWithFares: result, errored, log: logLines },

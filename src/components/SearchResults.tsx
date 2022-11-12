@@ -4,7 +4,6 @@ import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
-import { useCloudState } from "../hooks/useCloudState"
 import awardwizImageUrl from "../wizard.png"
 import { FastTooltip } from "./FastTooltip"
 import { default as dayjs } from "dayjs"
@@ -29,7 +28,8 @@ const airlineLogoUrl = (airlineCode: string) => {
 }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
-  const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
+  // TODO: update this
+  // const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
 
   const columns: ColumnsType<FlightWithFares> = [
     {
@@ -113,25 +113,31 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
     const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === cabin)
 
-    const markedFare = (markedFares ?? []).find((check) =>
-      check.checkFlightNo === record.flightNo &&
-      check.date.slice(0, 10) === record.departureDateTime.slice(0, 10) &&
-      check.checkCabin === cabin)
-    const clickedFare = () => {
-      if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
+    const markedFare = undefined as MarkedFare | undefined
+    // const markedFare = (markedFares ?? []).find((check) =>
+    //   check.checkFlightNo === record.flightNo &&
+    //   check.date.slice(0, 10) === record.departureDateTime.slice(0, 10) &&
+    //   check.checkCabin === cabin)
 
-      if (markedFare) {
-        void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
-      } else {
-        void setMarkedFares([...markedFares, {
-          origin: record.origin,
-          destination: record.destination,
-          checkFlightNo: record.flightNo,
-          date: record.departureDateTime.slice(0, 10),
-          checkCabin: cabin,
-          curAvailable: isSaverFare
-        }])    // add the marked fare
-      }
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    const clickedFare = () => {
+      console.log("unimplemented")
+      // TODO: implement
+
+      // if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
+
+      // if (markedFare) {
+      //   void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
+      // } else {
+      //   void setMarkedFares([...markedFares, {
+      //     origin: record.origin,
+      //     destination: record.destination,
+      //     checkFlightNo: record.flightNo,
+      //     date: record.departureDateTime.slice(0, 10),
+      //     checkCabin: cabin,
+      //     curAvailable: isSaverFare
+      //   }])    // add the marked fare
+      // }
     }
 
     return (

@@ -29,3 +29,12 @@ Several environment variables are *required* to start the server and frontend. I
 - `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. Be careful not to expose in public.
 
 You can start a local instance of Browserless using `docker-compose up`.
+
+## Firebase migration TODO
+
+- [X] Comment out Supabase things and make the search still work
+- [ ] Add in Firebase SDK and get auth to work
+- [ ] Bring back ability to mark fares
+- [ ] Bring back emails when marked fares become available
+- [ ] Bring back scraper logging except maybe via Google Analytics
+- [ ] Update README to remove references to Supabase
