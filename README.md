@@ -33,7 +33,7 @@ You can start a local instance of Browserless using `docker-compose up`.
 ## Firebase migration TODO
 
 - [X] Comment out Supabase things and make the search still work
-- [ ] Add in Firebase SDK and get auth to work
+- [X] Add in Firebase SDK and get auth to work
 - [ ] Bring back ability to mark fares
 - [ ] Bring back emails when marked fares become available
 - [ ] Bring back scraper logging except maybe via Google Analytics
