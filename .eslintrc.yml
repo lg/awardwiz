@@ -109,7 +109,7 @@ rules:
   unicorn/prefer-switch: off  # switch is too lengthy
   unicorn/filename-case: off  # for now
   unicorn/no-keyword-prefix: off  # unnecessarily prevents things like 'newValue'
-  unicorn/prevent-abbreviations: ["error", {"checkFilenames": false, "allowList": {"Env": true, "Props": true, "props": true, "Opts": true}}]
+  unicorn/prevent-abbreviations: off
   unicorn/no-array-push-push: ["error", {"ignore": ["debugTree"]}]  # debugTree is usually a big map, so it's cleaner to use multiple pushes
 
   "deprecation/deprecation": "warn"

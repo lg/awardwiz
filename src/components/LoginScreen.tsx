@@ -3,22 +3,8 @@ import * as React from "react"
 import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown, Menu } from "antd"
 import awardwizImageUrl from "../wizard.png"
 import CarbonLogout from "~icons/carbon/logout"
-import { initializeApp } from "firebase/app"
-import { getAuth, GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCgu7EVRrz3LQnDypCJJDOX3BRUYHqVZus",
-  authDomain: "awardwiz.firebaseapp.com",
-  projectId: "awardwiz",
-  storageBucket: "awardwiz.appspot.com",
-  messagingSenderId: "416370374153",
-  appId: "1:416370374153:web:12727dfb0493bf268b6ad8",
-  measurementId: "G-6JPRBFR4Y6"
-}
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
-const auth = getAuth(app)
+import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
+import { firebaseAuth } from "../helpers/firebase"
 
 export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   const [message, setMessage] = React.useState<{ type: AlertProps["type"], text: string }>({ type: undefined, text: "" })
@@ -26,7 +12,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
 
   React.useEffect(() => {
     setMessage({ type: "info", text: "Loading..." })
-    auth.onAuthStateChanged((authUser) => {
+    firebaseAuth.onAuthStateChanged((authUser) => {
       setUser(authUser ?? undefined)
     })
   }, [])
@@ -41,7 +27,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
 
     const idToken = credentialResponse.credential
     const credential = GoogleAuthProvider.credential(idToken)
-    void signInWithCredential(auth, credential).catch((error) => {
+    void signInWithCredential(firebaseAuth, credential).catch((error) => {
       setMessage({ type: "error", text: `Failed to log into Firebase with Google credential: ${error.message}` })
       throw error
     })
@@ -51,7 +37,7 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   if (user) {
     const avatarMenu = (
       <Menu items={[
-        { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => { void auth.signOut() } }
+        { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => { void firebaseAuth.signOut() } }
       ]} />
     )
 
