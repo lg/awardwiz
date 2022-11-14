@@ -130,7 +130,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
     const clickedFare = async () => {
       if (existingMarkedFare) {
-        void Firestore.deleteDoc(Firestore.doc(firestore, `marked_fares/${existingMarkedFare.id}`))   // remove the marked fare
+        void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
         void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {

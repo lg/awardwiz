@@ -22,6 +22,9 @@ interface ImportMetaEnv {
   /** The mailer SMTP connection string (use a free SendGrid account if you need one)
    * ex. smtps://username%40gmail.com:password@smtp.sendgrid.net:465 */
   readonly VITE_SMTP_CONNECTION_STRING: string
+
+  /** Set to true to use the local emulators for Firebase versus production */
+  readonly VITE_USE_FIREBASE_EMULATORS: string
 }
 
 // eslint-disable-next-line no-unused-vars

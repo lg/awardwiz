@@ -27,6 +27,7 @@ Several environment variables are *required* to start the server and frontend. I
 - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_SERVICE_KEY`: Supabase credentials for storing user settings and scraper logs. Dont forget to edit `src/scrapers/common.ts` with these values too. Be careful not to expose your service key in public.
 - `VITE_BROWSERLESS_AWS_PROXY_URL` and `VITE_BROWSERLESS_AWS_PROXY_API_KEY`: AWS API Gateway credentials for fronting browserless
 - `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. Be careful not to expose in public.
+- `VITE_FIREBASE_USE_EMULATORS` optionally set to `true` will use emulators instead of production credentials
 
 You can start a local instance of Browserless using `docker-compose up`.
 
@@ -34,7 +35,9 @@ You can start a local instance of Browserless using `docker-compose up`.
 
 - [X] Comment out Supabase things and make the search still work
 - [X] Add in Firebase SDK and get auth to work
-- [ ] Bring back ability to mark fares
+- [X] Bring back ability to mark fares
+- [X] Create Firebase config files + emulator setup
+- [ ] Use React version of Firestore
 - [ ] Bring back emails when marked fares become available
 - [ ] Bring back scraper logging except maybe via Google Analytics
 - [ ] Update README to remove references to Supabase
