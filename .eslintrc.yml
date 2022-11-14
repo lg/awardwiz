@@ -6,7 +6,6 @@ plugins:
   - "@typescript-eslint"
   - promise
   - react-hooks
-  - unicorn
   - deprecation
 extends:
   - eslint:recommended
@@ -17,7 +16,6 @@ extends:
   - plugin:react/jsx-runtime
   - plugin:promise/recommended
   - plugin:react-hooks/recommended
-  - plugin:unicorn/all
 parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
@@ -101,16 +99,6 @@ rules:
   "newline-per-chained-call": off
   "import/named": off
   "@typescript-eslint/no-throw-literal": off
-
-  unicorn/no-array-reduce: off
-  unicorn/prefer-module: off  # scrapers need this so they can be imported from browserless
-  unicorn/numeric-separators-style: off  # 1_000 is just ugly
-  unicorn/no-useless-undefined: off  # doesnt work for void types on catch
-  unicorn/prefer-switch: off  # switch is too lengthy
-  unicorn/filename-case: off  # for now
-  unicorn/no-keyword-prefix: off  # unnecessarily prevents things like 'newValue'
-  unicorn/prevent-abbreviations: off
-  unicorn/no-array-push-push: ["error", {"ignore": ["debugTree"]}]  # debugTree is usually a big map, so it's cleaner to use multiple pushes
 
   "deprecation/deprecation": "warn"
 

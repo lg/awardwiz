@@ -37,7 +37,6 @@ You can start a local instance of Browserless using `docker-compose up`.
 - [X] Add in Firebase SDK and get auth to work
 - [X] Bring back ability to mark fares
 - [X] Create Firebase config files + emulator setup
-- [ ] Use React version of Firestore
-- [ ] Bring back emails when marked fares become available
+- [X] Bring back emails when marked fares become available
 - [ ] Bring back scraper logging except maybe via Google Analytics
 - [ ] Update README to remove references to Supabase

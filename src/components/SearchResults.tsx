@@ -34,7 +34,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
   const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
 
   React.useEffect(() => {
-    const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid))
+    const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
     const unsubscribe = Firestore.onSnapshot(markedFaresQuery, (snapshot) => {
       setMarkedFares(snapshot.docs.map((curDoc) => ({ ...curDoc.data(), id: curDoc.id } as MarkedFare)))
     })

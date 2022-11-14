@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/consistent-function-scoping */
 import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
 import { browserlessInit, BrowserlessInput, gotoPage, log, Scraper, ScraperMetadata } from "./common"
 

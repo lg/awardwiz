@@ -34,7 +34,6 @@ export const scraper: Scraper = async (page, query) => {
 
   const errorResponse = page.waitForSelector(".atm-c-alert--error .atm-c-btn__text")
     .then((item) => (item?.evaluate((node) => node.textContent ?? undefined)))
-    // eslint-disable-next-line unicorn/no-useless-undefined
     .catch(() => undefined)
   const response = await Promise.race([fetchFlights, errorResponse])
 

@@ -32,5 +32,4 @@ tmp.ts
 
 .eslintcache
 
-# for now config is fully local
-supabase/
+firebase-serviceaccount.json

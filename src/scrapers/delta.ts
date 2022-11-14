@@ -20,7 +20,6 @@ export const scraper: Scraper = async (page, query) => {
   const formattedDate = `${query.departureDate.slice(5, 7)}/${query.departureDate.slice(8, 10)}/${query.departureDate.slice(0, 4)}`
 
   log("processing scraper flow")
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   const andThen = (airportCode: string): any => ([{
     find: "#search_input",
     type: airportCode,
