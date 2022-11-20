@@ -1,9 +1,8 @@
-import { Button, Form } from "antd"
+import { Button, DatePicker, Form } from "antd"
 import { SearchQuery } from "../types/scrapers"
 import { LeftOutlined, LoadingOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
 import { SelectAirport } from "./SelectAirport"
 import { default as dayjs, Dayjs } from "dayjs"
-import DatePickerDayJs from "./DatePickerDayJs"
 
 type FlightSearchFormProps = {
   searchQuery: SearchQuery
@@ -28,7 +27,7 @@ export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: Fl
       </Form.Item>
 
       <Form.Item name="departureDate" style={{ marginRight: 5 }}>
-        <DatePickerDayJs disabledDate={(current) => current.isBefore(dayjs().subtract(1, "day"))} allowClear={false} />
+        <DatePicker disabledDate={(current) => current.isBefore(dayjs().subtract(1, "day"))} allowClear={false} />
       </Form.Item>
       <Button icon={<LeftOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => addDay(-1)} />
       <Button icon={<RightOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => addDay(1)} />

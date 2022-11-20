@@ -58,7 +58,6 @@ const mainLocal = (async () => {
   console.log("ok done")
 })
 
-// eslint-disable-next-line unicorn/prefer-ternary
 if (mode === "browserless-func")
   // @ts-ignore
   void mainRemote()

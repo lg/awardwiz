@@ -1,6 +1,6 @@
 import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
 import * as React from "react"
-import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown, Menu } from "antd"
+import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown } from "antd"
 import awardwizImageUrl from "../wizard.png"
 import CarbonLogout from "~icons/carbon/logout"
 import type { Database } from "../types/supabase-types"
@@ -51,15 +51,10 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
 
   // Logged in view
   if (supabaseSession) {
-    const avatarMenu = (
-      <Menu items={[
-        { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => supabase.auth.signOut() }
-      ]} />
-    )
-
+    const avatarMenuItems = { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => supabase.auth.signOut() }
     return (
       <>
-        <Dropdown overlay={avatarMenu} trigger={["click"]}>
+        <Dropdown menu={avatarMenuItems} trigger={["click"]}>
           <Avatar src={supabaseSession.user.user_metadata.picture} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>
             {`${supabaseSession.user.user_metadata.given_name?.toString()[0]}${supabaseSession.user.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
           </Avatar>

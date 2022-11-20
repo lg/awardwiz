@@ -15,7 +15,6 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
 
   let initialTime: Dayjs
   const logLines = rawLog.map((line, lineNumber) => {
-    // eslint-disable-next-line unicorn/better-regex
     const parts = line.match(/^\[(.*, .+ (?:AM|PM)).*?\] (.*)$/)
     if (!parts || parts.length !== 3) return line
     if (lineNumber === 0) initialTime = dayjs(parts[1])

@@ -1,7 +1,7 @@
-import { DefaultOptionType } from "antd/lib/select"
 import * as React from "react"
 import airportsDatabase from "../airports.json"
 import type { Airport } from "../types/scrapers"
+import { DefaultOptionType } from "antd/es/select"
 
 export const useAirportsDatabase = () => {
   return React.useMemo(() => {

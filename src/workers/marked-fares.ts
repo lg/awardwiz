@@ -140,5 +140,4 @@ await new Listr<{}>(
 
 console.log("done")
 
-// eslint-disable-next-line unicorn/no-process-exit
 process.exit(0)   // TODO: this shouldn't be needed, but there's a leak somewhere with the ReactQuery QueryClient or nearby

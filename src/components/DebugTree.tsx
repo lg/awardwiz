@@ -1,7 +1,8 @@
-import { Popover, Tree } from "antd"
+import { Popover, Tree, Typography } from "antd"
 import React, { ReactNode, useEffect } from "react"
-import Text from "antd/lib/typography/Text"
 import { LoadingOutlined, StopOutlined } from "@ant-design/icons"
+
+const { Text } = Typography
 
 export type DebugTreeNode = { key: string, parentKey: string, stableIcon: ReactNode, isLoading: boolean, text: ReactNode, error?: boolean, details?: ReactNode }
 export type DebugTreeNodeComputed = { key: string, title: ReactNode, icon: ReactNode, children: DebugTreeNodeComputed[] }

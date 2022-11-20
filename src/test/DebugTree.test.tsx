@@ -27,14 +27,14 @@ describe("DebugTree", () => {
     expect(out.getByText(/abc/i)).toHaveStyle("color: red")
   })
 
-  it("should support items that are loading", () => {
+  it("should support items that are loading", async () => {
     // loading should show a spinner
     const items = [{ ...defaultItem, isLoading: true }]
     const out = render(<DebugTree debugTree={items} rootKey="root" />)
     expect(out.queryByRole("img", { name: "loading" })).toBeInTheDocument()
 
     // removing the loading flag and waiting should show the total time in the text and stop the spinner
-    act(() => {
+    await act(() => {
       items[0].isLoading = false
       vi.advanceTimersByTime(1500)
     })
@@ -43,7 +43,7 @@ describe("DebugTree", () => {
     expect(out.queryByRole("img", { name: "loading" })).not.toBeInTheDocument()
 
     // resetting loading flag should show spinner and remove the total-time from before
-    act(() => { items[0].isLoading = true })
+    await act(() => { items[0].isLoading = true })
     out.rerender(<DebugTree debugTree={items} rootKey="root" />)
     expect(out.queryByRole("img", { name: "loading" })).toBeInTheDocument()
     expect(out.queryByText(/\(.*?s\)/)).not.toBeInTheDocument()

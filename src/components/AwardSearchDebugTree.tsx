@@ -1,6 +1,6 @@
 import * as ReactQuery from "@tanstack/react-query"
 import { DebugTree, DebugTreeNode } from "./DebugTree"
-import Text from "antd/lib/typography/Text"
+import { Typography } from "antd"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
@@ -8,6 +8,8 @@ import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute
 import { SearchQuery } from "../types/scrapers"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
 import { ScraperResultDetails } from "./ScraperResultDetails"
+
+const { Text } = Typography
 
 export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors }: AwardSearchProgress & { searchQuery: SearchQuery }) => {
   const airlineNameByCode = (code: string) => airlineRoutes.find((airlineRoute) => airlineRoute.airlineCode === code)?.airlineName ?? code

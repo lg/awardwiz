@@ -1,5 +1,4 @@
-import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
-import { ColumnsType, ColumnType } from "antd/lib/table"
+import { Badge, ConfigProvider, Empty, Table, TableColumnType, TableColumnsType, Tag } from "antd"
 import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
@@ -31,14 +30,14 @@ const airlineLogoUrl = (airlineCode: string) => {
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
 
-  const columns: ColumnsType<FlightWithFares> = [
+  const columns: TableColumnsType<FlightWithFares> = [
     {
       title: "Flight",
       dataIndex: "flightNo",
       sorter: (recordA, recordB) => recordA.flightNo.localeCompare(recordB.flightNo),
       render: (flightNo: string, flight) => (
         <>
-          <img style={{ height: 16, marginBottom: 3, borderRadius: 3 }} src={airlineLogoUrl(flightNo.slice(0, 2))} alt={flightNo.slice(0, 2)} />
+          <img style={{ height: 16, verticalAlign: "textBottom", borderRadius: 3 }} src={airlineLogoUrl(flightNo.slice(0, 2))} alt={flightNo.slice(0, 2)} />
           <span style={{ marginLeft: 8 }}>{flightNo}</span>
         </>
       )
@@ -86,11 +85,11 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       dataIndex: "destination",
       sorter: (recordA, recordB) => recordA.destination.localeCompare(recordB.destination),
     },
-    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((searchResult) => searchResult.fares.some((fare) => fare.cabin === col.key))).map((column): ColumnType<FlightWithFares> => ({
+    ...[{ title: "Economy", key: "economy" }, { title: "Business", key: "business" }, { title: "First", key: "first" }].filter((col) => results?.some((searchResult) => searchResult.fares.some((fare) => fare.cabin === col.key))).map((column): TableColumnType<FlightWithFares> => ({
       title: column.title,
       key: column.key,
-      render: (_, record) => renderFare(record, column.key),
-      sorter: (recordA, recordB) => {
+      render: (_: any, record: FlightWithFares) => renderFare(record, column.key),
+      sorter: (recordA: FlightWithFares, recordB: FlightWithFares) => {
         const fareAMiles = lowestFare(recordA.fares, column.key)?.miles ?? Number.MAX_VALUE
         const fareBMiles = lowestFare(recordB.fares, column.key)?.miles ?? Number.MAX_VALUE
         return fareAMiles - fareBMiles
