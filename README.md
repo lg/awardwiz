@@ -17,26 +17,19 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 
 ## Architecture
 
-The Typescript React-based frontend calls a [Browserless](https://github.com/browserless/chrome) backend to scrape airlines' award search pages with [Puppeteer](https://github.com/puppeteer/puppeteer). Backend database for user prefs is [Supabase](https://supabase.com). [Vite](https://github.com/vitejs/vite) is used as the dev server (`pnpm start`), [Vitest](https://github.com/vitest-dev/vitest) is used for tests (`pnpm test` and `pnpm test-scrapers`). UI framework is [Ant Design](https://github.com/ant-design/ant-design/). The package manager recommended is [pnpm](https://github.com/pnpm/pnpm).
+The Typescript React-based frontend calls a [Browserless](https://github.com/browserless/chrome) backend to scrape airlines' award search pages with [Puppeteer](https://github.com/puppeteer/puppeteer). Backend database for user prefs is [Firebase](http://firebase.google.com). [Vite](https://github.com/vitejs/vite) is used as the dev server (`pnpm start`), [Vitest](https://github.com/vitest-dev/vitest) is used for tests (`pnpm test` and `pnpm test-scrapers`). UI framework is [Ant Design](https://github.com/ant-design/ant-design/). The recommended package manager is [pnpm](https://github.com/pnpm/pnpm).
 
 Source code formatting and acceptable patterns are highly opinionated and enforced via eslint. This is checked as a git commit hook but can also be run with `pnpm run check` (also checks dependencies, and builds the page).
 
-Several environment variables are *required* to start the server and frontend. It's not ideal right now, and I hope to remove these as requirements for hosting at least locally soon. These can be listed in a `.env.local` file:
+## Running locally
 
-- `VITE_GOOGLE_CLIENT_ID`: A Google client ID with OAuth capabilities (used for identity of users).
-- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_SERVICE_KEY`: Supabase credentials for storing user settings and scraper logs. Dont forget to edit `src/scrapers/common.ts` with these values too. Be careful not to expose your service key in public.
-- `VITE_BROWSERLESS_AWS_PROXY_URL` and `VITE_BROWSERLESS_AWS_PROXY_API_KEY`: AWS API Gateway credentials for fronting browserless
-- `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. Be careful not to expose in public.
-- `VITE_FIREBASE_USE_EMULATORS` optionally set to `true` will use emulators instead of production credentials
+A few environment variables are required to start the server and frontend. It's not ideal right now, and I hope to remove these as requirements for hosting at least locally soon. These can be listed in a `.env.local` file:
+
+- `VITE_GOOGLE_CLIENT_ID`: A Google client ID with OAuth capabilities (used for identity of users). You can get this from your Firebase Auth instance (Authentication > Sign-in method > Google > Web SDK confirmation > Web client ID)
+- `VITE_FIREBASE_CONFIG_JSON`: Set to the config information (in JSON format with quoted attribute names) from 'Settings > Project settings > General' and scroll to the bottom and select Config for your web app. The format is: `{"apiKey": "...", "authDomain": "...", ...}`
+- `VITE_USE_FIREBASE_EMULATORS`: When running locally, setting this to `true` will use the default Firebase emulators. Don't forget to start them using `firebase emulators:start`.
+- `VITE_BROWSERLESS_AWS_PROXY_URL` and `VITE_BROWSERLESS_AWS_PROXY_API_KEY`: AWS API Gateway credentials for fronting Browserless. **TODO:** Don't require these be set.
+- `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. **This is a secret and should not be public**
+- `VITE_FIREBASE_SERVICE_ACCOUNT_JSON`: Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts' from when you created it. If you create a new one now, note the old one will be immediately disabled. The service account is used by workers. The format is: `{"type": "service_account", "project_id": "awardwiz", "private_key_id": "...", ...}`. **This is a secret and should not be public**
 
 You can start a local instance of Browserless using `docker-compose up`.
-
-## Firebase migration TODO
-
-- [X] Comment out Supabase things and make the search still work
-- [X] Add in Firebase SDK and get auth to work
-- [X] Bring back ability to mark fares
-- [X] Create Firebase config files + emulator setup
-- [X] Bring back emails when marked fares become available
-- [ ] Bring back scraper logging except maybe via Google Analytics
-- [ ] Update README to remove references to Supabase

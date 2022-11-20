@@ -4,9 +4,6 @@ interface ImportMetaEnv {
   /** Disables using localStorage to store React Query state if "true" (default: "false") */
   readonly VITE_REACT_QUERY_CACHE_OFF: string
 
-  /** Shows the React Query dev tools flower in the bottom left if "true" (default: "false") */
-  readonly VITE_REACT_QUERY_DEV_TOOLS: string
-
   /** Google client id for oauth (ex. "123123123213-jgjkhewfgj23hgjkhgfk3.apps.googleusercontent.com") */
   readonly VITE_GOOGLE_CLIENT_ID: string
 
@@ -25,6 +22,17 @@ interface ImportMetaEnv {
 
   /** Set to true to use the local emulators for Firebase versus production */
   readonly VITE_USE_FIREBASE_EMULATORS: string
+
+  /** Set to the config information (in JSON format with quoted attribute names) from
+   * 'Settings > Project settings > General' and scroll to the bottom and select Config for your web app.
+   * The format is: {"apiKey": "...", "authDomain": "...", ...} */
+  readonly VITE_FIREBASE_CONFIG_JSON: string
+
+  /** Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts'
+   * from when you created it. If you create a new one now, note the old one will be immediately disabled.
+   * The service account is used by workers.
+   * The format is: {"type": "service_account", "project_id": "awardwiz", "private_key_id": "...", ...} */
+  readonly VITE_FIREBASE_SERVICE_ACCOUNT_JSON: string
 }
 
 // eslint-disable-next-line no-unused-vars

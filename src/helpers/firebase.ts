@@ -2,18 +2,9 @@ import { initializeApp } from "firebase/app"
 import { connectAuthEmulator, getAuth } from "firebase/auth"
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore"
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCgu7EVRrz3LQnDypCJJDOX3BRUYHqVZus",
-  authDomain: "awardwiz.firebaseapp.com",
-  projectId: "awardwiz",
-  storageBucket: "awardwiz.appspot.com",
-  messagingSenderId: "416370374153",
-  appId: "1:416370374153:web:12727dfb0493bf268b6ad8",
-  measurementId: "G-6JPRBFR4Y6"
-}
-
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
+if (!Object.keys(import.meta.env).includes("VITE_FIREBASE_CONFIG_JSON")) throw new Error("Missing VITE_FIREBASE_CONFIG_JSON environment variable")
+const app = initializeApp(JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG_JSON))
 export const firebaseAuth = getAuth(app)
 export const firestore = getFirestore(app)
 

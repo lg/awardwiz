@@ -5,17 +5,22 @@ services:
     environment:
       - DEBUG=browserless:*
       - MAX_CONCURRENT_SESSIONS=10
-      - CONNECTION_TIMEOUT=60000
+      - CONNECTION_TIMEOUT=30000
       - MAX_QUEUE_LENGTH=20
       - DEMO_MODE=false
       - ENABLE_DEBUGGER=true
       - ENABLE_CORS=true
       - PORT=4000
+      - WORKSPACE_DIR=/home/browserless
       - WORKSPACE_DELETE_EXPIRED=true
-
+      - WORKSPACE_EXPIRE_DAYS=3
       - DEFAULT_HEADLESS=false
       - DEFAULT_BLOCK_ADS=true
       - DEFAULT_STEALTH=true
+      - PREBOOT_CHROME=true
+      - EXIT_ON_HEALTH_FAILURE=true
+      - DEFAULT_LAUNCH_ARGS=[\"--disk-cache-dir=/tmp/browsercache\"]
+      - FUNCTION_EXTERNALS=[\"node-fetch\"]
     container_name: "browserless"
     restart: always
     ports:

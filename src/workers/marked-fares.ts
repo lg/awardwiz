@@ -17,12 +17,17 @@ dayjs.extend(timezone)
 for (const key of ["VITE_BROWSERLESS_AWS_PROXY_URL", "VITE_BROWSERLESS_AWS_PROXY_API_KEY"])
   if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
 
+let app: admin.app.App
 if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") {
   console.log("\u001B[33mUsing Firebase emulators\u001B[0m")
   process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"
   process.env.FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
+  app = admin.initializeApp({ projectId: "awardwiz" })
+
+} else {
+  if (!Object.keys(import.meta.env).includes("VITE_FIREBASE_SERVICE_ACCOUNT_JSON")) throw new Error("Missing VITE_FIREBASE_SERVICE_ACCOUNT_JSON environment variable")
+  app = admin.initializeApp({ credential: admin.credential.cert(JSON.parse(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT_JSON)) })
 }
-const app = admin.initializeApp({ credential: admin.credential.cert(`${process.cwd()}/firebase-serviceaccount.json`) })
 
 //////////////////////////////////////
 

@@ -65,29 +65,6 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
 
   log(`*** Completed scraper ${ errored ? "with error " : ""}after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
 
-  // TODO: implement
-  // eslint-disable-next-line no-unused-vars
-  const fetch = require("node-fetch") // available from browserless
-  // void fetch(SUPABASE_URL, {
-  //   method: "POST",
-  //   headers: {
-  //     "apikey": SUPABASE_KEY_ANON,
-  //     "Authorization": `Bearer ${SUPABASE_KEY_ANON}`,
-  //     "Content-Type": "application/json"
-  //   },
-  //   body: JSON.stringify({
-  //     scraper_name: meta.name,
-  //     search_origin: input.context.origin,
-  //     search_destination: input.context.destination,
-  //     search_departure_date: input.context.departureDate,
-  //     start_utc: new Date(scraperStartTime).toUTCString(),
-  //     duration_ms: Date.now() - scraperStartTime,
-  //     status: errored ? "failure" : "success",
-  //     results: result,
-  //     log: logLines.join("\n"),
-  //   })
-  // })
-
   return {
     data: { flightsWithFares: result, errored, log: logLines },
     type: "application/json",

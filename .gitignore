@@ -31,5 +31,3 @@ src/**/*.schema.d.ts
 tmp.ts
 
 .eslintcache
-
-firebase-serviceaccount.json
