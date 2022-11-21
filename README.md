@@ -15,7 +15,17 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 - *Coming soon* Get emailed when award space opens up
 - *Coming soon* Automatically calculate region-based miles based on published award charts
 
-## Architecture
+<br/>
+
+# Scraper Status
+
+![aa](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aa) ![aeroplan](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aeroplan) ![alaska](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=alaska) ![delta](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=delta) ![jetblue](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=jetblue) ![skiplagged](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skiplagged) ![skyscanner](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skyscanner) ![southwest](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=southwest) ![united](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=united)
+
+(Badges auto-updated twice-daily based on latest [Github Actions test run](https://github.com/lg/awardwiz/actions/workflows/scraper-tests.yaml) and [generator script](https://runkit.com/lg-/637ac74ba242730009cda1f8))
+
+<br/>
+
+# Architecture
 
 The Typescript React-based frontend calls a [Browserless](https://github.com/browserless/chrome) backend to scrape airlines' award search pages with [Puppeteer](https://github.com/puppeteer/puppeteer). Backend database for user prefs is [Supabase](https://supabase.com). [Vite](https://github.com/vitejs/vite) is used as the dev server (`pnpm start`), [Vitest](https://github.com/vitest-dev/vitest) is used for tests (`pnpm test` and `pnpm test-scrapers`). UI framework is [Ant Design](https://github.com/ant-design/ant-design/). The package manager recommended is [pnpm](https://github.com/pnpm/pnpm).
 
