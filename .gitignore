@@ -34,3 +34,4 @@ tmp.ts
 
 # for now config is fully local
 supabase/
+test-results.json

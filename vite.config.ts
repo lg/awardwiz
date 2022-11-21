@@ -44,6 +44,9 @@ export default defineConfig({
       clean: true
     },
     sequence: { shuffle: true },
-    passWithNoTests: true
+    passWithNoTests: true,
+
+    reporters: ["default", "json"],
+    outputFile: "test-results.json"
   }
 })

@@ -22,3 +22,8 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm run test-scrapers
+      - uses: actions/upload-artifact@v3
+        with:
+          name: scraper-test-results
+          path: test-results.json
+          if-no-files-found: error
