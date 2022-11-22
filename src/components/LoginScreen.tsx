@@ -3,61 +3,43 @@ import * as React from "react"
 import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown } from "antd"
 import awardwizImageUrl from "../wizard.png"
 import CarbonLogout from "~icons/carbon/logout"
-import type { Database } from "../types/supabase-types"
-import axios from "axios"
-import { createClient, Session } from "@supabase/supabase-js"
-
-export const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
+import { firebaseAuth } from "../helpers/firebase"
 
 export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   const [message, setMessage] = React.useState<{ type: AlertProps["type"], text: string }>({ type: undefined, text: "" })
-  const [supabaseSession, setSupabaseSession] = React.useState<Session | undefined>()
+  const [user, setUser] = React.useState<User>()
 
   React.useEffect(() => {
     setMessage({ type: "info", text: "Loading..." })
-
-    const loadSession = async () => {
-      const session = await supabase.auth.getSession()
-      if (!session.error) setSupabaseSession(session.data.session ?? undefined)
-    }
-    void loadSession()
-    supabase.auth.onAuthStateChange((event, session) => loadSession())
+    firebaseAuth.onAuthStateChanged((authUser) => {
+      setUser(authUser ?? undefined)
+    })
   }, [])
 
-  const sessionEmail = supabaseSession?.user.email ?? undefined
   React.useEffect(() => {
-    console.log(`Current user logged in: ${sessionEmail ?? "(not logged in)"}`)
-  }, [sessionEmail])
+    console.log(`Current user logged in: ${user?.email ?? "(not logged in)"}`)
+  }, [user])
 
   const onGoogleCredential = async (credentialResponse: CredentialResponse) => {
-    console.log("Google credential received, logging into Supabase...")
+    console.log("Google credential received, logging into Firebase...")
     if (!credentialResponse.credential || !credentialResponse.clientId) { setMessage({ type: "error", text: "Failed to log in with Google" }); return }
 
-    // Supabase seems to not support doing an xhr to get a token (so we don't need to reload the page) natively. We
-    // want this because of the Google One Tap button shouldn't require a redirect like Supabase is expecting. So we're
-    // using an older API to get the session and then we 'refresh' it to get back into the expected Supabase SDK flow.
-    const response = await axios.post<Session>(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/token?grant_type=id_token`, {
-      client_id: credentialResponse.clientId,
-      id_token: credentialResponse.credential,
-      issuer: "https://accounts.google.com",
-      provider: "google"
-    }, { headers: { "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, "apikey": `${import.meta.env.VITE_SUPABASE_ANON_KEY}` } }).catch((error) => {
-      setMessage({ type: "error", text: `Failed to log into Supabase: ${error.response?.data?.message || error.response?.data?.msg || error.message}` })
+    const idToken = credentialResponse.credential
+    const credential = GoogleAuthProvider.credential(idToken)
+    void signInWithCredential(firebaseAuth, credential).catch((error) => {
+      setMessage({ type: "error", text: `Failed to log into Firebase with Google credential: ${error.message}` })
       throw error
     })
-    if (!response.data.user.email) { setMessage({ type: "error", text: "Could not get email address from auth provider" }); return }
-    await supabase.auth.setSession({ refresh_token: response.data.refresh_token, access_token: response.data.access_token })
   }
 
   // Logged in view
-  if (supabaseSession) {
-    const avatarMenuItems = { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => supabase.auth.signOut() }
+  if (user) {
+    const avatarMenuItems = { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => firebaseAuth.signOut() }
     return (
       <>
         <Dropdown menu={avatarMenuItems} trigger={["click"]}>
-          <Avatar src={supabaseSession.user.user_metadata.picture} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>
-            {`${supabaseSession.user.user_metadata.given_name?.toString()[0]}${supabaseSession.user.user_metadata.family_name?.toString()[0]}`.toUpperCase()}
-          </Avatar>
+          <Avatar src={user.photoURL} style={{ cursor: "pointer", float: "right", marginBlockStart: 10, marginInlineEnd: 10 }}>USER</Avatar>
         </Dropdown>
         {children}
       </>

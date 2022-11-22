@@ -1,65 +1,53 @@
-import { createClient } from "@supabase/supabase-js"
-import type { Database } from "../types/supabase-types"
 import { MarkedFare } from "../components/SearchResults"
 import dayjs from "dayjs"
 import LocalizedFormat from "dayjs/plugin/localizedFormat"
-import { genQueryClient, search } from "../helpers/awardSearchStandalone"
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
 import { Listr } from "listr2"
 import { runListrTask } from "../helpers/common"
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
 import notificationEmail from "../../emails/notification.html?raw"
+import admin from "firebase-admin"
 
 dayjs.extend(LocalizedFormat)
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
-for (const key of ["VITE_SUPABASE_URL", "VITE_SUPABASE_SERVICE_KEY", "VITE_BROWSERLESS_AWS_PROXY_URL", "VITE_BROWSERLESS_AWS_PROXY_API_KEY"])
+for (const key of ["VITE_BROWSERLESS_AWS_PROXY_URL", "VITE_BROWSERLESS_AWS_PROXY_API_KEY"])
   if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
 
-const supabase = createClient<Database>(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_SERVICE_KEY)
+let app: admin.app.App
+if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") {
+  console.log("\u001B[33mUsing Firebase emulators\u001B[0m")
+  process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"
+  process.env.FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
+  app = admin.initializeApp({ projectId: "awardwiz" })
 
-const sendNotificationEmail = async (transporter: nodemailer.Transporter, html: string, toAddress: string) => {
-  return transporter.sendMail({
-    from: "\"AwardWiz\" <no-reply@awardwiz.com>",
-    to: toAddress,
-    subject: "AwardWiz Notification",
-    priority: "high",
-    html,
-    attachments: [{
-      filename: "wizard.png",
-      path: "src/wizard.png",
-      cid: "wizard.png",
-    }]
-  })
+} else {
+  if (!Object.keys(import.meta.env).includes("VITE_FIREBASE_SERVICE_ACCOUNT_JSON")) throw new Error("Missing VITE_FIREBASE_SERVICE_ACCOUNT_JSON environment variable")
+  app = admin.initializeApp({ credential: admin.credential.cert(JSON.parse(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT_JSON)) })
 }
 
 //////////////////////////////////////
 
+await runListrTask("Cleaning up old marked fares...", async () => {
+  const earliestDate = dayjs.tz(undefined, "Etc/GMT+12").format("YYYY-MM-DD")   // earliest possible date at UTC-12
+  const oldMarkedFares = await admin.firestore(app)
+    .collection("marked_fares")
+    .where("date", "<", earliestDate)
+    .get()
+  const batch = admin.firestore(app).batch()
+  oldMarkedFares.forEach((oldMarkedFare) => batch.delete(oldMarkedFare.ref))
+  return batch.commit()
+}, (returnData) => `${returnData.length} removed`)
+
 const markedFaresQuery = await runListrTask("Getting all marked fares...", async () => {
-  return supabase
-    .from("cloudstate")
-    .select("user_id, value")
-    .eq("key", "markedFares")
-    .not("value", "eq", "[]")
-    .throwOnError()
-}, (returnData) => `${returnData.data!.length} found`)
-
-const emailsQuery = await runListrTask("Getting all emails...", async () => {
-  return supabase
-    .from("users_clone")
-    .select("id, email")
-    .in("id", markedFaresQuery.data!.map(({ user_id }) => user_id))
-    .throwOnError()
-}, () => "done")
-
-// Add user id and email to each marked fare
-let markedFares = markedFaresQuery.data!.flatMap((item) => {
-  const email = emailsQuery.data!.find((user) => user.id === item.user_id)?.email as string
-  return (item.value as MarkedFare[]).map((markedFare) => ({ ...markedFare, userId: item.user_id, email }))
-})
-
-// Remove all fares from the past
-const toRemove = new Set(markedFares.filter((markedFare) => dayjs(markedFare.date).isBefore(dayjs().startOf("day"))))
-markedFares = markedFares.filter((markedFare) => !toRemove.has(markedFare))
+  return admin.firestore(app)
+    .collection("marked_fares")
+    .get()
+}, (returnData) => `${returnData.size} found`)
+const markedFares = markedFaresQuery.docs.map((doc) => ({ ...doc.data(), id: doc.id } as MarkedFare))
 
 // Prep email transport
 const { transporter, template } = await runListrTask("Creating email transport...", async () => {
@@ -76,10 +64,13 @@ const { transporter, template } = await runListrTask("Creating email transport..
   return { transporter, template }
 }, () => import.meta.env.VITE_SMTP_CONNECTION_STRING ? "using prod SMTP" : "\u001B[33musing test account\u001B[0m")
 
+// Needs to be imported here because of some 'fs' hook happydom seems to do which breaks Firebase file opening in initializeApp
+import { genQueryClient, search } from "../helpers/awardSearchStandalone"
 const qc = genQueryClient() // Use the same query client for all searches for caching
+
 await new Listr<{}>(
-  markedFares.filter((markedFare) => markedFare.email === "trivex@gmail.com").map((markedFare) => ({
-    title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.email}`,
+  markedFares.map((markedFare) => ({
+    title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid}`,
     task: async (_context, task) => {
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
       const foundSaver = results.searchResults.some((result) =>
@@ -95,44 +86,47 @@ await new Listr<{}>(
       return task.newListr<{}>([{
         title: "Sending notification email...",
         task: async (_context2, task2) => {
-          // TODO: make the buttons work
-          const sendResult = await sendNotificationEmail(transporter, template({
-            origin: markedFare.origin,
-            destination: markedFare.destination,
-            date: dayjs(markedFare.date).format("ddd ll"),
-            cabin: `${markedFare.checkCabin.charAt(0).toUpperCase()}${markedFare.checkCabin.slice(1)}`,
-            availability: foundSaver ? "AVAILABLE" : "UNAVAILABLE",
-            availability_color: foundSaver ? "#00aa00" : "#aa0000"
-          }), markedFare.email)
+          const user = await admin.auth(app).getUser(markedFare.uid!)
+          if (user.email !== "trivex@gmail.com") {
+            // eslint-disable-next-line no-param-reassign
+            task2.title = `${task2.title} skipping email for now`
+            return
+          }
+
+          // TODO: make the buttons work and remove the email restriction above
+          const sendResult = await transporter.sendMail({
+            from: "\"AwardWiz\" <no-reply@awardwiz.com>",
+            to: `"${user.displayName ?? user.email!}" <${user.email!}>`,
+            subject: "AwardWiz Notification",
+            priority: "high",
+            html: template({
+              origin: markedFare.origin,
+              destination: markedFare.destination,
+              date: dayjs(markedFare.date).format("ddd ll"),
+              cabin: `${markedFare.checkCabin.charAt(0).toUpperCase()}${markedFare.checkCabin.slice(1)}`,
+              availability: foundSaver ? "AVAILABLE" : "UNAVAILABLE",
+              availability_color: foundSaver ? "#00aa00" : "#aa0000"
+            }),
+            attachments: [{
+              filename: "wizard.png",
+              path: "src/wizard.png",
+              cid: "wizard.png",
+            }]
+          })
 
           // eslint-disable-next-line no-param-reassign
           task2.title = `${task2.title} ${nodemailer.getTestMessageUrl(sendResult) || sendResult.response}`
         }
       }, {
-        title: "Updating db...",
+        title: "Updating marked fare...",
         task: async (_context2, task2) => {
-          const userMarkedFares = await supabase
-            .from("cloudstate")
-            .select("user_id, value")
-            .eq("key", "markedFares")
-            .eq("user_id", markedFare.userId)
-            .single()
-
-          const newMarkedFare: MarkedFare = userMarkedFares.data?.value
-            .find((checkMarkedFare: any) => Object.keys(checkMarkedFare).every((checkKey) => (checkMarkedFare as Record<string, any>)[checkKey] === (markedFare as Record<string, any>)[checkKey]))
-          newMarkedFare.curAvailable = foundSaver
-
-          await supabase
-            .from("cloudstate")
-            .update({value: userMarkedFares.data?.value})
-            .eq("key", "markedFares")
-            .eq("user_id", markedFare.userId)
-            .throwOnError()
+          const docRef = admin.firestore().doc(`marked_fares/${markedFare.id}`)
+          await docRef.update("curAvailable", foundSaver)
 
           // eslint-disable-next-line no-param-reassign
           task2.title = `${task2.title} ok`
         }
-      }], { rendererOptions: { collapse: false } })
+     }], { rendererOptions: { collapse: false } })
     },
     retry: 3,
   })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }

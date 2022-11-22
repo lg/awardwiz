@@ -3,10 +3,12 @@ import { FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
-import { useCloudState } from "../hooks/useCloudState"
 import awardwizImageUrl from "../wizard.png"
 import { FastTooltip } from "./FastTooltip"
 import { default as dayjs } from "dayjs"
+import * as Firestore from "firebase/firestore"
+import { firebaseAuth, firestore } from "../helpers/firebase"
+import React, { useState } from "react"
 
 const triState = (condition: boolean | undefined, trueValue: string, falseValue: string, undefinedValue: string) => {
   if (condition === undefined)
@@ -14,7 +16,7 @@ const triState = (condition: boolean | undefined, trueValue: string, falseValue:
   return condition ? trueValue : falseValue
 }
 
-export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string, curAvailable: boolean | undefined }
+export type MarkedFare = { origin: string, destination: string, date: string, checkFlightNo: string, checkCabin: string, curAvailable: boolean | undefined } & { uid?: string, id?: string }
 
 const lowestFare = (fares: FlightFare[], cabin: string): FlightFare | undefined => {
   const faresForClass = fares.filter((fare) => fare.cabin === cabin)
@@ -28,7 +30,15 @@ const airlineLogoUrl = (airlineCode: string) => {
 }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
-  const { value: markedFares, setValue: setMarkedFares } = useCloudState<MarkedFare[]>("markedFares", [])
+  const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
+
+  React.useEffect(() => {
+    const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
+    const unsubscribe = Firestore.onSnapshot(markedFaresQuery, (snapshot) => {
+      setMarkedFares(snapshot.docs.map((curDoc) => ({ ...curDoc.data(), id: curDoc.id } as MarkedFare)))
+    })
+    return () => { unsubscribe() }
+  }, [])
 
   const columns: TableColumnsType<FlightWithFares> = [
     {
@@ -112,30 +122,31 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
 
     const isSaverFare = record.fares.some((checkFare) => checkFare.isSaverFare && checkFare.cabin === cabin)
 
-    const markedFare = (markedFares ?? []).find((check) =>
+    const existingMarkedFare = markedFares.find((check) =>
       check.checkFlightNo === record.flightNo &&
       check.date.slice(0, 10) === record.departureDateTime.slice(0, 10) &&
       check.checkCabin === cabin)
-    const clickedFare = () => {
-      if (markedFares === undefined) return     // if the user's prefs havent loaded yet, dont allow changes
 
-      if (markedFare) {
-        void setMarkedFares(markedFares.filter((fare) => fare !== markedFare))     // remove the marked fare
+    const clickedFare = async () => {
+      if (existingMarkedFare) {
+        void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
+
       } else {
-        void setMarkedFares([...markedFares, {
+        void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {
+          uid: firebaseAuth.currentUser?.uid,
           origin: record.origin,
           destination: record.destination,
           checkFlightNo: record.flightNo,
           date: record.departureDateTime.slice(0, 10),
           checkCabin: cabin,
           curAvailable: isSaverFare
-        }])    // add the marked fare
+        })
       }
     }
 
     return (
       <FastTooltip title={tooltipContent}>
-        <Badge dot={!!markedFare} offset={[-8, 0]} color="gold">
+        <Badge dot={!!existingMarkedFare} offset={[-8, 0]} color="gold">
           <Tag color={isSaverFare ? "green" : "gold"} onClick={clickedFare} style={{ cursor: "pointer" }}>
             {milesText}{` + ${cashText}`}
           </Tag>

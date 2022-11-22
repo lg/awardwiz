@@ -31,7 +31,4 @@ src/**/*.schema.d.ts
 tmp.ts
 
 .eslintcache
-
-# for now config is fully local
-supabase/
 test-results.json

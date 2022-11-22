@@ -1,6 +1,8 @@
 name: Marked Fares Worker
 on:
   push:
+    branches: ["master"]
+
   schedule:
     - cron: '*/10 * * * *' # every 10 minutes
 
@@ -12,11 +14,11 @@ jobs:
     environment: workers
     env:
       PUPPETEER_SKIP_DOWNLOAD: "true"
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
-      VITE_SUPABASE_SERVICE_KEY: ${{ secrets.VITE_SUPABASE_SERVICE_KEY }}
       VITE_SMTP_CONNECTION_STRING: ${{ secrets.VITE_SMTP_CONNECTION_STRING }}
+      VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
+      VITE_FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.VITE_FIREBASE_SERVICE_ACCOUNT_JSON }}
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4
