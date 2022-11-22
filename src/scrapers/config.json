@@ -50,6 +50,7 @@
     },
     {
       "name": "aeroplan",
+      "disabled": true,
       "supportedAirlines": ["staralliance", "GF", "EY", "JU", "CX", "G3", "OY", "UL", "UK"],
       "nativeAirline": "AC"
     },
