@@ -6,8 +6,10 @@ jobs:
   run-checks:
     name: run-checks
     runs-on: ubuntu-latest
+    environment: ci
     env:
       PUPPETEER_SKIP_DOWNLOAD: "true"
+      VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4
