@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "start": "pnpm run schemas && vite",
     "start-emulators": "pnpm exec firebase emulators:start",
-    "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node",
+    "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch",
     "schemas": "json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "husky install",
     "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test run && SHOW_VIZ=false pnpm build --log-level=error && echo 'ok'",

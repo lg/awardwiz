@@ -4,6 +4,10 @@
 import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCycleEvent } from "puppeteer"
 import type { FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 
+// WARNING: replaced by the compiler (see src/helpers/runScraper.ts)
+const FIREBASE_SCRAPER_RUNS_URL_WITH_KEY = ""
+const FIREBASE_UID = "unknown"
+
 export type ScraperFlowRule = {
   find: string
   type?: string
@@ -64,6 +68,33 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   await input.browser?.close().catch(() => {})
 
   log(`*** Completed scraper ${ errored ? "with error " : ""}after ${Math.round(Date.now() - scraperStartTime) / 1000} seconds with ${result.length} result(s)`)
+
+  // eslint-disable-next-line no-unused-vars
+  const fetch = require("node-fetch") // available from browserless
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (FIREBASE_SCRAPER_RUNS_URL_WITH_KEY !== "" && FIREBASE_UID !== "unknown") {
+    void fetch(`${FIREBASE_SCRAPER_RUNS_URL_WITH_KEY}&documentId=run-${Date.now()}`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        fields: {
+          scraper_name: { stringValue: meta.name },
+          search_origin: { stringValue: input.context.origin },
+          search_destination: { stringValue: input.context.destination },
+          search_departure_date: { stringValue: input.context.departureDate },
+          start_unix: { integerValue: scraperStartTime },
+          duration_ms: { integerValue: Date.now() - scraperStartTime },
+          status: { stringValue: errored ? "failure" : "success" },
+          results: { stringValue: JSON.stringify(result) },
+          log: { stringValue: logLines.join("\n") },
+          uid: { stringValue: FIREBASE_UID }
+        }
+      })
+    })
+  }
 
   return {
     data: { flightsWithFares: result, errored, log: logLines },

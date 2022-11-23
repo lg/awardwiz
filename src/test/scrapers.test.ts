@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { expect, test } from "vitest"
-import { FlightFare, FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
-import * as fs from "node:fs/promises"
-import ts from "typescript"
-import axios from "axios"
+import { FlightFare, FlightWithFares } from "../types/scrapers"
 import { default as dayjs } from "dayjs"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
+import { runScraper } from "../helpers/runScraper"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -39,15 +37,7 @@ const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
 const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
-  const commonTS = await fs.readFile("src/scrapers/common.ts", "utf8")
-  const scraperTS = await fs.readFile(`src/scrapers/${scraperName}.ts`, "utf8")
-  const tsCode = scraperTS.replace(/import .* from "\.\/common"/, commonTS)
-  const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
-
-  const postData: { code: string, context: ScraperQuery } = { code: jsCode, context: { origin: route[0], destination: route[1], departureDate: checkDate } }
-
-
-  const scraperResponse = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY } })
+  const scraperResponse = await runScraper(scraperName, { origin: route[0], destination: route[1], departureDate: checkDate }, ["unknown"], undefined)
   if (scraperResponse.data.errored) throw new Error("Errored in scraper")
   return scraperResponse.data
 }

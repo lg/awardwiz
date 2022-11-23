@@ -22,12 +22,16 @@
       "type": "node",
       "request": "launch",
       "name": "Scraper Remote",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "exec",
+        "vite-node",
+        "src/scrapers/debug.ts",
+        "--",
+        "${input:params}"
+      ],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "program": "${workspaceFolder}/src/scrapers/debug.ts",
-      "preLaunchTask": "tsc: build - src/scrapers/tsconfig.json",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
       "internalConsoleOptions": "openOnSessionStart",
-      "args": ["${input:params}"]
     }
   ],
   "inputs": [

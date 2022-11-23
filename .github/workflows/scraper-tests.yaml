@@ -14,6 +14,7 @@ jobs:
       VITE_LIVE_SCRAPER_TESTS: 1
       VITE_BROWSERLESS_AWS_PROXY_URL: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_URL }}
       VITE_BROWSERLESS_AWS_PROXY_API_KEY: ${{ secrets.VITE_BROWSERLESS_AWS_PROXY_API_KEY }}
+      VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4

@@ -1,15 +1,14 @@
 import * as ReactQuery from "@tanstack/react-query"
 import axios from "axios"
-import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, BrowserlessPostData, FlightAmenities } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities } from "../types/scrapers"
 import scrapersRaw from "../scrapers/config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import type { FlightRadar24Response } from "../scrapers/samples/fr24"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
+import { runScraper } from "../helpers/runScraper"
 
 export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
-
-const scraperCode = import.meta.glob("../scrapers/*.ts", { as: "raw" })
 
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
@@ -174,20 +173,7 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
   meta.curRetries += 1  // starts at -1
   const scraperToRun = meta.scraperToRun
 
-  const scraperPath = (name: string) => {
-    const localPath = Object.keys(scraperCode).find((scraperKey) => scraperKey.includes(`${name}.ts`))
-    if (!localPath) throw new Error(`Could not find scraper ${name}`)
-    return localPath
-  }
-
-  const tsCodeCommon = await scraperCode[scraperPath("common")]()
-  let tsCode = await scraperCode[scraperPath(scraperToRun.scraperName)]()
-  tsCode = tsCode.replace(/import .* from "\.\/common"/, tsCodeCommon)
-  const ts = await import("typescript")
-  const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
-
-  const postData: BrowserlessPostData = { code: jsCode, context: { ...scraperToRun.forDatedRoute } }
-  const response = await axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }).catch((error) => {
+  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, queryKey, signal).catch((error) => {
     throw { message: error.message, log: [ ...meta.prevLog, `*** Error calling scraper: ${error.messsage}` ], name: "ScraperError" } as ScraperError
   })
 
