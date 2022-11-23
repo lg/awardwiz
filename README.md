@@ -19,7 +19,7 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 
 # Scraper Status
 
-![aa](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aa) ![aeroplan](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aeroplan) ![alaska](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=alaska) ![delta](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=delta) ![jetblue](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=jetblue) ![skiplagged](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skiplagged) ![skyscanner](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skyscanner) ![southwest](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=southwest) ![united](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=united)
+![aa](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aa&nocache) ![aeroplan](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=aeroplan&nocache) ![alaska](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=alaska&nocache) ![delta](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=delta&nocache) ![jetblue](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=jetblue&nocache) ![skiplagged](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skiplagged&nocache) ![skyscanner](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=skyscanner&nocache) ![southwest](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=southwest&nocache) ![united](https://untitled-n0tvu4usv9sd.runkit.sh/badge?scraper=united&nocache)
 
 (Badges auto-updated twice-daily based on latest [Github Actions test run](https://github.com/lg/awardwiz/actions/workflows/scraper-tests.yaml) and [generator script](https://runkit.com/lg-/637ac74ba242730009cda1f8))
 
