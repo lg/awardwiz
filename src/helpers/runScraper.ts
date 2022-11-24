@@ -17,7 +17,7 @@ export const runScraper = async (scraperName: string, datedRoute: DatedRoute, qu
   const tsCodeCommon = await scraperCode[scraperPath("common")]()
   let tsCode = await scraperCode[scraperPath(scraperName)]()
   tsCode = tsCode.replace(/import .* from "\.\/common"/, tsCodeCommon)
-  tsCode = tsCode.replace("const LOKI_LOGGING_URL = \"\"", `const LOKI_LOGGING_URL = "${import.meta.env.VITE_LOKI_LOGGING_URL}"`)
+  tsCode = tsCode.replace("const LOKI_LOGGING_URL = \"\"", `const LOKI_LOGGING_URL = "${import.meta.env.VITE_LOKI_LOGGING_URL || ""}"`)
   tsCode = tsCode.replace("const FIREBASE_UID = \"unknown\"", `const FIREBASE_UID = "${firebaseAuth.currentUser?.uid ?? "unknown"}"`)
 
   const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
