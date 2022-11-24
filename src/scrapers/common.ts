@@ -5,8 +5,8 @@ import type { BrowserContext, ElementHandle, HTTPResponse, Page, PuppeteerLifeCy
 import type { FlightWithFares, ScraperQuery, ScraperResponse } from "../types/scrapers"
 
 // WARNING: replaced by the compiler (see src/helpers/runScraper.ts)
-const FIREBASE_SCRAPER_RUNS_URL_WITH_KEY = ""
 const FIREBASE_UID = "unknown"
+const LOKI_LOGGING_URL = ""
 
 export type ScraperFlowRule = {
   find: string
@@ -72,26 +72,26 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   // eslint-disable-next-line no-unused-vars
   const fetch = require("node-fetch") // available from browserless
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (FIREBASE_SCRAPER_RUNS_URL_WITH_KEY !== "" && FIREBASE_UID !== "unknown") {
-    void fetch(`${FIREBASE_SCRAPER_RUNS_URL_WITH_KEY}&documentId=run-${Date.now()}`, {
+  if (LOKI_LOGGING_URL && FIREBASE_UID !== "unknown") {
+    void fetch(LOKI_LOGGING_URL, {
       method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        fields: {
-          scraper_name: { stringValue: meta.name },
-          search_origin: { stringValue: input.context.origin },
-          search_destination: { stringValue: input.context.destination },
-          search_departure_date: { stringValue: input.context.departureDate },
-          start_unix: { integerValue: scraperStartTime },
-          duration_ms: { integerValue: Date.now() - scraperStartTime },
-          status: { stringValue: errored ? "failure" : "success" },
-          results: { stringValue: JSON.stringify(result) },
-          log: { stringValue: logLines.join("\n") },
-          uid: { stringValue: FIREBASE_UID }
-        }
+        streams: [{
+          stream: {"app": "scraper-run"},
+          values: [[ (Date.now() * 1000000).toString(), JSON.stringify({
+            scraper_name: meta.name,
+            search_origin: input.context.origin,
+            search_destination: input.context.destination,
+            search_departure_date: input.context.departureDate,
+            start_unix: scraperStartTime,
+            duration_ms: Date.now() - scraperStartTime,
+            status: errored ? "failure" : "success",
+            results: JSON.stringify(result),
+            log: logLines.join("\n"),
+            uid: FIREBASE_UID
+          })]]
+        }]
       })
     })
   }

@@ -13,6 +13,9 @@ interface ImportMetaEnv {
   /** The x-api-key to pass through to Browserless calls (for aws api gateway) */
   readonly VITE_BROWSERLESS_AWS_PROXY_API_KEY: string
 
+  /** The url to log scraper results to ex: https://123456:apikey@logs-prod3.grafana.net/loki/api/v1/push (optional) */
+  readonly VITE_LOKI_LOGGING_URL: string
+
   /** Set this to run scraper tests live against production */
   readonly VITE_LIVE_SCRAPER_TESTS: string
 
