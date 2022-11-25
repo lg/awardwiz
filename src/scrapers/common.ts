@@ -149,7 +149,10 @@ export const gotoPage = async (page: Page, url: string, waitUntil: PuppeteerLife
   log(`Going to ${url}`)
   const load = await page.goto(url, { waitUntil, timeout })
   if (load && load.status() !== 200) {
-    log(await load.text())
+    const pageText = await load.text()
+    if (pageText.includes("<H1>Access Denied</H1>"))
+      throw new Error(`Access Denied while loading page (status: ${load.status()}`)
+    log(pageText)
     throw new Error(`Page loading failed with status ${load.status()}`)
   }
 

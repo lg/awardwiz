@@ -37,8 +37,11 @@ const scrapers: ScraperConfig = import.meta.env.VITE_LIVE_SCRAPER_TESTS ? [
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
 const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
-  const scraperResponse = await runScraper(scraperName, { origin: route[0], destination: route[1], departureDate: checkDate }, ["unknown"], undefined)
-  if (scraperResponse.data.errored) throw new Error("Errored in scraper")
+  const scraperResponse = await runScraper(scraperName, { origin: route[0], destination: route[1], departureDate: checkDate }, ["unknown"], undefined).catch((e: Error) => {
+    throw new Error(`Axios errored in calling scraper: ${e.message}`)
+  })
+  if (scraperResponse.data.errored)
+    throw new Error(`Errored in scraper\n\n${scraperResponse.data.log.join("\n")}`)
   return scraperResponse.data
 }
 
