@@ -1,0 +1,18 @@
+{
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "./node_modules",
+    "./lib"
+  ],
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": "lib",
+    "sourceMap": true,
+  }
+}

@@ -17,7 +17,8 @@
     "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test run && SHOW_VIZ=false pnpm build --log-level=error && echo 'ok'",
     "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm npm-check -u",
     "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch NODE_NO_WARNINGS=1 vite-node src/workers/marked-fares.ts",
-    "preview-email-worker": "vite-node src/workers/preview-email.ts"
+    "preview-email-worker": "vite-node src/workers/preview-email.ts",
+    "deploy-functions": "pnpm exec firebase deploy --only functions"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"
