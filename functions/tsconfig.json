@@ -14,5 +14,6 @@
     "noEmit": false,
     "outDir": "lib",
     "sourceMap": true,
+    "esModuleInterop": true
   }
 }

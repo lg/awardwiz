@@ -17,7 +17,10 @@
   },
   "main": "lib/index.js",
   "dependencies": {
-    "firebase-functions": "4.1.0"
+    "@sparticuz/chromium": "^108.0.1",
+    "firebase-admin": "^11.3.0",
+    "firebase-functions": "4.1.0",
+    "playwright-core": "^1.28.1"
   },
   "devDependencies": {
     "depcheck": "^1.4.3",
