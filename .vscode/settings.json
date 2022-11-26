@@ -9,11 +9,14 @@
     "**/.svn": true,
     "**/.hg": true,
     "**/CVS": true,
-    ".eslintcache": true,
-    "node_modules": true,
+    "**/.eslintcache": true,
+    "**/node_modules": true,
     "coverage": true,
     "src/scrapers/dist": true,
+    "functions/lib": true,
     "old": true,
-    "dist": true
+    "**/dist": true,
+    "**/*-debug.log": true,
+    "stats.html": true
   }
 }
