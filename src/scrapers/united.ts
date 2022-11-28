@@ -1,4 +1,4 @@
-import type { FlightWithFares } from "../types/scrapers"
+import type { FlightWithFares, ScraperQuery } from "../types/scrapers"
 import { browserlessInit, BrowserlessInput, gotoPage, log, processScraperFlowRules, Scraper, ScraperMetadata } from "./common"
 import type { Trip, UnitedResponse } from "./samples/united"
 
@@ -34,11 +34,14 @@ export const scraper: Scraper = async (page, query) => {
 
   const errorResponse = page.waitForSelector(".atm-c-alert--error .atm-c-btn__text")
     .then((item) => (item?.evaluate((node) => node.textContent ?? undefined)))
+    .then((item) => { log(`Alert from United: ${item}`); return item })
     .catch(() => undefined)
   const response = await Promise.race([fetchFlights, errorResponse])
 
   if (response === undefined || typeof response === "string") {
     if (response?.includes("the airport is not served"))  // invalid airport code
+      return []
+    if (response?.includes("One or more of the flights on your trip is earlier than the flight before it"))   // date in the past
       return []
     throw new Error(`Error fetching flights: ${response ?? "unknown"}`)
   }
@@ -46,14 +49,14 @@ export const scraper: Scraper = async (page, query) => {
   log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
   if ((response.data?.Trips || []).length > 0) {
-    const flights = standardizeResults(response.data!.Trips[0])
+    const flights = standardizeResults(query, response.data!.Trips[0])
     flightsWithFares.push(...flights)
   }
 
   return flightsWithFares
 }
 
-const standardizeResults = (unitedTrip: Trip) => {
+const standardizeResults = (query: ScraperQuery, unitedTrip: Trip) => {
   const results: FlightWithFares[] = []
   for (const flight of unitedTrip.Flights) {
     const result: FlightWithFares = {
@@ -75,6 +78,8 @@ const standardizeResults = (unitedTrip: Trip) => {
     if (flight.Origin !== (unitedTrip.RequestedOrigin || unitedTrip.Origin))
       continue
     if (flight.Destination !== (unitedTrip.RequestedDestination || unitedTrip.Destination))
+      continue
+    if (result.departureDateTime.substring(0, 10) !== query.departureDate.substring(0, 10))
       continue
 
     // United's API has a way of returning flights with more connections than asked
