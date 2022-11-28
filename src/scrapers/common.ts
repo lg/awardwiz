@@ -72,7 +72,7 @@ export const browserlessInit = async (meta: ScraperMetadata, scraper: Scraper, i
   // eslint-disable-next-line no-unused-vars
   const fetch = require("node-fetch") // available from browserless
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (LOKI_LOGGING_URL && FIREBASE_UID !== "unknown") {
+  if (LOKI_LOGGING_URL) {
     void fetch(LOKI_LOGGING_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
