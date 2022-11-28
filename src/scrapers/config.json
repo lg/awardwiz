@@ -67,6 +67,7 @@
     },
     {
       "name": "jetblue",
+      "disabled": true,
       "supportedAirlines": ["B6"],
       "nativeAirline": "B6"
     },
