@@ -7,7 +7,7 @@ const [origin, destination, departureDate, scraper, mode, ip] = process.argv[2].
 const mainRemote = (async () => {
   const startTime = Date.now()
   const query = { origin, destination, scraper, departureDate }
-  const raw = await runScraper(query.scraper, query, ["unknown"], undefined).catch((error: AxiosError) => error)
+  const raw = await runScraper(query.scraper, query, ["debug_script"], undefined).catch((error: AxiosError) => error)
 
   console.log(`completed in: ${(Date.now() - startTime).toLocaleString()} ms`)
   if (raw instanceof AxiosError) {

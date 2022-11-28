@@ -12,6 +12,9 @@
         "vite-node",
         "src/workers/marked-fares.ts"
       ],
+      "env": {
+        "VITE_LOKI_LOGGING_UID": "debug_marked_fares_worker"
+      },
       "runtimeExecutable": "pnpm",
       "skipFiles": [
         "<node_internals>/**"
@@ -30,6 +33,9 @@
         "--",
         "${input:params}"
       ],
+      "env": {
+        "VITE_LOKI_LOGGING_UID": "debug_scraper_script"
+      },
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "internalConsoleOptions": "openOnSessionStart",
     }
