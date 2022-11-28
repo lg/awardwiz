@@ -125,7 +125,7 @@ export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
 const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[] | undefined> => {
   const result = await scraper(page, input.context).catch(async (error) => {
     if (page.isClosed()) return undefined
-    log("* Error in scraper, taking screenshot *\n", error)
+    log("* Error in scraper, taking screenshot *")
     await screenshot(page)
     return undefined
   })
