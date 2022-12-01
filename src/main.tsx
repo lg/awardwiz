@@ -36,5 +36,10 @@ createRoot(document.querySelector("#root")!).render(
     <LoginScreen>
       <FlightSearch />
     </LoginScreen>
+
+    <div style={{position: "fixed", bottom: 0, right: 0, padding: 5, backgroundColor: "#FFF9CC" }}>
+      <a href="https://awardwiz.grafana.net/public-dashboards/48c620f74daf42b4b24d0b1cf86300f5">Stats</a>
+      <a href="https://github.com/lg/awardwiz" style={{marginLeft: 10}}>Github</a>
+    </div>
   </QueryClientProvider>
 )
