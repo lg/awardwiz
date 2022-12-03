@@ -31,15 +31,8 @@ export const scraper: Scraper = async (page, query) => {
 
   if (htmlResponse.includes("div class=\"px-captcha-error-header\""))
     throw new Error("Perimeter-X captcha while loading xhr")
-
-  const errorText = htmlResponse.match(/<p class="form-error-msg">(.*)<\/p>/)
-  if (errorText) {
-    if (errorText[1] === "There are no flights for the destination city.") {
-      return []
-    } else {
-      throw new Error(`Result error: ${errorText[1]}`)
-    }
-  }
+  if (htmlResponse.includes("There are no flights for the destination city.") || htmlResponse.includes("All flights are full. Please try selecting a different date."))
+    return []
 
   if (!htmlResponse.includes("<title>Available Flights | Alaska Airlines Mobile</title>"))
     throw new Error(`Unexpected result: ${htmlResponse}`)
