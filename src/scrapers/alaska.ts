@@ -11,7 +11,7 @@ const meta: ScraperMetadata = {
 
 export const scraper: Scraper = async (page, query) => {
   // warm the browser up
-  await gotoPage(page, "https://m.alaskaair.com/shopping/?timeout=true")
+  await gotoPage(page, "https://m.alaskaair.com/shopping/?timeout=true", undefined, 10000)
 
   log("doing xhr")
   const htmlResponse = await page.evaluate(async (context: ScraperQuery) => {
@@ -20,7 +20,7 @@ export const scraper: Scraper = async (page, query) => {
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
       "content-type": "application/x-www-form-urlencoded",
       origin: "https://m.alaskaair.com",
-      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
+      "user-agent": navigator.userAgent
     }
     options.body = `CacheId=&ClientStateCode=CA&SaveFields.DepShldrSel=False&SaveFields.RetShldrSel=False&SaveFields.SelDepOptId=-1&SaveFields.SelDepFareCode=&SaveFields.SelRetOptId=-1&SaveFields.SelRetFareCode=&SearchFields.IsAwardBooking=true&SearchFields.IsAwardBooking=false&SearchFields.SearchType=OneWay&SearchFields.DepartureCity=${context.origin}&SearchFields.ArrivalCity=${context.destination}&SearchFields.DepartureDate=${context.departureDate}&SearchFields.ReturnDate=&SearchFields.NumberOfTravelers=1&SearchFields.PriceType=Lowest&SearchFields.UpgradeOption=none&SearchFields.DiscountCode=&DiscountCode=&SourcePage=Search&deals-link=&SearchFields.IsCalendar=false`
     options.method = "POST"
@@ -28,6 +28,21 @@ export const scraper: Scraper = async (page, query) => {
     const response = await fetch("https://m.alaskaair.com/shopping/flights", options)
     return response.text()
   }, query)
+
+  if (htmlResponse.includes("div class=\"px-captcha-error-header\""))
+    throw new Error("Perimeter-X captcha while loading xhr")
+
+  const errorText = htmlResponse.match(/<p class="form-error-msg">(.*)<\/p>/)
+  if (errorText) {
+    if (errorText[1] === "There are no flights for the destination city.") {
+      return []
+    } else {
+      throw new Error(`Result error: ${errorText[1]}`)
+    }
+  }
+
+  if (!htmlResponse.includes("<title>Available Flights | Alaska Airlines Mobile</title>"))
+    throw new Error(`Unexpected result: ${htmlResponse}`)
 
   log("parsing")
   await page.setContent(htmlResponse)
@@ -63,8 +78,8 @@ export const scraper: Scraper = async (page, query) => {
         destination,
         departureDateTime: `${departureDate} ${time12to24(departureTime[0])}:00`,
         arrivalDateTime: `${addDays ? addToDate(departureDate, Number.parseInt(addDays[1], 10)) : departureDate} ${time12to24(arrivalTime[0])}:00`,
-        duration: 0,                    // filled in properly in the next step
-        aircraft: detailsUrl,           // filled in properly in the next step
+        duration: 0,
+        aircraft: undefined,
         amenities: {
           hasWiFi: undefined,         // TODO: switch to desktop version which does have the indicator (search LAX-LIH for an AA award with it)
           hasPods: undefined,
@@ -89,27 +104,7 @@ export const scraper: Scraper = async (page, query) => {
     }).filter((flight) => !!flight)
   }) as FlightWithFares[] // weird this is required to cancel out the undefineds
 
-  // Get the aircraft type for each flight from the details page
-  log("getting aircraft details")
-  const flights: FlightWithFares[] = []
-  for await (const flight of parsedResults) {
-    await gotoPage(page, flight.aircraft!)
-
-    const durationDetails = await page.$$eval(".optionDetail .clear", (items: Element[]) => items.map((item) => item.textContent))
-    const durationMatch = durationDetails[0]?.match(/Duration: (\d*?)h (\d+?)m/) ?? durationDetails[0]?.match(/Duration: (\d+?)m/)
-    if (!durationMatch)
-      throw new Error(`Invalid duration '${durationDetails[0]}' for flight number ${flight.flightNo}!`)
-    const duration = durationMatch.length === 3 ? Number.parseInt(durationMatch[1], 10) * 60 + Number.parseInt(durationMatch[2], 10) : Number.parseInt(durationMatch[1], 10)
-
-    const aircraftDetails = await page.$$eval(".detailinfo", (items: Element[]) => items.map((item) => item.textContent))
-    const aircraft = aircraftDetails[1]?.replace(/[\t\n\r]/g, "")
-    if (!aircraft)
-      throw new Error(`Invalid aircraft type for flight number ${flight.flightNo}!`)
-
-    flights.push({ ...flight, aircraft, duration })
-  }
-
-  return flights
+  return parsedResults
 }
 
 module.exports = (input: BrowserlessInput) => browserlessInit(meta, scraper, input)

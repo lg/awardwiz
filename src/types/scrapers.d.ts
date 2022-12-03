@@ -28,7 +28,7 @@ export type FlightWithFares = {
   arrivalDateTime: string                // "2022-04-01 15:12"
   origin: string                         // "SFO"
   destination: string                    // "LHR"
-  duration: number                       // 62 (in minutes)
+  duration: number | undefined           // 62 (in minutes)
   aircraft: string | undefined           // "737"
   fares: FlightFare[]
   amenities: FlightAmenities

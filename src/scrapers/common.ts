@@ -125,7 +125,11 @@ export const prepPage = async (pageToPrep: Page, meta: ScraperMetadata) => {
 const runAttempt = async (page: Page, input: BrowserlessInput, scraper: Scraper, meta: ScraperMetadata, contextToClose: BrowserContext | undefined): Promise<FlightWithFares[] | undefined> => {
   const result = await scraper(page, input.context).catch(async (error) => {
     if (page.isClosed()) return undefined
-    log("* Error in scraper, taking screenshot *")
+    log(`* Error in scraper (${error.message}), taking screenshot *`)
+    if (error.message?.includes("ERR_CERT_AUTHORITY_INVALID")) {
+      await input.page.tracing.stop()
+      return undefined
+    }
     await screenshot(page)
     return undefined
   })
@@ -152,6 +156,8 @@ export const gotoPage = async (page: Page, url: string, waitUntil: PuppeteerLife
     const pageText = await load.text()
     if (pageText.includes("<H1>Access Denied</H1>"))
       throw new Error(`Access Denied while loading page (status: ${load.status()}`)
+    if (pageText.includes("div class=\"px-captcha-error-header\""))
+      throw new Error("Perimeter-X captcha while loading page")
     log(pageText)
     throw new Error(`Page loading failed with status ${load.status()}`)
   }

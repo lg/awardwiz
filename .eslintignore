@@ -1,3 +1,4 @@
 src/types/*.schema.d.ts
 dist/
+functions/lib/
 tools/
