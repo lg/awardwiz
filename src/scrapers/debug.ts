@@ -34,7 +34,7 @@ const mainLocal = (async () => {
   const page = await browserContext.newPage()
 
   const scraperImport = await import(`./${scraper}`) as any
-  const results = await scraperImport({ page, browser, context: { origin, destination, departureDate } })
+  const results = await scraperImport.default({ page, browser, context: { origin, destination, departureDate } })
   console.log(JSON.stringify(results))
 
   console.log("closing browser!")
