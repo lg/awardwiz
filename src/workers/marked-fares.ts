@@ -87,7 +87,7 @@ await new Listr<{}>(
         title: "Sending notification email...",
         task: async (_context2, task2) => {
           const user = await admin.auth(app).getUser(markedFare.uid!)
-          if (user.email !== "trivex@gmail.com") {
+          if (user.email !== "trivex@gmail.com" && user.uid !== "GscyHmuPQ1ZuxT3LiQxy0CSyDP73") {
             // eslint-disable-next-line no-param-reassign
             task2.title = `${task2.title} skipping email for now`
             return
