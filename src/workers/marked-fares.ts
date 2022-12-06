@@ -32,10 +32,9 @@ if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") {
 //////////////////////////////////////
 
 await runListrTask("Cleaning up old marked fares...", async () => {
-  const earliestDate = dayjs.tz(undefined, "Etc/GMT+12").format("YYYY-MM-DD")   // earliest possible date at UTC-12
   const oldMarkedFares = await admin.firestore(app)
     .collection("marked_fares")
-    .where("date", "<", earliestDate)
+    .where("originTime", "<", Math.floor(Date.now() / 1000))
     .get()
   const batch = admin.firestore(app).batch()
   oldMarkedFares.forEach((oldMarkedFare) => batch.delete(oldMarkedFare.ref))

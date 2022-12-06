@@ -9,6 +9,14 @@ import { default as dayjs } from "dayjs"
 import * as Firestore from "firebase/firestore"
 import { firebaseAuth, firestore } from "../helpers/firebase"
 import React, { useState } from "react"
+import axios from "axios"
+import { useAirportsDatabase } from "../hooks/useAirportsDb"
+import { ReverseLookup } from "../types/geoapify"
+import timezone from "dayjs/plugin/timezone"
+import utc from "dayjs/plugin/utc"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const triState = (condition: boolean | undefined, trueValue: string, falseValue: string, undefinedValue: string) => {
   if (condition === undefined)
@@ -31,6 +39,7 @@ const airlineLogoUrl = (airlineCode: string) => {
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
+  const airportsDatabase = useAirportsDatabase()
 
   React.useEffect(() => {
     const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
@@ -132,12 +141,18 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
+        const departureCity = airportsDatabase.airports[record.origin]
+        const tzRequest = await axios.get<ReverseLookup>(`https://api.geoapify.com/v1/geocode/reverse?lat=${departureCity.latitude}&lon=${departureCity.longitude}&format=json&apiKey=${import.meta.env.VITE_GEOAPIFY_API_KEY}`)
+        const tzName = tzRequest.data.features?.[0].properties.timezone.name
+        const originTime = dayjs(record.departureDateTime).tz(tzName)
+
         void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {
           uid: firebaseAuth.currentUser?.uid,
           origin: record.origin,
           destination: record.destination,
           checkFlightNo: record.flightNo,
           date: record.departureDateTime.slice(0, 10),
+          originTime: originTime.unix(),
           checkCabin: cabin,
           curAvailable: isSaverFare
         })

@@ -13,7 +13,8 @@
         "src/workers/marked-fares.ts"
       ],
       "env": {
-        "VITE_LOKI_LOGGING_UID": "debug_marked_fares_worker"
+        "VITE_LOKI_LOGGING_UID": "debug_marked_fares_worker",
+        "NODE_NO_WARNINGS": "1"
       },
       "runtimeExecutable": "pnpm",
       "skipFiles": [
