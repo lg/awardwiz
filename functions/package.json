@@ -3,28 +3,20 @@
   "packageManager": "pnpm@7.14.0",
   "scripts": {
     "lint": "TIMING=1 pnpm exec eslint --ext .ts --cache .",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "serve": "pnpm run build && pnpm exec firebase emulators:start --only functions",
-    "shell": "pnpm run build && pnpm exec firebase functions:shell",
-    "start": "pnpm run shell",
-    "deploy": "pnpm exec firebase deploy --only functions",
-    "logs": "pnpm exec firebase functions:log",
+    "build": "pnpm exec tsc",
     "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm pnpm exec npm-check -u",
-    "depcheck": "pnpm exec depcheck",
+    "depcheck": "pnpm exec depcheck --ignores firebase-admin",
     "test": "exit 0",
     "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && pnpm lint && echo 'tests' && pnpm test && echo 'ok'"
   },
   "main": "lib/index.js",
   "dependencies": {
-    "@sparticuz/chromium": "^108.0.1",
-    "firebase-admin": "^11.3.0",
-    "firebase-functions": "4.1.0",
-    "playwright-core": "^1.28.1"
+    "firebase-functions": "4.1.0"
   },
   "devDependencies": {
     "depcheck": "^1.4.3",
     "eslint": "^8.9.0",
+    "firebase-admin": "^11.3.0",
     "npm-check": "^6.0.1",
     "typescript": "^4.5.4"
   },
