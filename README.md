@@ -36,6 +36,10 @@ A few environment variables are used to start the server and frontend. These can
 - `VITE_LOKI_LOGGING_URL`: The url to log scraper results to ex: `https://123456:apikey@logs-prod3.grafana.net/loki/api/v1/push`
 - `VITE_LOKI_LOGGING_UID`: Customize the loki logging user id when calling logging scraper results (defaults to `unknown`)
 - `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. **This is a secret and should not be public**
-- `VITE_FIREBASE_SERVICE_ACCOUNT_JSON`: Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts' from when you created it. If you create a new one now, note the old one will be immediately disabled. The service account is used by workers. The format is: `{"type": "service_account", "project_id": "awardwiz", "private_key_id": "...", ...}`. **This is a secret and should not be public**
+- `VITE_FIREBASE_SERVICE_ACCOUNT_JSON`: Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts' from when you created it. If you create a new one now, note the old one will be immediately disabled. The service account is used by workers. The format is: `{"type": "service_account", "project_id": "awardwiz", "private_key_id": "...", ...}`. This is also used for deploying to Firebase Functions. **This is a secret and should not be public**
 
 You can start a local instance of Browserless using `docker-compose up`.
+
+To deploy the Firebase Functions to production, first add `Artifact Registry Administrator` and `Cloud Functions Developer` on `https://console.cloud.google.com/iam-admin/iam` for the project, and then either:
+  - Locally: Put the contents of `VITE_FIREBASE_SERVICE_ACCOUNT_JSON` into a new file, `serviceaccount.json`, and run `GOOGLE_APPLICATION_CREDENTIALS=serviceaccount.json pnpm deploy-functions`
+  - Using `act` (also useful to test the Github Action): `act -W .github/workflows/upload-functions.yaml --secret-file .env.local`

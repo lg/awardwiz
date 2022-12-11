@@ -9,9 +9,11 @@ export const firebaseApp = initializeApp(JSON.parse(import.meta.env.VITE_FIREBAS
 export const firebaseAuth = getAuth(firebaseApp)
 export const firestore = getFirestore(firebaseApp)
 export const firebaseFunctions = getFunctions(firebaseApp)
+export let firebaseFunctionsUrl = import.meta.env.VITE_FIREBASE_FUNCTIONS_URL
 
 if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") {
   connectAuthEmulator(firebaseAuth, "http://localhost:9099")
   connectFirestoreEmulator(firestore, "localhost", 8080)
   connectFunctionsEmulator(firebaseFunctions, "localhost", 5001)
+  firebaseFunctionsUrl = "http://127.0.0.1:5001/awardwiz/us-central1"
 }

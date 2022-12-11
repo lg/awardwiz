@@ -37,6 +37,10 @@ interface ImportMetaEnv {
    * The format is: {"apiKey": "...", "authDomain": "...", ...} */
   readonly VITE_FIREBASE_CONFIG_JSON: string
 
+  /** Beginning of url where we will hit our functions. Ex: `https://us-central1-ABCD.cloudfunctions.net`.
+   * This is overridden when using firebase emulators. */
+  readonly VITE_FIREBASE_FUNCTIONS_URL: string
+
   /** Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts'
    * from when you created it. If you create a new one now, note the old one will be immediately disabled.
    * The service account is used by workers.
