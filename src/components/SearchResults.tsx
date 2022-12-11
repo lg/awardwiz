@@ -39,7 +39,7 @@ const airlineLogoUrl = (airlineCode: string) => {
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
-  const airportsDatabase = useAirportsDatabase()
+  const airports = useAirportsDatabase()
 
   React.useEffect(() => {
     const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
@@ -141,7 +141,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
-        const departureCity = airportsDatabase.airports[record.origin]
+        const departureCity = airports[record.origin]
         const tzRequest = await axios.get<ReverseLookup>(`https://api.geoapify.com/v1/geocode/reverse?lat=${departureCity.latitude}&lon=${departureCity.longitude}&format=json&apiKey=${import.meta.env.VITE_GEOAPIFY_API_KEY}`)
         const tzName = tzRequest.data.features?.[0].properties.timezone.name
         const originTime = dayjs(record.departureDateTime).tz(tzName)

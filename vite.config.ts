@@ -9,6 +9,7 @@ import path from "node:path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  clearScreen: false,
   server: {
     port: 5000
   },
@@ -24,7 +25,7 @@ export default defineConfig({
     watchAndRun([{
       name: "generate-ts-schemas",
       watch: path.resolve("src/**/*.schema.json"),
-      run: "npm run schemas"
+      run: "pnpm run schemas"
     }])
   ],
 
