@@ -1,7 +1,7 @@
 name: Upload functions to Firebase Functions
 on:
   push:
-    branches: ["airports_json"]
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:
