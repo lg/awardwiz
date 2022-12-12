@@ -29,10 +29,10 @@ A few environment variables are used to start the server and frontend. These can
 - `VITE_GOOGLE_CLIENT_ID`: A Google client ID with OAuth capabilities (used for identity of users). You can get this from your Firebase Auth instance (Authentication > Sign-in method > Google > Web SDK confirmation > Web client ID)
 - `VITE_FIREBASE_CONFIG_JSON`: Set to the config information (in JSON format with quoted attribute names) from 'Settings > Project settings > General' and scroll to the bottom and select Config for your web app. The format is: `{"apiKey": "...", "authDomain": "...", ...}`
 - `VITE_BROWSERLESS_AWS_PROXY_URL` and `VITE_BROWSERLESS_AWS_PROXY_API_KEY`: AWS API Gateway credentials for fronting Browserless. You can also just set the URL to your Browserless instance and the API key.
-- `VITE_GEOAPIFY_API_KEY`: Used to look up the the timezone of airports by longitude and latitude when marking fares.
 
 **Optional Variables**
 - `VITE_USE_FIREBASE_EMULATORS`: When running locally, setting this to `true` will use the default Firebase emulators. Don't forget to start them using `firebase emulators:start`.
+- `VITE_FIREBASE_FUNCTIONS_URL`: The Firebase Functions URL used as the beginning of function requests. Required only for production. Ex: `https://us-central1-ABCD.cloudfunctions.net`.
 - `VITE_LOKI_LOGGING_URL`: The url to log scraper results to ex: `https://123456:apikey@logs-prod3.grafana.net/loki/api/v1/push`
 - `VITE_LOKI_LOGGING_UID`: Customize the loki logging user id when calling logging scraper results (defaults to `unknown`)
 - `VITE_SMTP_CONNECTION_STRING` required for sending email notifications (still in progress). This is used when using `pnpm run marked-fares-worker`. **This is a secret and should not be public**

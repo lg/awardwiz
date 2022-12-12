@@ -9,9 +9,7 @@ import { default as dayjs } from "dayjs"
 import * as Firestore from "firebase/firestore"
 import { firebaseAuth, firestore } from "../helpers/firebase"
 import React, { useState } from "react"
-import axios from "axios"
 import { useAirportsDatabase } from "../hooks/useAirportsDb"
-import { ReverseLookup } from "../types/geoapify"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
 
@@ -141,9 +139,7 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
-        const departureCity = airports[record.origin]
-        const tzRequest = await axios.get<ReverseLookup>(`https://api.geoapify.com/v1/geocode/reverse?lat=${departureCity.latitude}&lon=${departureCity.longitude}&format=json&apiKey=${import.meta.env.VITE_GEOAPIFY_API_KEY}`)
-        const tzName = tzRequest.data.features?.[0].properties.timezone.name
+        const tzName = airports[record.origin].tz_name
         const originTime = dayjs(record.departureDateTime).tz(tzName)
 
         void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {

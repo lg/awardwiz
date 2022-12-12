@@ -34,7 +34,6 @@ jobs:
       VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
       VITE_FIREBASE_FUNCTIONS_URL: ${{ secrets.VITE_FIREBASE_FUNCTIONS_URL }}
       VITE_LOKI_LOGGING_URL: ${{ secrets.VITE_LOKI_LOGGING_URL }}
-      VITE_GEOAPIFY_API_KEY: ${{ secrets.VITE_GEOAPIFY_API_KEY }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

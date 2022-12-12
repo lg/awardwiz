@@ -22,7 +22,6 @@ jobs:
       VITE_FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.VITE_FIREBASE_SERVICE_ACCOUNT_JSON }}
       VITE_LOKI_LOGGING_URL: ${{ secrets.VITE_LOKI_LOGGING_URL }}
       VITE_LOKI_LOGGING_UID: marked_fares_worker
-      VITE_GEOAPIFY_API_KEY: ${{ secrets.VITE_GEOAPIFY_API_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2.2.4

@@ -66,4 +66,5 @@ export type Airport = {
   popularity: number
   city: string
   country: string
+  tz_name: string | undefined
 }

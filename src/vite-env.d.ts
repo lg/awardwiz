@@ -19,9 +19,6 @@ interface ImportMetaEnv {
   /** Customize the loki logging user id when calling logging scraper results */
   readonly VITE_LOKI_LOGGING_UID: string
 
-  /** Used to look up the the timezone of airports by longitude and latitude when marking fares */
-  readonly VITE_GEOAPIFY_API_KEY: string
-
   /** Set this to run scraper tests live against production */
   readonly VITE_LIVE_SCRAPER_TESTS: string
 
