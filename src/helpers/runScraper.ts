@@ -1,6 +1,5 @@
 import { QueryKey } from "@tanstack/react-query"
 import axios, { GenericAbortSignal } from "axios"
-import ts from "typescript"
 import { DatedRoute } from "../hooks/useAwardSearch"
 import { BrowserlessPostData, ScraperResponse } from "../types/scrapers"
 import { firebaseAuth } from "./firebase"
@@ -20,7 +19,8 @@ export const runScraper = async (scraperName: string, datedRoute: DatedRoute, qu
   tsCode = tsCode.replace("const LOKI_LOGGING_URL = \"\"", `const LOKI_LOGGING_URL = "${import.meta.env.VITE_LOKI_LOGGING_URL || ""}"`)
   tsCode = tsCode.replace("const FIREBASE_UID = \"unknown\"", `const FIREBASE_UID = "${firebaseAuth.currentUser?.uid ?? (import.meta.env.VITE_LOKI_LOGGING_UID || "unknown")}"`)
 
-  const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
+  const ts = await import("typescript")
+  const jsCode = ts.default.transpile(tsCode, { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS })
   const postData: BrowserlessPostData = { code: jsCode, context: { ...datedRoute } }
   return axios.post<ScraperResponse>(`${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/function?key=${queryKey}`, postData, { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal })
 }

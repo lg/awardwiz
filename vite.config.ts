@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from "vite"
+import { defineConfig, splitVendorChunkPlugin } from "vite"
 import react from "@vitejs/plugin-react"
 import Icons from "unplugin-icons/vite"
 import { visualizer } from "rollup-plugin-visualizer"
@@ -26,7 +26,8 @@ export default defineConfig({
       name: "generate-ts-schemas",
       watch: path.resolve("src/**/*.schema.json"),
       run: "pnpm run schemas"
-    }])
+    }]),
+    splitVendorChunkPlugin()
   ],
 
   test: {
