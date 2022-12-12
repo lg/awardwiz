@@ -9,7 +9,7 @@ import { default as dayjs, Dayjs } from "dayjs"
 export const FlightSearch = () => {
   console.log("render")
 
-  const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: dayjs().add(1, "day").format("YYYY-MM-DD") }
+  const defaultSearchQuery = { origins: ["SFO"], destinations: ["HNL", "LIH"], departureDate: dayjs().format("YYYY-MM-DD") }
   const [searchQuery, setSearchQuery] = React.useState<SearchQuery>(() => {
     const receivedDate = JSON.parse(localStorage.getItem("searchQuery") ?? JSON.stringify(defaultSearchQuery))
     if (dayjs(receivedDate.departureDate).isBefore(dayjs()))
