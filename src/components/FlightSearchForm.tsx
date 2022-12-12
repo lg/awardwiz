@@ -1,9 +1,8 @@
 import { Button, DatePicker, Form } from "antd"
-import { Airport, SearchQuery } from "../types/scrapers"
+import { SearchQuery } from "../types/scrapers"
 import { LeftOutlined, LoadingOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
 import { SelectAirport } from "./SelectAirport"
 import { default as dayjs, Dayjs } from "dayjs"
-import React from "react"
 
 type FlightSearchFormProps = {
   searchQuery: SearchQuery
@@ -12,9 +11,6 @@ type FlightSearchFormProps = {
 }
 
 export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: FlightSearchFormProps) => {
-  const [airports, setAirports] = React.useState<Airport[]>([])
-  React.useEffect(() => void import("../../airports.json").then((data) => setAirports(data)))
-
   const swapOriginsAndDestinations = () => form.setFieldsValue({ origins: form.getFieldValue("destinations"), destinations: form.getFieldValue("origins") })
   const addDay = (days: number) => form.setFieldsValue({ departureDate: dayjs(form.getFieldValue("departureDate")).add(days, "day") })
 
@@ -23,11 +19,11 @@ export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: Fl
   return (
     <Form form={form} initialValues={initialValuesWithDate} layout="inline" onFinish={onSearchClick}>
       <Form.Item name="origins" rules={[{ type: "array", min: 1 }]} style={{ width: 200, marginRight: 5, marginBottom: 0 }}>
-        <SelectAirport placeholder="Origins" allAirports={airports} />
+        <SelectAirport placeholder="Origins" />
       </Form.Item>
       <Button icon={<SwapOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={swapOriginsAndDestinations} />
       <Form.Item name="destinations" rules={[{ type: "array", min: 1 }]} style={{ width: 200, marginBottom: 0 }}>
-        <SelectAirport placeholder="Destinations" allAirports={airports} />
+        <SelectAirport placeholder="Destinations" />
       </Form.Item>
 
       <Form.Item name="departureDate" style={{ marginRight: 5 }}>

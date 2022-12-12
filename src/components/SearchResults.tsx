@@ -35,10 +35,10 @@ const airlineLogoUrl = (airlineCode: string) => {
 }
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
-  const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
   const [airports, setAirports] = React.useState<Airport[]>([])
-  React.useEffect(() => void import("../../airports.json").then((data) => setAirports(data)))
+  React.useEffect(() => { void import("../../airports.json").then((data) => { return setAirports(data.default)}) }, [])
 
+  const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
   React.useEffect(() => {
     const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
     const unsubscribe = Firestore.onSnapshot(markedFaresQuery, (snapshot) => {
