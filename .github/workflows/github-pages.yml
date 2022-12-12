@@ -42,8 +42,11 @@ jobs:
         with:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-      - name: Setup Pages
+      - name: Generate airports.json
+        run: pnpm gen-statics-worker
+      - name: Build website
+        run: pnpm run build
+      - name: Setup Github Pages
         uses: actions/configure-pages@v2
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1

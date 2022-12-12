@@ -13,8 +13,7 @@
   "dependencies": {
     "@types/cors": "^2.8.13",
     "cors": "^2.8.5",
-    "firebase-functions": "4.1.0",
-    "geo-tz": "^7.0.6"
+    "firebase-functions": "4.1.0"
   },
   "devDependencies": {
     "depcheck": "^1.4.3",

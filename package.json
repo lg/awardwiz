@@ -18,6 +18,7 @@
     "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm npm-check -u",
     "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch NODE_NO_WARNINGS=1 vite-node src/workers/marked-fares.ts",
     "preview-email-worker": "vite-node src/workers/preview-email.ts",
+    "gen-statics-worker": "vite-node src/workers/gen-statics.ts",
     "deploy-functions": "pnpm firebase deploy --only functions --force --debug"
   },
   "lint-staged": {
@@ -61,6 +62,7 @@
     "eslint-plugin-react": "7.31.11",
     "eslint-plugin-react-hooks": "^4.6.0",
     "firebase-tools": "^11.17.0",
+    "geo-tz": "^7.0.6",
     "handlebars": "^4.7.7",
     "husky": "^8.0.2",
     "jsdom": "20.0.3",
@@ -90,7 +92,6 @@
     "src/types/*.schema.d.ts",
     "dist/",
     "functions/lib/",
-    "tools/",
     "vite-plugin-firebase.ts"
   ]
 }

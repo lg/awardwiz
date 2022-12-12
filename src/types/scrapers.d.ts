@@ -57,14 +57,8 @@ export type SearchQuery = {
 }
 
 export type Airport = {
-  icao_code: string
-  iata_code: string
+  iataCode: string
   name: string
-  longitude: number
-  latitude: number
-  url: string | null
+  tzName: string
   popularity: number
-  city: string
-  country: string
-  tz_name: string | undefined
 }

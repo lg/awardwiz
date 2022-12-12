@@ -1,5 +1,5 @@
 import { Badge, ConfigProvider, Empty, Table, TableColumnType, TableColumnsType, Tag } from "antd"
-import { FlightFare, FlightWithFares } from "../types/scrapers"
+import { Airport, FlightFare, FlightWithFares } from "../types/scrapers"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
@@ -9,7 +9,6 @@ import { default as dayjs } from "dayjs"
 import * as Firestore from "firebase/firestore"
 import { firebaseAuth, firestore } from "../helpers/firebase"
 import React, { useState } from "react"
-import { useAirportsDatabase } from "../hooks/useAirportsDb"
 import timezone from "dayjs/plugin/timezone"
 import utc from "dayjs/plugin/utc"
 
@@ -37,7 +36,8 @@ const airlineLogoUrl = (airlineCode: string) => {
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
-  const airports = useAirportsDatabase()
+  const [airports, setAirports] = React.useState<Airport[]>([])
+  React.useEffect(() => void import("../../airports.json").then((data) => setAirports(data)))
 
   React.useEffect(() => {
     const markedFaresQuery = Firestore.query(Firestore.collection(firestore, "marked_fares"), Firestore.where("uid", "==", firebaseAuth.currentUser?.uid ?? ""))
@@ -139,7 +139,9 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
         void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
-        const tzName = airports[record.origin].tz_name
+        const tzName = airports.find((checkAirport) => checkAirport.iataCode === record.origin)?.tzName
+        if (!tzName)
+          throw "Unknown time zone for marked fare"
         const originTime = dayjs(record.departureDateTime).tz(tzName)
 
         void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {
