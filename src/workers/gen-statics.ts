@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 // This script downloads the latest airports and filters/formats them for use with AwardWiz.
 // Use the Launch profile in VSCode to debug this if necessary.
 
