@@ -1,0 +1,16 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "docker buildx build -t ghcr.io/lg/awardwiz:scrapers ./",
+    "run-local": "docker run -it --rm -p 5900:5900 ghcr.io/lg/awardwiz:scrapers",
+    "start": "npm run build && npm run run-local"
+  },
+  "devDependencies": {
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "playwright": "^1.28.1",
+    "playwright-extra": "^4.3.5",
+    "puppeteer-extra-plugin-stealth": "^2.11.1"
+  }
+}
