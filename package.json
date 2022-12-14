@@ -19,7 +19,7 @@
     "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch NODE_NO_WARNINGS=1 vite-node src/workers/marked-fares.ts",
     "preview-email-worker": "vite-node src/workers/preview-email.ts",
     "gen-statics-worker": "vite-node src/workers/gen-statics.ts",
-    "deploy-functions": "pnpm firebase deploy --only functions --force --debug"
+    "deploy-functions": "pnpm firebase deploy --only functions --force"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"

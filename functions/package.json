@@ -1,6 +1,5 @@
 {
   "name": "functions",
-  "packageManager": "pnpm@7.14.0",
   "scripts": {
     "lint": "TIMING=1 pnpm exec eslint --ext .ts --cache .",
     "build": "pnpm exec tsc",
@@ -14,7 +13,7 @@
     "@types/cors": "^2.8.13",
     "cors": "^2.8.5",
     "firebase-functions": "4.1.1",
-    "puppeteer": "^19.4.0"
+    "playwright": "^1.28.1"
   },
   "devDependencies": {
     "depcheck": "^1.4.3",

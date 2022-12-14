@@ -1,38 +1,42 @@
 import * as functions from "firebase-functions"
 import cors from "cors"
-import puppeteer, { Browser } from "puppeteer"
+//import { chromium } from "playwright"
+const util = require("node:util")
+const exec = util.promisify(require("node:child_process").exec)
+// const fs = require("fs")
 
-let browser: Browser | undefined = undefined
+exports.hello = functions.runWith({ memory: "4GB", timeoutSeconds: 60 }).https.onRequest((req, res) => {
+  return cors({ origin: true })(req, res, async () => {
+    //const out = exec("pwd")
+    //if (!fs.existsSync("node_modules/playwright-core/.local-browsers")) {
+      const { stdout, stderr } = await exec("npx playwright install")
+      return res.status(200).json({stdout, stderr})
+    //}
 
-exports.hello = functions.runWith({ memory: "2GB", timeoutSeconds: 60 }).https.onRequest((req, res) => {
-  cors({ origin: true })(req, res, async () => {
-    if (browser === undefined) {
-      console.log("opening browser")
-      browser = await puppeteer.launch({
-        headless: false
-      })
-      console.log("opened")
-    }
+    //return res.status(200).json("exists")
 
-    console.log("waiting for new page")
-    const page = await browser.newPage()
-    console.log("navigating")
-    await page.goto("https://www.github.com")
 
-    console.log("getting title")
-    const title = await page.title()
-    console.log("good!")
 
-    console.log("closing page")
-    await page.close()
+    // const startTime = Date.now()
+    // console.log("opening browser")
+    // const browser = await chromium.launch()
+    // console.log("opening context")
+    // const context = await browser.newContext()
+    // console.log("opening page")
+    // const page = await context.newPage()
+    // console.log("navigating")
+    // await page.goto("https://www.github.com")
 
-    //console.log("closing browser")
+    // console.log("getting title")
+    // const title = await page.title()
+    // console.log("good!")
 
+    // console.log("closing context")
+    // await context.close()
+    // console.log("closing browser")
     // await browser.close()
-    // console.log("done")
 
-    //res.set("Cache-control", "public, max-age=604800")  // 1 week TTL
-    console.log("done")
-    res.status(200).json(title)
+    // console.log("done")
+    // return res.status(200).json({ title, totTime: Date.now() - startTime })
   })
 })
