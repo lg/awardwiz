@@ -6,7 +6,7 @@ x11vnc -forever -shared -nopw -quiet 2>/dev/null >/dev/null &
 websockify --daemon --web /usr/share/novnc 8080 localhost:5900 2>/dev/null
 fluxbox 2>/dev/null &
 
-echo -e "maxmemory 1gb\\n daemonize yes\\n dir ./redis" | redis-server -
+echo -e "maxmemory 1gb\\n daemonize yes\\n dir ./tmp" | redis-server -
 
 node --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main.js
 exec redis-cli shutdown
