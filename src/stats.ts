@@ -10,7 +10,7 @@ export const enableStatsForContext = (context: BrowserContext) => {
     } else {
       totCacheMisses += 1
       const hostname = new URL(response.url()).hostname
-      const bytes = parseInt(await response.headerValue("content-length") ?? (await response.body()).byteLength.toString())
+      const bytes = parseInt(await response.headerValue("content-length") ?? (await response.body().catch(e => Buffer.from(""))).byteLength.toString())
       domains[hostname] = (domains[hostname] || 0) + bytes
       bytesDownloaded += bytes
     }

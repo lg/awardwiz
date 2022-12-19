@@ -1,7 +1,3 @@
-// import { FlightFare, FlightWithFares, ScraperQuery } from "../types/scrapers"
-// import { browserlessInit, BrowserlessInput, gotoPage, log, pptrFetch, Scraper, ScraperMetadata } from "./common"
-// import type { AAResponse, Slice } from "./samples/aa"
-
 import { gotoPage, log, xhrFetch } from "../common.js"
 import { FlightFare, FlightWithFares, Scraper, ScraperMetadata, ScraperQuery } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
@@ -9,12 +5,13 @@ import { AAResponse, Slice } from "./samples/aa.js"
 export const meta: ScraperMetadata = {
   name: "aa",
   blockUrls: [
-    "customer.cludo.com", // "ocsp.entrust.net", "crl.entrust.net", "aia.entrust.net" need blocking at proxy level
+    "customer.cludo.com", "*.entrust.net", "*_cookieBanner.jsp", "*.tiqcdn.com",
+    "https://www.aa.com/VEoQcQ/*", "https://www.aa.com/airport/countries*",
   ],
 }
 
 export const runScraper: Scraper = async (aw) => {
-  await gotoPage(aw, "https://www.aa.com/booking/find-flights?redirectSearchToLegacyAACom=false", "commit")
+  await gotoPage(aw, "https://www.aa.com/booking/find-flights", "commit")
 
   log(aw, "fetching itinerary")
   const raw = await xhrFetch(aw.page, "https://www.aa.com/booking/api/search/itinerary", {

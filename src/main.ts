@@ -17,10 +17,19 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   const scraper = await import(`./scrapers/${scraperName.match(/[a-z0-9]+/)![0]}.js`) as ScraperModule
   const aw: AwardWizRequest = { query, meta: scraper.meta, page: undefined!, randId, logLines: [] }
 
+  // randomly select browser
   const selectedBrowserName = debugOptions.overrideBrowser ?? scraper.meta.useBrowser ?? BROWSERS[Math.floor(Math.random() * BROWSERS.length)]
   const selectedBrowser = {"firefox": firefox, "webkit": webkit, "chromium": chromium}[selectedBrowserName]
-  selectedBrowser.use(StealthPlugin())
 
+  // load stealth and handle incompatible stealth plugins
+  const stealth = StealthPlugin()
+  if (selectedBrowserName === "webkit")
+    ["navigator.webdriver", "user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
+  if (selectedBrowserName === "firefox")
+    ["user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
+  selectedBrowser.use(stealth)
+
+  // load proxy
   let proxy = undefined
   if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null) {
     const { host, username, password } = new URL(env.PROXY_ADDRESS!)
@@ -33,6 +42,7 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   const browser = await selectedBrowser.launch({ headless: false, proxy })
   const context = await browser.newContext({ serviceWorkers: "block" })
 
+  // enable caching, blocking and stats
   await enableCacheForContext(context, `cache:${scraperName}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
   if (!scraper.meta.noBlocking)
     await enableBlockingForContext(context, scraper.meta.blockUrls, debugOptions.showBlocked)
@@ -45,15 +55,20 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   if (debugOptions.showResponses)
     aw.page.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
 
+  let failed = false
   const result = await scraper.runScraper(aw).catch(async e => {
-    log(aw, `Error: ${e.message}`)
+    failed = true
+    log(aw, "Scraper Error", e)
     return []
   })
 
   await browser.close()
-  log(aw, `completed with ${result.length} results in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  log(aw, `completed ${failed ? "\x1b[31min failure\x1b[0m " : ""}with ${result.length} results in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
 
   return result
 }
 
-await runScraper("aa", { origin: "JFK", destination: "SFO", departureDate: "2022-12-19" }, { overrideBrowser: "chromium" })
+for (let i: number = 0; i < 5; i += 1) {
+  await runScraper("aa", { origin: "JFK", destination: "SFO", departureDate: "2022-12-19" })
+}
