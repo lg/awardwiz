@@ -49,6 +49,9 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   const getStats = enableStatsForContext(context)
 
   aw.page = await context.newPage()
+  await aw.page.goto("https://checkip.amazonaws.com").then(async () => log(aw, `\x1b[35mUsing IP ${(await aw.page.textContent("body"))?.trim()}\x1b[0m`))
+  await aw.page.close()
+  aw.page = await context.newPage()
 
   if (debugOptions.showRequests)
     aw.page.on("request", request => console.log(">>", request.method(), request.url()))
