@@ -6,6 +6,7 @@ import { enableCacheForContext } from "./cache.js"
 import { enableBlockingForContext } from "./blocking.js"
 import { env } from "node:process"
 import url from "url"
+import { enableStatsForContext } from "./stats.js"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -35,6 +36,7 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   await enableCacheForContext(context, `cache:${scraperName}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
   if (!scraper.meta.noBlocking)
     await enableBlockingForContext(context, scraper.meta.blockUrls, debugOptions.showBlocked)
+  const getStats = enableStatsForContext(context)
 
   aw.page = await context.newPage()
 
@@ -43,27 +45,13 @@ const runScraper = async (scraperName: string, query: ScraperQuery, debugOptions
   if (debugOptions.showResponses)
     aw.page.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
 
-  let totCacheHits = 0, totCacheMisses = 0, bytesDownloaded = 0
-  const domains: Record<string, number> = {}
-  aw.page.on("response", async response => {
-    if (await response.headerValue("x-fromcache")) {
-      totCacheHits += 1
-    } else {
-      totCacheMisses += 1
-      const hostname = new URL(response.url()).hostname
-      const bytes = parseInt(await response.headerValue("content-length") ?? (await response.body()).byteLength.toString())
-      domains[hostname] = (domains[hostname] || 0) + bytes
-      bytesDownloaded += bytes
-    }
-  })
-
   const result = await scraper.runScraper(aw).catch(async e => {
     log(aw, `Error: ${e.message}`)
     return []
   })
 
   await browser.close()
-  log(aw, `completed with ${result.length} results in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${totCacheHits} cache hits · ${totCacheMisses} cache misses · ${Object.keys(domains).length} domains · ${bytesDownloaded.toLocaleString("en-US")} bytes)`)
+  log(aw, `completed with ${result.length} results in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
 
   return result
 }

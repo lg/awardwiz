@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "docker-build": "docker buildx build -t ghcr.io/lg/awardwiz:scrapers ./",
-    "docker-run-local": "docker run -it --rm -p 8080:8080 --volume $(pwd)/tmp:/root/tmp $( [ -f .env.local ] && echo '--env-file .env.local' || echo '' ) ghcr.io/lg/awardwiz:scrapers",
+    "docker-run-local": "docker run -it --rm -p 8080:8080 --volume $(pwd)/tmp:/root/tmp $([ -f .env.local ] && echo '--env-file .env.local') ghcr.io/lg/awardwiz:scrapers",
     "start": "tsc && npm run docker-build && npm run docker-run-local"
   },
   "devDependencies": {
