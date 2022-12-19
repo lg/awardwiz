@@ -19,7 +19,7 @@ export const gotoPage = async (aw: AwardWizRequest, url: string, waitUntil: Wait
   if (load && load.status() !== 200) {
     const pageText = await load.text()
     if (pageText.includes("<H1>Access Denied</H1>"))
-      throw new Error(`Access Denied while loading page (status: ${load.status()}`)
+      throw new Error(`Access Denied while loading page (status: ${load.status()})`)
     if (pageText.includes("div class=\"px-captcha-error-header\""))
       throw new Error("Perimeter-X captcha while loading page")
     log(aw, pageText)
