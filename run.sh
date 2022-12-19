@@ -1,8 +1,12 @@
 #!/bin/bash
 
-Xvfb :0 -screen 0 1280x900x16 &
-sleep 1
-x11vnc -display :0 -bg -forever -nopw -listen localhost -xkb -quiet &
-sleep 1
+# Start a web server on port 8080 so we can view the browser
+Xvfb :0 -screen 0 1280x900x16 -listen tcp -ac &
+x11vnc -forever -shared -nopw -quiet 2>/dev/null >/dev/null &
+websockify --daemon --web /usr/share/novnc 8080 localhost:5900 2>/dev/null
+fluxbox 2>/dev/null &
 
-exec node --unhandled-rejections=strict "$@"
+echo -e "maxmemory 1gb\\n daemonize yes\\n dir ./redis" | redis-server -
+
+node --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main.js
+exec redis-cli shutdown

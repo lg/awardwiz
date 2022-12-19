@@ -1,0 +1,88 @@
+env:
+  browser: true
+  es2022: true
+plugins:
+  - "@typescript-eslint"
+  - promise
+  - deprecation
+extends:
+  - eslint:recommended
+  - plugin:import/recommended
+  - plugin:import/typescript
+  - plugin:@typescript-eslint/strict
+  - plugin:promise/recommended
+parser: "@typescript-eslint/parser"
+parserOptions:
+  ecmaFeatures:
+    jsx: true
+  ecmaVersion: latest
+  sourceType: module
+  project: ["./tsconfig.json", "./functions/tsconfig.json"]
+settings:
+  react:
+    version: detect
+rules:
+  # disabled due to performance issues
+  "import/namespace": off
+  "import/default": off
+  "import/no-named-as-default": off
+  "import/no-named-as-default-member": off
+
+  quotes: ["error", "double"]
+  semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
+  max-len: off
+  no-unused-vars: ["error", { "args": "none", "varsIgnorePattern": "_.*" }]
+  "@typescript-eslint/no-unused-vars": off # ["error", { "args": "none" }]
+  no-use-before-define: off
+  no-undef: off # because of JSX
+  max-classes-per-file: off
+  comma-dangle: off
+  no-multiple-empty-lines: off
+  nonblock-statement-body-position: off # allows for if without {}
+  curly: off
+  arrow-body-style: off
+  no-multi-spaces: ["error", { "ignoreEOLComments": true }]
+  "@typescript-eslint/no-non-null-assertion": off
+  import/extensions: off
+  no-debugger: off
+  no-console: off
+  object-curly-newline: off
+  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result", "acc"] }]
+  lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
+
+  import/prefer-default-export: off
+  import/no-unresolved: off
+  import/order: off
+
+  "@typescript-eslint/no-empty-function": off
+  import/newline-after-import: off
+
+  spaced-comment: off
+
+  import/no-import-module-exports: off    # so i can embed the scrapers in the main codebase
+  padded-blocks: off
+  "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+  "@typescript-eslint/ban-ts-comment": off
+  "@typescript-eslint/no-explicit-any": off
+  quote-props: off
+  no-restricted-syntax: off
+  "@typescript-eslint/consistent-type-definitions": off
+  "@typescript-eslint/prefer-string-starts-ends-with": off
+
+  "@typescript-eslint/no-floating-promises": ["error"]
+  "no-void": off
+  "no-shadow": ["error", { "ignoreOnInitialization": true }]
+  "newline-per-chained-call": off
+  "import/named": off
+  "@typescript-eslint/no-throw-literal": off
+
+  "deprecation/deprecation": "warn"
+
+  "no-restricted-globals": ["error",
+    { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
+    { name: "setTimeout", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" }
+  ]
+  "no-restricted-properties": ["error",
+    { object: 'window', property: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
+    { object: "window", property: "setTimeout", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" }
+  ]
