@@ -14,10 +14,8 @@ const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
 type BrowserName = "chromium" | "webkit" | "firefox"
 
-export type ScraperRequest<QueryType> = {
-  query: QueryType
+export type ScraperRequest = {
   meta: ScraperMetadata
-
   page: Page
   logLines: string[]
   randId: number
@@ -29,8 +27,6 @@ export type ScraperResult<ReturnType> = {
   logLines: string[]
 }
 
-export type ScraperModule<QueryType, ReturnType> = { meta: ScraperMetadata, runScraper: Scraper<QueryType, ReturnType> }
-export type Scraper<QueryType, ReturnType> = (req: ScraperRequest<QueryType>) => Promise<ReturnType>
 export type ScraperMetadata = {
   name: string,
   blockUrls?: string[]
@@ -41,13 +37,13 @@ export type ScraperMetadata = {
 }
 
 export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean }
-export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<QueryType, ReturnType>, query: QueryType, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
+export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
   const randId = Math.round(Math.random() * 1000)
-  const sc: ScraperRequest<QueryType> = { query, meta: scraper.meta, page: undefined!, randId, logLines: [] }
+  const sc: ScraperRequest = { meta, page: undefined!, randId, logLines: [] }
 
   // randomly select browser
-  const selectedBrowserName = debugOptions.overrideBrowser ?? scraper.meta.useBrowser ?? BROWSERS[Math.floor(Math.random() * BROWSERS.length)]
+  const selectedBrowserName = debugOptions.overrideBrowser ?? meta.useBrowser ?? BROWSERS[Math.floor(Math.random() * BROWSERS.length)]
   const selectedBrowser = {"firefox": firefox, "webkit": webkit, "chromium": chromium}[selectedBrowserName]
 
   // load stealth and handle incompatible stealth plugins
@@ -67,14 +63,14 @@ export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<Q
     log(sc, c.yellow(`Not using proxy server (the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})`))
   }
 
-  log(sc, `Starting ${c.green(selectedBrowserName)} with`, query)
+  log(sc, `Starting ${c.green(selectedBrowserName)}`)
   const browser = await selectedBrowser.launch({ headless: false, proxy })
   const context = await browser.newContext({ serviceWorkers: "block" })
 
   // enable caching, blocking and stats
-  await enableCacheForContext(context, `cache:${scraper.meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
-  if (!scraper.meta.noBlocking)
-    await enableBlockingForContext(context, scraper.meta.blockUrls, debugOptions.showBlocked)
+  await enableCacheForContext(context, `cache:${meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
+  if (!meta.noBlocking)
+    await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
   const getStats = enableStatsForContext(context)
 
   sc.page = await context.newPage()
@@ -91,7 +87,7 @@ export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<Q
     sc.page.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
 
   let failed = false
-  const scraperResult = await scraper.runScraper(sc).catch(async e => {
+  const scraperResult = await scraper(sc).catch(async e => {
     failed = true
     log(sc, "Scraper Error", e)
     return undefined

@@ -9,7 +9,7 @@ type WaitUntilStates = "load" | "domcontentloaded" | "networkidle" | "commit"
 const NAV_WAIT_COMMIT_MS = 5000
 const NAV_WAIT_EXTRA_MS = 25000
 
-export const gotoPage = async (aw: ScraperRequest<any>, url: string, waitUntil: WaitUntilStates) => {
+export const gotoPage = async (aw: ScraperRequest, url: string, waitUntil: WaitUntilStates) => {
   log(aw, `Going to ${url}`)
   const load = await aw.page.goto(url, { waitUntil: "commit", timeout: NAV_WAIT_COMMIT_MS })
   log(aw, `Headers received, waiting for ${waitUntil}`)

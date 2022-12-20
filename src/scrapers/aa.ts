@@ -1,6 +1,6 @@
 import { gotoPage, log, xhrFetch } from "../common.js"
-import { Scraper, ScraperMetadata } from "../scraper.js"
-import { FlightFare, FlightWithFares, AwardWizQuery } from "../types.js"
+import { ScraperMetadata } from "../scraper.js"
+import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
 
 export const meta: ScraperMetadata = {
@@ -11,7 +11,7 @@ export const meta: ScraperMetadata = {
   ],
 }
 
-export const runScraper: Scraper<AwardWizQuery, FlightWithFares[]> = async (aw) => {
+export const runScraper: AwardWizScraper = async (aw, query) => {
   await gotoPage(aw, "https://www.aa.com/booking/find-flights", "commit")
 
   log(aw, "fetching itinerary")
@@ -31,11 +31,11 @@ export const runScraper: Scraper<AwardWizQuery, FlightWithFares[]> = async (aw) 
         "allCarriers": true,
         "cabin": "",
         "connectionCity": undefined,
-        "departureDate": aw.query.departureDate,
-        "destination": aw.query.destination,
+        "departureDate": query.departureDate,
+        "destination": query.destination,
         "includeNearbyAirports": false,
         "maxStops": undefined,
-        "origin": aw.query.origin,
+        "origin": query.origin,
         "departureTime": "040001"
       }],
       "tripOptions": { "locale": "en_US", "searchType": "Award" },
@@ -53,7 +53,7 @@ export const runScraper: Scraper<AwardWizQuery, FlightWithFares[]> = async (aw) 
 
   const flightsWithFares: FlightWithFares[] = []
   if (json.slices && json.slices.length > 0) {
-    const flights = standardizeResults(json.slices, aw.query)
+    const flights = standardizeResults(json.slices, query)
     flightsWithFares.push(...flights)
   }
 
