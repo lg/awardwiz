@@ -11,3 +11,6 @@ for (let i: number = 0; i < 5; i += 1) {
     return scraper.runScraper(sc, query)
   }, { name: scraper.meta.name })
 }
+
+// await runScraper(async (sc) => {
+// }, { name: "test", noBlocking: true, noProxy: false }, { showUncached: true })

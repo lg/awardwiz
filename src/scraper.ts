@@ -6,9 +6,9 @@ import { enableBlockingForContext } from "./blocking.js"
 import { env } from "node:process"
 import url from "url"
 import { enableStatsForContext } from "./stats.js"
-import { Page } from "playwright"
-import pRetry from "p-retry"
+import { Browser, Page } from "playwright"
 import c from "ansi-colors"
+import { find as findTz } from "geo-tz"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -34,6 +34,7 @@ export type ScraperMetadata = {
   noBlocking?: boolean
   noStealth?: boolean
   useBrowser?: BrowserName
+  noProxy?: boolean
 }
 
 export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean }
@@ -56,28 +57,24 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
   // load proxy
   let proxy = undefined
-  if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null) {
+  if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null && !meta.noProxy) {
     const { host, username, password } = new URL(env.PROXY_ADDRESS!)
     proxy = { server: host, username: username, password: password }
   } else {
-    log(sc, c.yellow(`Not using proxy server (the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})`))
+    log(sc, c.yellow(`Not using proxy server ${meta.noProxy ? "(the scraper has noProxy enabled)" : `(the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
   }
 
   log(sc, `Starting ${c.green(selectedBrowserName)}`)
   const browser = await selectedBrowser.launch({ headless: false, proxy })
-  const context = await browser.newContext({ serviceWorkers: "block" })
+  const { ip, tz } = await getIPAndTimezone(browser)
+  const context = await browser.newContext({ serviceWorkers: "block", timezoneId: tz })
+  log(sc, c.magenta(`Using IP ${ip} (${tz})`))
 
   // enable caching, blocking and stats
   await enableCacheForContext(context, `cache:${meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
   if (!meta.noBlocking)
     await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
   const getStats = enableStatsForContext(context)
-
-  sc.page = await context.newPage()
-  await pRetry(async () => sc.page.goto("https://checkip.amazonaws.com"), { retries: 3, onFailedAttempt(error) {
-    log(sc, c.yellow(`Failed to load IP page: ${error.message.split("\n")[0]} (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber})`))
-  }}).then(async () => log(sc, c.magenta(`Using IP ${(await sc.page.textContent("body"))?.trim()}`)))
-  await sc.page.close()
 
   sc.page = await context.newPage()
 
@@ -98,4 +95,15 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   log(sc, `completed ${failed ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
 
   return { result: scraperResult, logLines: sc.logLines, failed: false }
+}
+
+const getIPAndTimezone = async (browser: Browser) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  await page.goto("http://geo.zombe.es")
+  const ipGeo = JSON.parse(await page.textContent("pre") ?? "{}")
+  const tz = findTz(ipGeo.geo.latitude, ipGeo.geo.longitude)[0]
+  await page.close()
+  await context.close()
+  return { ip: ipGeo.ip, tz }
 }
