@@ -1,5 +1,6 @@
 import { gotoPage, log, xhrFetch } from "../common.js"
-import { FlightFare, FlightWithFares, Scraper, ScraperMetadata, ScraperQuery } from "../types.js"
+import { Scraper, ScraperMetadata } from "../scraper.js"
+import { FlightFare, FlightWithFares, AwardWizQuery } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
 
 export const meta: ScraperMetadata = {
@@ -10,7 +11,7 @@ export const meta: ScraperMetadata = {
   ],
 }
 
-export const runScraper: Scraper = async (aw) => {
+export const runScraper: Scraper<AwardWizQuery, FlightWithFares[]> = async (aw) => {
   await gotoPage(aw, "https://www.aa.com/booking/find-flights", "commit")
 
   log(aw, "fetching itinerary")
@@ -59,7 +60,7 @@ export const runScraper: Scraper = async (aw) => {
   return flightsWithFares
 }
 
-const standardizeResults = (slices: Slice[], query: ScraperQuery): FlightWithFares[] => (
+const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFares[] => (
   slices.map((slice) => {
     const segment = slice.segments[0]
     const leg = segment.legs[0]
