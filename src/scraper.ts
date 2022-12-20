@@ -7,6 +7,8 @@ import { env } from "node:process"
 import url from "url"
 import { enableStatsForContext } from "./stats.js"
 import { Page } from "playwright"
+import pRetry from "p-retry"
+import c from "ansi-colors"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -62,10 +64,10 @@ export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<Q
     const { host, username, password } = new URL(env.PROXY_ADDRESS!)
     proxy = { server: host, username: username, password: password }
   } else {
-    log(sc, `\x1b[31mNot using proxy server (the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})\x1b[0m`)
+    log(sc, c.yellow(`Not using proxy server (the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})`))
   }
 
-  log(sc, `Starting ${selectedBrowserName} with`, query)
+  log(sc, `Starting ${c.green(selectedBrowserName)} with`, query)
   const browser = await selectedBrowser.launch({ headless: false, proxy })
   const context = await browser.newContext({ serviceWorkers: "block" })
 
@@ -76,8 +78,11 @@ export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<Q
   const getStats = enableStatsForContext(context)
 
   sc.page = await context.newPage()
-  await sc.page.goto("https://checkip.amazonaws.com").then(async () => log(sc, `\x1b[35mUsing IP ${(await sc.page.textContent("body"))?.trim()}\x1b[0m`))
+  await pRetry(async () => sc.page.goto("https://checkip.amazonaws.com"), { retries: 3, onFailedAttempt(error) {
+    log(sc, c.yellow(`Failed to load IP page: ${error.message.split("\n")[0]} (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber})`))
+  }}).then(async () => log(sc, c.magenta(`Using IP ${(await sc.page.textContent("body"))?.trim()}`)))
   await sc.page.close()
+
   sc.page = await context.newPage()
 
   if (debugOptions.showRequests)
@@ -94,7 +99,7 @@ export const runScraper = async <QueryType, ReturnType>(scraper: ScraperModule<Q
 
   await browser.close()
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  log(sc, `completed ${failed ? "\x1b[31min failure\x1b[0m " : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
+  log(sc, `completed ${failed ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
 
   return { result: scraperResult, logLines: sc.logLines, failed: false }
 }
