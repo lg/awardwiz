@@ -72,7 +72,7 @@ await new Listr<{}>(
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid}`,
     task: async (_context, task) => {
       const user = await admin.auth(app).getUser(markedFare.uid!)
-      if (["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73"].includes(user.uid)) {
+      if (!["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73"].includes(user.uid)) {
         // eslint-disable-next-line no-param-reassign
         task.title = `${task.title} (skipped)`
         return
