@@ -1,7 +1,7 @@
 import { BrowserContext } from "playwright"
 
 export const enableStatsForContext = (context: BrowserContext) => {
-  let totCacheHits = 0, totCacheMisses = 0, bytesDownloaded = 0
+  let totCacheHits = 0, totCacheMisses = 0, bytesDownloaded = 0, totBlocked = 0
   const domains: Record<string, number> = {}
 
   context.on("response", async response => {
@@ -16,5 +16,10 @@ export const enableStatsForContext = (context: BrowserContext) => {
     }
   })
 
-  return () => ({ totCacheHits, totCacheMisses, domains, bytesDownloaded, summary: `${totCacheHits} cache hits · ${totCacheMisses} cache misses · ${Object.keys(domains).length} domains · ${bytesDownloaded.toLocaleString("en-US")} bytes` })
+  context.on("requestfailed", async request => {
+    if (["NS_ERROR_FAILURE", "net::ERR_FAILED", "Blocked by Web Inspector"].includes(request.failure()?.errorText ?? ""))
+     totBlocked += 1
+  })
+
+  return () => ({ totCacheHits, totCacheMisses, domains, bytesDownloaded, summary: `${totCacheHits} cache hits · ${totCacheMisses} cache misses · ${totBlocked} blocked · ${Object.keys(domains).length} domains · ${bytesDownloaded.toLocaleString("en-US")} bytes` })
 }

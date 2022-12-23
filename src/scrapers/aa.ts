@@ -8,6 +8,7 @@ export const meta: ScraperMetadata = {
   blockUrls: [
     "customer.cludo.com", "*.entrust.net", "*_cookieBanner.jsp", "*.tiqcdn.com",
     "https://www.aa.com/VEoQcQ/*", "https://www.aa.com/airport/countries*",
+    "https://www.aa.com/RGt3a2Qzh5TVPGBjNRHoGvYR/fuEJ6Qp3/cXBWXmQD/VlJ9H3/NSN0oB"
   ],
 }
 

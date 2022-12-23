@@ -35,6 +35,7 @@ export type ScraperMetadata = {
   noStealth?: boolean
   useBrowser?: BrowserName
   noProxy?: boolean
+  noCache?: boolean
 }
 
 export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean }
@@ -71,7 +72,8 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   log(sc, c.magenta(`Using IP ${ip} (${tz})`))
 
   // enable caching, blocking and stats
-  await enableCacheForContext(context, `cache:${meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
+  if (!meta.noCache)
+    await enableCacheForContext(context, `cache:${meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
   if (!meta.noBlocking)
     await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
   const getStats = enableStatsForContext(context)
