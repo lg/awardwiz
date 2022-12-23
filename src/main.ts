@@ -11,7 +11,7 @@ for (let i: number = 0; i < 5; i += 1) {
     log(sc, "Using query:", query)
     const scraperResults = await scraper.runScraper(sc, query)
     log(sc, c.yellow(`Completed with ${scraperResults.length} results`))
-  }, scraper.meta, { showUncached: true })
+  }, { ...scraper.meta }, { showUncached: true, trace: true })
 }
 
 // await runScraper(async (sc) => {

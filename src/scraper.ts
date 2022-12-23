@@ -38,7 +38,7 @@ export type ScraperMetadata = {
   noCache?: boolean
 }
 
-export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean }
+export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean, trace?: boolean }
 export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
   const randId = Math.round(Math.random() * 1000)
@@ -69,6 +69,8 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   const browser = await selectedBrowser.launch({ headless: false, proxy })
   const { ip, tz } = await getIPAndTimezone(browser)
   const context = await browser.newContext({ serviceWorkers: "block", timezoneId: tz })
+  if (debugOptions.trace)
+    await context.tracing.start({ screenshots: true, snapshots: true, sources: true })
   log(sc, c.magenta(`Using IP ${ip} (${tz})`))
 
   // enable caching, blocking and stats
@@ -92,6 +94,8 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     return undefined
   })
 
+  if (debugOptions.trace)
+    await context.tracing.stop({ path: "tmp/trace.zip" })
   await browser.close()
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   log(sc, `completed ${failed ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
