@@ -71,6 +71,13 @@ await new Listr<{}>(
   markedFares.map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid}`,
     task: async (_context, task) => {
+      const user = await admin.auth(app).getUser(markedFare.uid!)
+      if (["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73"].includes(user.uid)) {
+        // eslint-disable-next-line no-param-reassign
+        task.title = `${task.title} (skipped)`
+        return
+      }
+
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
       const foundSaver = results.searchResults.some((result) =>
         result.flightNo === markedFare.checkFlightNo
@@ -85,13 +92,6 @@ await new Listr<{}>(
       return task.newListr<{}>([{
         title: "Sending notification email...",
         task: async (_context2, task2) => {
-          const user = await admin.auth(app).getUser(markedFare.uid!)
-          if (user.email !== "trivex@gmail.com" && user.uid !== "GscyHmuPQ1ZuxT3LiQxy0CSyDP73") {
-            // eslint-disable-next-line no-param-reassign
-            task2.title = `${task2.title} skipping email for now`
-            return
-          }
-
           // TODO: make the buttons work and remove the email restriction above
           const sendResult = await transporter.sendMail({
             from: "\"AwardWiz\" <no-reply@awardwiz.com>",
