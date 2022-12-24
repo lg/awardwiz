@@ -23,7 +23,6 @@ export type ScraperRequest = {
 
 export type ScraperResult<ReturnType> = {
   result: ReturnType | undefined
-  failed: boolean
   logLines: string[]
 }
 
@@ -71,7 +70,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
   const ipStartTime = Date.now()
   const { ip, tz } = await pRetry(() => getIPAndTimezone(browser), { retries: 2, onFailedAttempt(error) {
-    log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message}`))
+    log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
   }, })
   log(sc, c.magenta(`Using IP ${ip} (${tz}) (took ${(Date.now() - ipStartTime)}ms)`))
 
@@ -86,17 +85,19 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
   const getStats = enableStatsForContext(context)
 
-  sc.page = await context.newPage()
-
   if (debugOptions.showRequests)
-    sc.page.on("request", request => console.log(">>", request.method(), request.url()))
+    context.on("request", request => console.log(">>", request.method(), request.url()))
   if (debugOptions.showResponses)
-    sc.page.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
+    context.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
 
-  let failed = false
-  const scraperResult = await scraper(sc).catch(async e => {
-    failed = true
-    log(sc, c.red("Scraper Error"), c.red(e))
+  const scraperResult = await pRetry(async () => {
+    sc.page = await context.newPage()
+    return scraper(sc).finally(() => sc.page.close())
+
+  }, { retries: 2, onFailedAttempt(error) {
+    log(sc, c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+  }, }).catch(e => {
+    log(sc, c.red(`Failed to run scraper: ${e.message}`))
     return undefined
   })
 
@@ -104,9 +105,9 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     await context.tracing.stop({ path: "tmp/trace.zip" })
   await browser.close()
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  log(sc, `completed ${failed ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
+  log(sc, `completed ${scraperResult === undefined ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats().summary})`)
 
-  return { result: scraperResult, logLines: sc.logLines, failed: false }
+  return { result: scraperResult, logLines: sc.logLines }
 }
 
 const getIPAndTimezone = async (browser: Browser) => {
