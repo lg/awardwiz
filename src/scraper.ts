@@ -114,13 +114,13 @@ const getIPAndTimezone = async (browser: Browser) => {
   const context = await browser.newContext()
   const page = await context.newPage()
 
-  const response = await page.goto("https://ipv4.geojs.io", { waitUntil: "domcontentloaded", timeout: NAV_WAIT_COMMIT_MS })
-  const out = await response?.text()
-  const [_, ip, tz] = out?.match(/IP: ([0-9.]+?)\n[\s\S]+Timezone: (.*)\n/) ?? []
-  if (!response?.ok() || !ip || !tz)
-    throw new Error(`Failed to get ip/timezone (status ${response?.status()}): ${await page.content()}`)
+  const ret = await page.goto("http://ipv4.geojs.io", { waitUntil: "load", timeout: 100 }) //NAV_WAIT_COMMIT_MS })
+    .then(async response => ({ ok: !!response, status: response?.status() ?? 0, out: await response?.text() ?? "" }))
+    .finally(() => context.close())
 
-  await page.close()
-  await context.close()
+  const { ip, tz } = /IP: (?<ip>[\d.]+)\n[\s\S]+Timezone: (?<tz>.*)\n/u.exec(ret.out)?.groups ?? {}
+  if (!ret.ok || !ip || !tz)
+    throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
+
   return { ip, tz }
 }

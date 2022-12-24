@@ -3,3 +3,4 @@ dist/
 tmp/
 .env*
 .eslintcache
+.DS_Store
