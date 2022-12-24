@@ -36,6 +36,7 @@ export const xhrFetch = async (page: Page, url: string, init: RequestInit, timeo
   return page.evaluate(async ({ url, init, timeoutMs }) => {
     const ac = new AbortController()
     const { signal } = ac
+    // eslint-disable-next-line no-restricted-globals
     void setTimeout(() => { ac.abort() }, timeoutMs)
 
     const fetchResponse = await fetch(url, { ...init, signal })

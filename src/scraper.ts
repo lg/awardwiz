@@ -8,7 +8,7 @@ import url from "url"
 import { enableStatsForContext } from "./stats.js"
 import { Browser, Page } from "playwright"
 import c from "ansi-colors"
-import { find as findTz } from "geo-tz"
+import pRetry from "p-retry"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -34,11 +34,12 @@ export type ScraperMetadata = {
   noBlocking?: boolean
   noStealth?: boolean
   useBrowser?: BrowserName
-  noProxy?: boolean
   noCache?: boolean
 }
 
-export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean, trace?: boolean }
+const NAV_WAIT_COMMIT_MS = 5000
+
+export type DebugOptions = { overrideBrowser?: BrowserName, showRequests?: boolean, showResponses?: boolean, showBlocked?: boolean, showCached?: boolean, showUncached?: boolean, trace?: boolean, noProxy?: boolean }
 export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
   const randId = Math.round(Math.random() * 1000)
@@ -58,20 +59,25 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
   // load proxy
   let proxy = undefined
-  if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null && !meta.noProxy) {
+  if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null && !debugOptions.noProxy) {
     const { host, username, password } = new URL(env.PROXY_ADDRESS!)
     proxy = { server: host, username: username, password: password }
   } else {
-    log(sc, c.yellow(`Not using proxy server ${meta.noProxy ? "(the scraper has noProxy enabled)" : `(the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
+    log(sc, c.yellow(`Not using proxy server ${debugOptions.noProxy ? "(noProxy option enabled)" : `(the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
   }
 
   log(sc, `Starting ${c.green(selectedBrowserName)}`)
   const browser = await selectedBrowser.launch({ headless: false, proxy })
-  const { ip, tz } = await getIPAndTimezone(browser)
+
+  const ipStartTime = Date.now()
+  const { ip, tz } = await pRetry(() => getIPAndTimezone(browser), { retries: 2, onFailedAttempt(error) {
+    log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message}`))
+  }, })
+  log(sc, c.magenta(`Using IP ${ip} (${tz}) (took ${(Date.now() - ipStartTime)}ms)`))
+
   const context = await browser.newContext({ serviceWorkers: "block", timezoneId: tz })
   if (debugOptions.trace)
     await context.tracing.start({ screenshots: true, snapshots: true, sources: true })
-  log(sc, c.magenta(`Using IP ${ip} (${tz})`))
 
   // enable caching, blocking and stats
   if (!meta.noCache)
@@ -90,7 +96,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   let failed = false
   const scraperResult = await scraper(sc).catch(async e => {
     failed = true
-    log(sc, "Scraper Error", e)
+    log(sc, c.red("Scraper Error"), c.red(e))
     return undefined
   })
 
@@ -106,10 +112,14 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 const getIPAndTimezone = async (browser: Browser) => {
   const context = await browser.newContext()
   const page = await context.newPage()
-  await page.goto("http://geo.zombe.es")
-  const ipGeo = JSON.parse(await page.textContent("pre") ?? "{}")
-  const tz = findTz(ipGeo.geo.latitude, ipGeo.geo.longitude)[0]
+
+  const response = await page.goto("https://ipv4.geojs.io", { waitUntil: "domcontentloaded", timeout: NAV_WAIT_COMMIT_MS })
+  const out = await response?.text()
+  const [_, ip, tz] = out?.match(/IP: ([0-9.]+?)\n[\s\S]+Timezone: (.*)\n/) ?? []
+  if (!response?.ok() || !ip || !tz)
+    throw new Error(`Failed to get ip/timezone (status ${response?.status()}): ${await page.content()}`)
+
   await page.close()
   await context.close()
-  return { ip: ipGeo.ip, tz }
+  return { ip, tz }
 }
