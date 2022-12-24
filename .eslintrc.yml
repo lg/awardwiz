@@ -5,12 +5,14 @@ plugins:
   - "@typescript-eslint"
   - promise
   - deprecation
+  - regexp
 extends:
   - eslint:recommended
   - plugin:import/recommended
   - plugin:import/typescript
   - plugin:@typescript-eslint/strict
   - plugin:promise/recommended
+  - plugin:regexp/all
 parser: "@typescript-eslint/parser"
 parserOptions:
   ecmaFeatures:
@@ -77,6 +79,8 @@ rules:
   "@typescript-eslint/no-throw-literal": off
 
   "deprecation/deprecation": "warn"
+
+  "regexp/no-unused-capturing-group": off
 
   "no-restricted-globals": ["error",
     { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },
