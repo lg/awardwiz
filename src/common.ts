@@ -3,10 +3,11 @@
 import { Page } from "playwright"
 import dayjs from "dayjs"
 import { ScraperMetadata, ScraperRequest } from "./scraper.js"
+import c from "ansi-colors"
 
 type WaitUntilStates = "load" | "domcontentloaded" | "networkidle" | "commit"
 
-const NAV_WAIT_COMMIT_MS = 5000
+const NAV_WAIT_COMMIT_MS = 7000
 const NAV_WAIT_EXTRA_MS = 25000
 
 export const gotoPage = async (aw: ScraperRequest, url: string, waitUntil: WaitUntilStates) => {
@@ -44,9 +45,18 @@ export const xhrFetch = async (page: Page, url: string, init: RequestInit, timeo
   }, { url, init, timeoutMs })
 }
 
-export const log = (aw: { meta: ScraperMetadata, randId: number, logLines: string[] } , ...toLog: any) => {
+type ScraperRequestMinimumForLogging = { meta: ScraperMetadata, randId: number, logLines: string[] }
+export const log = (aw: ScraperRequestMinimumForLogging, ...toLog: any) => {
   const start = `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")} ${aw.meta.name}-${aw.randId}]`
   aw.logLines.push([start, ...toLog].map((line) => ((typeof line === "string") ? line : JSON.stringify(line))).join(" "))
   console.log(start, ...toLog)
 }
 
+export const jsonParseLoggingError = (aw: ScraperRequestMinimumForLogging, json: string) => {
+  try {
+    return JSON.parse(json)
+  } catch (e) {
+    log(aw, c.red("Error parsing JSON"), e, c.red("JSON:"), `${json}`)
+    throw e
+  }
+}

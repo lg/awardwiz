@@ -1,4 +1,5 @@
-import { gotoPage, log, xhrFetch } from "../common.js"
+import pRetry from "p-retry"
+import { gotoPage, jsonParseLoggingError, log, xhrFetch } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
@@ -9,13 +10,14 @@ export const meta: ScraperMetadata = {
     "customer.cludo.com", "*.entrust.net", "*_cookieBanner.jsp", "*.tiqcdn.com",
     "https://www.aa.com/VEoQcQ/*", "https://www.aa.com/airport/countries*"
   ],
+  unsafeHttpsOk: true
 }
 
-export const runScraper: AwardWizScraper = async (aw, query) => {
-  await gotoPage(aw, "https://www.aa.com/booking/find-flights", "commit")
+export const runScraper: AwardWizScraper = async (sc, query) => {
+  await gotoPage(sc, "https://www.aa.com/booking/find-flights", "commit")
 
-  log(aw, "fetching itinerary")
-  const raw = await xhrFetch(aw.page, "https://www.aa.com/booking/api/search/itinerary", {
+  log(sc, "fetching itinerary")
+  const raw = await pRetry(() => xhrFetch(sc.page, "https://www.aa.com/booking/api/search/itinerary", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -41,11 +43,10 @@ export const runScraper: AwardWizScraper = async (aw, query) => {
       "tripOptions": { "locale": "en_US", "searchType": "Award" },
       "loyaltyInfo": undefined
     })
-  })
+  }), { retries: 2 })
 
-  log(aw, "parsing")
-  const json = JSON.parse(raw) as AAResponse
-
+  log(sc, "parsing")
+  const json = jsonParseLoggingError(sc, raw) as AAResponse
   if (json.error && json.error !== "309")
     throw new Error(json.error)
 
