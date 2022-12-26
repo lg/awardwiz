@@ -10,7 +10,8 @@ export const meta: ScraperMetadata = {
     "customer.cludo.com", "*.entrust.net", "*_cookieBanner.jsp", "*.tiqcdn.com",
     "https://www.aa.com/VEoQcQ/*", "https://www.aa.com/airport/countries*"
   ],
-  unsafeHttpsOk: true
+  unsafeHttpsOk: true,
+  noIpLookup: true,
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

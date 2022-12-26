@@ -12,7 +12,7 @@ for (let i: number = 0; i < 5; i += 1) {
     const scraperResults = await scraper.runScraper(sc, query)
     log(sc, c.green(`Completed with ${scraperResults.length} results`))
     return scraperResults
-  }, { ...scraper.meta }, { showUncached: false, trace: false, noProxy: false, noTz: false })
+  }, { ...scraper.meta }, { showUncached: false, trace: false, noProxy: false })
 }
 
 // await runScraper(async (sc) => {

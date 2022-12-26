@@ -35,6 +35,7 @@ export type ScraperMetadata = {
   useBrowser?: BrowserName
   noCache?: boolean
   unsafeHttpsOk?: boolean
+  noIpLookup?: boolean
 }
 
 export type DebugOptions = {
@@ -46,7 +47,6 @@ export type DebugOptions = {
   showUncached?: boolean,
   trace?: boolean,
   noProxy?: boolean,
-  noTz?: boolean,
 }
 
 const NAV_WAIT_COMMIT_MS = 7000
@@ -87,7 +87,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     browser = await selectedBrowser.launch({ headless: false, proxy })
 
     const ipStartTime = Date.now()
-    const { ip, tz } = !debugOptions.noTz ? await pRetry(() => getIPAndTimezone(browser!), { retries: 2, onFailedAttempt(error) {
+    const { ip, tz } = !meta.noIpLookup ? await pRetry(() => getIPAndTimezone(browser!), { retries: 2, onFailedAttempt(error) {
       log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
     }, }) : { ip: undefined, tz: undefined }
     if (ip && tz)
@@ -144,8 +144,8 @@ const getIPAndTimezone = async (browser: Browser) => {
 
   const PROVIDERS = [
     { url: "https://json.geoiplookup.io", ip_field: "ip", tz_field: "timezone_name" },
-    { url: "https://ipapi.co/json", ip_field: "ip", tz_field: "timezone" },
-    { url: "https://ipinfo.io/json", ip_field: "ip", tz_field: "timezone" }
+    // { url: "https://ipapi.co/json", ip_field: "ip", tz_field: "timezone" },
+    // { url: "https://ipinfo.io/json", ip_field: "ip", tz_field: "timezone" }
   ]
   const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]
 

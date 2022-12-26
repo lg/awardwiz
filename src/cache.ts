@@ -26,7 +26,7 @@ export const enableCacheForContext = async (context: BrowserContext, namespace: 
     const requestMethod = response.request().method()
     const cacheControl = await response.headerValue("cache-control")
 
-    const maxAge = parseInt(cacheControl?.match(/max-age=(\d+)/)?.[1] ?? "0")
+    const maxAge = parseInt(/max-age=(?<maxAge>\d+)/u.exec(cacheControl ?? "")?.groups?.maxAge ?? "0")
     const isPublic = !!cacheControl?.includes("public")
     const isPrivate = !!cacheControl?.includes("private")
     const isNoCache = !!cacheControl?.includes("no-cache")

@@ -16,8 +16,8 @@ ENV NODE_ENV production
 COPY package.json package-lock.json ./
 RUN npm install -g npm && npm i
 
+COPY run.sh ./
 COPY dist/ dist/
-COPY ua-*.txt run.sh ./
 
 CMD ["/root/run.sh"]
 
