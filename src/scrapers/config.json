@@ -56,6 +56,7 @@
     },
     {
       "name": "alaska",
+      "disabled": true,
       "supportedAirlines": ["AS", "EI", "AA", "BA", "CX", "DE", "LY", "EK", "FJ", "AY", "AU", "FI", "JL", "KE", "LA", "KS", "QF", "7H", "SQ"],
       "nativeAirline": "AS"
     },
