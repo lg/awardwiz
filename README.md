@@ -42,3 +42,4 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 3. Put a `try`/`catch` block around your entire method when debugging to print the error and then `await sc.page.pause()` so you can investigate when things fail. Also consider a `sc.page.setDefaultTimeout(5000)` statement to not wait the full 30s Playwright expects.
 4. Getting a scraper to be complete end-to-end in **5 seconds** is amazing, **5-10 seconds** is ok, **10-15 seconds** is ok, **15+ seconds** isn't great. Cache everything that you can, block outside vendors they're using (except anti-botting), try to directly do xhr requests instead of filling out forms (when possible). It's all a balance of the amount of anti-botting they're using.
 5. If stuck behind anti-botting, try `useIpTimezone`.
+6. If the xhr for the actual flight results takes a while to get requested, use `showFullRequest` to see when the request actually starts, maybe there's a dependent request that can be cached.

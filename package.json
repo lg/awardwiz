@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
+    "lets-upgrade-packages": "npm-check -u",
     "_": "",
     "start-arm64": "npm run docker-build-arm64 && npm run docker-run",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
@@ -27,6 +28,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-regexp": "^1.11.0",
+    "npm-check": "^6.0.1",
     "typescript": "^4.9.4"
   },
   "dependencies": {

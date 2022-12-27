@@ -49,7 +49,8 @@ export type DebugOptions = {
   showUncached?: boolean,
   trace?: boolean,
   noProxy?: boolean,
-  outputResponse?: string[],
+  showFullResponse?: string[],
+  showFullRequest?: string[],
 }
 
 const NAV_WAIT_COMMIT_MS = 7000
@@ -107,19 +108,29 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
     getStats = enableStatsForContext(context)
 
+    // debugging options to see requests and responses (and optionally the full bodies)
     if (debugOptions.showRequests)
       context.on("request", request => console.log(">>", request.method(), request.url()))
     if (debugOptions.showResponses)
       context.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
 
-    const outputResponseRegexps = (debugOptions.outputResponse ?? []).map((glob) => globToRegexp(glob, { extended: true }))
-    if (debugOptions.outputResponse?.length) {
-      context!.on("response", async (response) => {
-        if (outputResponseRegexps.some((pattern) => pattern.test(response.url())))
-          log(sc, c.yellow(`*** Outputting response for ${response.url()} ***`), "\n", c.whiteBright(await response.text()), c.yellow("*******"))
-      })
-    }
+    const fullRequestRegexps = (debugOptions.showFullRequest ?? []).map((glob) => globToRegexp(glob, { extended: true }))
+    fullRequestRegexps.length > 0 && context.on("request", async (request) => {
+      if (fullRequestRegexps.some((pattern) => pattern.test(request.url()))) {
+        log(sc, "\n", c.whiteBright(`*** Outputting request for ${request.url()} ***`), "\n",
+          c.whiteBright(request.postData() ?? "(no post data)"), "\n", c.whiteBright("*******"))
+      }
+    })
 
+    const fullResponseRegexps = (debugOptions.showFullResponse ?? []).map((glob) => globToRegexp(glob, { extended: true }))
+    fullResponseRegexps.length > 0 && context.on("response", async (response) => {
+      if (fullResponseRegexps.some((pattern) => pattern.test(response.url()))) {
+        log(sc, "\n", c.whiteBright(`*** Outputting response for ${response.url()} ***`), "\n",
+          c.whiteBright(await response.text()), "\n", c.whiteBright("*******"))
+      }
+    })
+
+    // run scraper
     const scraperResult = await pRetry(async () => {
       sc.page = await context!.newPage()
       return scraper(sc).finally(() => sc.page.close())
