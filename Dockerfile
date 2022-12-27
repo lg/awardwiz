@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/playwright:v1.28.0-focal@sha256:005384a627bd71a0791e993d017907d31c9798e6b082d794a36e80213520c0a9
+# tags here: https://mcr.microsoft.com/en-us/product/playwright/tags
+FROM mcr.microsoft.com/playwright:next-jammy
 WORKDIR /root
 
 # tools to debug via vnc (connect to this instance on port 8080)
@@ -20,5 +21,3 @@ COPY run.sh ./
 COPY dist/ dist/
 
 CMD ["/root/run.sh"]
-
-
