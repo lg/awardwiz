@@ -1,7 +1,13 @@
 import { commandOptions, createClient } from "@redis/client"
 import { BrowserContext, Route } from "playwright"
+import c from "ansi-colors"
+import { default as globToRegexp } from "glob-to-regexp"
 
-export const enableCacheForContext = async (context: BrowserContext, namespace: string, debug?: { showCached?: boolean, showUncached?: boolean }) => {
+const MAX_CACHE_TIME_S = 3600 * 24
+
+export const enableCacheForContext = async (context: BrowserContext, namespace: string, forceCache: string[], debug?: { showCached?: boolean, showUncached?: boolean }) => {
+  const forceRegexps = forceCache.map((glob) => globToRegexp(glob, { extended: true }))
+
   const redis = createClient()
   redis.on("error", (err) => { console.log("Redis Client Error", err); return redis.disconnect() })
   await redis.connect()
@@ -33,16 +39,23 @@ export const enableCacheForContext = async (context: BrowserContext, namespace: 
 
     const shouldCacheGlobally = maxAge > 0 && !isPrivate && !isNoCache
     const shouldCacheLocally = maxAge > 0 && !isPublic && !isNoCache
+    const shouldCacheBecauseForced = forceRegexps.some((pattern) => pattern.test(response.url()))
 
-    const shouldCache = (shouldCacheGlobally || shouldCacheLocally) && requestMethod === "GET"
+    const shouldCache = (shouldCacheGlobally || shouldCacheLocally || shouldCacheBecauseForced) && requestMethod === "GET"
     if (shouldCache) {
       const body = await response.body().catch((e) => Buffer.from(""))
-      await redis.setEx(`${namespace}:${response.url()}`, Math.min(maxAge, 3600 * 24), body)
+      await redis.setEx(`${namespace}:${response.url()}`, Math.min(maxAge || MAX_CACHE_TIME_S, MAX_CACHE_TIME_S), body)
       await context.route(response.url(), runCachedRoute)
     }
 
     if (debug?.showUncached)
-      console.log("<<", response.status(), response.url(), `\x1b[31m${await response.headerValue("cache-control")}\x1b[0m`, `\x1b[32m${shouldCache ? "ADDED TO CACHE" : ""}\x1b[0m`)
+      console.log(
+        "<<",
+        c.yellow(response.request().method()),
+        c.yellow(response.status().toString()),
+        response.url(),
+        c.blue(await response.headerValue("cache-control") ?? "unknown"),
+        c.green(shouldCache ? `ADDED TO CACHE ${shouldCacheBecauseForced ? "(FORCED)" : ""}` : ""))
   })
 
   const allKeys = await redis.keys(`${namespace}:*`)

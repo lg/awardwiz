@@ -9,6 +9,7 @@ import { enableStatsForContext } from "./stats.js"
 import { Browser, BrowserContext, Page } from "playwright"
 import c from "ansi-colors"
 import pRetry from "p-retry"
+import globToRegexp from "glob-to-regexp"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -36,6 +37,7 @@ export type ScraperMetadata = {
   noCache?: boolean
   unsafeHttpsOk?: boolean
   noIpLookup?: boolean
+  forceCache?: string[]
 }
 
 export type DebugOptions = {
@@ -47,6 +49,7 @@ export type DebugOptions = {
   showUncached?: boolean,
   trace?: boolean,
   noProxy?: boolean,
+  outputResponse?: string[],
 }
 
 const NAV_WAIT_COMMIT_MS = 7000
@@ -99,7 +102,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
     // enable caching, blocking and stats
     if (!meta.noCache)
-      await enableCacheForContext(context, `cache:${meta.name}`, { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
+      await enableCacheForContext(context, `cache:${meta.name}`, meta.forceCache ?? [], { showCached: debugOptions.showCached, showUncached: debugOptions.showUncached })
     if (!meta.noBlocking)
       await enableBlockingForContext(context, meta.blockUrls, debugOptions.showBlocked)
     getStats = enableStatsForContext(context)
@@ -108,6 +111,14 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       context.on("request", request => console.log(">>", request.method(), request.url()))
     if (debugOptions.showResponses)
       context.on("response", async response => console.log("<<", response.status(), response.url(), await response.headerValue("cache-control")))
+
+    const outputResponseRegexps = (debugOptions.outputResponse ?? []).map((glob) => globToRegexp(glob, { extended: true }))
+    if (debugOptions.outputResponse?.length) {
+      context!.on("response", async (response) => {
+        if (outputResponseRegexps.some((pattern) => pattern.test(response.url())))
+          log(sc, c.yellow(`*** Outputting response for ${response.url()} ***`), "\n", c.whiteBright(await response.text()), c.yellow("*******"))
+      })
+    }
 
     const scraperResult = await pRetry(async () => {
       sc.page = await context!.newPage()

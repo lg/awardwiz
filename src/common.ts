@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-import { Page } from "playwright"
+import { Page, Response } from "playwright"
 import dayjs from "dayjs"
 import { ScraperMetadata, ScraperRequest } from "./scraper.js"
 import c from "ansi-colors"
@@ -17,19 +17,26 @@ export const gotoPage = async (aw: ScraperRequest, url: string, waitUntil: WaitU
   if (waitUntil !== "commit")
     await aw.page.waitForLoadState(waitUntil, { timeout: NAV_WAIT_EXTRA_MS })
 
-  if (load && load.status() !== 200) {
-    const pageText = await load.text()
+  await throwIfBadResponse(aw, load)
+
+  log(aw, "Completed loading url")
+  return load ?? undefined
+}
+
+export const throwIfBadResponse = async (aw: ScraperRequest, response: Response | null) => {
+  if (!response)
+    throw new Error("Response was null!")
+
+  if (response.status() !== 200) {
+    const pageText = await response.text()
     if (pageText.includes("<H1>Access Denied</H1>"))
-      throw new Error(`Access Denied while loading page (status: ${load.status()})`)
+      throw new Error(`Access Denied while loading page (status: ${response.status()})`)
     if (pageText.includes("div class=\"px-captcha-error-header\""))
       throw new Error("Perimeter-X captcha while loading page")
     log(aw, pageText)
 
-    throw new Error(`Page loading failed with status ${load.status()}`)
+    throw new Error(`Page loading failed with status ${response.status()}`)
   }
-
-  log(aw, "Completed loading url")
-  return load ?? undefined
 }
 
 export const xhrFetch = async (page: Page, url: string, init: RequestInit, timeoutMs: number = NAV_WAIT_EXTRA_MS) => {
