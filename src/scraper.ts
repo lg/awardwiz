@@ -29,13 +29,14 @@ export type ScraperResult<ReturnType> = {
 
 export type ScraperMetadata = {
   name: string,
+  unsafeHttpsOk: boolean
+
   blockUrls?: string[]
   noRandomUserAgent?: boolean
   noBlocking?: boolean
   noStealth?: boolean
   useBrowser?: BrowserName
   noCache?: boolean
-  unsafeHttpsOk?: boolean
   useIpTimezone?: boolean
   forceCache?: string[]
 }

@@ -5,7 +5,7 @@ import c from "ansi-colors"
 import dayjs from "dayjs"
 
 for (let i: number = 0; i < 1; i += 1) {
-  const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
+  const scraper: AwardWizScraperModule = await import("./scrapers/skiplagged.js")
   const randomDate = dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
   const query: AwardWizQuery = { origin: "SFO", destination: "LAX", departureDate: randomDate }
 

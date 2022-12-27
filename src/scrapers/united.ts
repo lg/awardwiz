@@ -5,6 +5,7 @@ import type { Trip, UnitedResponse } from "./samples/united.js"
 
 export const meta: ScraperMetadata = {
   name: "united",
+  unsafeHttpsOk: true,
   blockUrls: ["*.liveperson.net", "tags.tiqcdn.com"],
   forceCache: [
     "*.svg", "*/npm.*", "*/fonts/*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
