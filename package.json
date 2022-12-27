@@ -1,10 +1,12 @@
 {
   "type": "module",
   "scripts": {
-    "check": "NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
+    "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
+    "_": "",
     "start-arm64": "npm run docker-build-arm64 && npm run docker-run",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
     "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
+    "__": "",
     "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
     "docker-build-arm64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/arm64 ./",
     "docker-build-amd64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/amd64 ./",

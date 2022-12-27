@@ -9,8 +9,7 @@ export const meta: ScraperMetadata = {
   forceCache: [
     "*.svg", "*/npm.*", "*/fonts/*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
     "*/api/airports/lookup/?airport=*&allAirports=true", "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
-    "*/api/User/IsEmployee", "*/api/flight/recentSearch"],
-  noIpLookup: true,
+    "*/api/User/IsEmployee", "*/api/flight/recentSearch"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

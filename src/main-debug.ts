@@ -4,8 +4,8 @@ import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
 
 for (let i: number = 0; i < 1; i += 1) {
-  const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
-  const query: AwardWizQuery = { origin: "EWR", destination: "SFO", departureDate: "2023-01-25" }
+  const scraper: AwardWizScraperModule = await import("./scrapers/aa.js")
+  const query: AwardWizQuery = { origin: "JFK", destination: "SFO", departureDate: "2023-01-25" }
 
   await runScraper(async (sc) => {
     log(sc, "Using query:", query)
@@ -14,8 +14,8 @@ for (let i: number = 0; i < 1; i += 1) {
     return scraperResults
   }, { ...scraper.meta }, {
     showUncached: true,
-    noProxy: false,
-    showBlocked: true,
+    noProxy: true,
+    showBlocked: false,
     outputResponse: []
   })
 }

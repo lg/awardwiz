@@ -7,11 +7,10 @@ import { AAResponse, Slice } from "./samples/aa.js"
 export const meta: ScraperMetadata = {
   name: "aa",
   blockUrls: [
-    "customer.cludo.com", "*.entrust.net", "*_cookieBanner.jsp", "*.tiqcdn.com",
-    "https://www.aa.com/VEoQcQ/*", "https://www.aa.com/airport/countries*"
+    "customer.cludo.com", "*.entrust.net", "*.tiqcdn.com"
   ],
-  unsafeHttpsOk: true,
-  noIpLookup: true,
+  forceCache: ["*_cookieBanner.jsp", "*/airport/countries*"],
+  unsafeHttpsOk: true
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

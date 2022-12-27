@@ -36,7 +36,7 @@ export type ScraperMetadata = {
   useBrowser?: BrowserName
   noCache?: boolean
   unsafeHttpsOk?: boolean
-  noIpLookup?: boolean
+  useIpTimezone?: boolean
   forceCache?: string[]
 }
 
@@ -90,7 +90,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     browser = await selectedBrowser.launch({ headless: false, proxy })
 
     const ipStartTime = Date.now()
-    const { ip, tz } = !meta.noIpLookup ? await pRetry(() => getIPAndTimezone(browser!), { retries: 2, onFailedAttempt(error) {
+    const { ip, tz } = meta.useIpTimezone ? await pRetry(() => getIPAndTimezone(browser!), { retries: 2, onFailedAttempt(error) {
       log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
     }, }) : { ip: undefined, tz: undefined }
     if (ip && tz)
