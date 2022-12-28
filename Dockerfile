@@ -1,5 +1,5 @@
 # tags here: https://mcr.microsoft.com/en-us/product/playwright/tags
-FROM mcr.microsoft.com/playwright:next-jammy
+FROM mcr.microsoft.com/playwright:v1.29.1
 WORKDIR /root
 
 # tools to debug via vnc (connect to this instance on port 8080)

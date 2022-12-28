@@ -4,10 +4,12 @@ import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
 import dayjs from "dayjs"
 
-for (let i: number = 0; i < 1; i += 1) {
-  const scraper: AwardWizScraperModule = await import("./scrapers/skiplagged.js")
+for (let i: number = 0; i < 20; i += 1) {
+  const scraper: AwardWizScraperModule = await import("./scrapers/southwest.js")
   const randomDate = dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
-  const query: AwardWizQuery = { origin: "SFO", destination: "LAX", departureDate: randomDate }
+  const flights = [["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
+  const flight = flights[Math.floor(Math.random() * flights.length)]
+  const query: AwardWizQuery = { origin: flight[0], destination: flight[1], departureDate: randomDate }
 
   await runScraper(async (sc) => {
     log(sc, "Using query:", query)
@@ -24,7 +26,7 @@ for (let i: number = 0; i < 1; i += 1) {
     pauseAfterRun: false,
     pauseAfterError: false,
     changeProxies: true,
-    maxAttempts: 3
+    maxAttempts: 3,
   })
 }
 

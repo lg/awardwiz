@@ -4,7 +4,7 @@
     "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
     "lets-upgrade-packages": "npm-check -u",
     "_": "",
-    "start": "npm run start-arm64-native",
+    "start": "npm run start-arm64-docker",
     "start-arm64-docker": "npm run docker-build-arm64 && npm run docker-run",
     "start-arm64-native": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-debug.js",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
