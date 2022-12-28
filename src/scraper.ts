@@ -99,10 +99,14 @@ export type DebugOptions = {
    * opened (so not on retries).
    * @default true */
   changeProxies?: boolean
+
+  /** If a scraper fails, we'll retry until this many attempts.
+   * @default 3
+   */
+  maxAttempts?: number
 }
 
 const NAV_WAIT_COMMIT_MS = 15000
-const MAX_ATTEMPTS = 3
 
 export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
@@ -202,7 +206,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       sc.page = await context!.newPage()
       return scraper(sc)
 
-    }, { retries: 2, onFailedAttempt: async (error) => {
+    }, { retries: (debugOptions.maxAttempts ?? 3) - 1, onFailedAttempt: async (error) => {
       if (debugOptions.pauseAfterError) {
         log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8080/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
         await sc.page.pause()
