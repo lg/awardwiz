@@ -59,11 +59,19 @@ export const log = (aw: ScraperRequestMinimumForLogging, ...toLog: any) => {
   console.log(start, ...toLog)
 }
 
-export const jsonParseLoggingError = (aw: ScraperRequestMinimumForLogging, json: string) => {
+export const jsonParseLoggingError = <Type>(aw: ScraperRequestMinimumForLogging, json: string): Type => {
   try {
     return JSON.parse(json)
   } catch (e) {
     log(aw, c.red("Error parsing JSON"), e, c.red("JSON:"), `${json}`)
     throw e
+  }
+}
+
+export const jsonParse = <Type>(json: string): Type | undefined => {
+  try {
+    return JSON.parse(json)
+  } catch (e) {
+    return undefined
   }
 }

@@ -2,6 +2,7 @@ import { commandOptions, createClient } from "@redis/client"
 import { BrowserContext, Route } from "playwright"
 import c from "ansi-colors"
 import { default as globToRegexp } from "glob-to-regexp"
+import { jsonParse } from "./common.js"
 
 const MAX_CACHE_TIME_S = 3600 * 24
 
@@ -18,11 +19,13 @@ export const enableCacheForContext = async (context: BrowserContext, namespace: 
     if (route.request().method() !== "GET")
       return route.fallback()
 
-    const cachedBody = await redis.get(commandOptions({ returnBuffers: true }), `${namespace}:${route.request().url()}`)
-    if (!cachedBody) return route.fallback()
+    const cachedBodyBuffer = await redis.get(commandOptions({ returnBuffers: true }), `${namespace}:body:${route.request().url()}`)
+    const cachedHeadersBuffer = await redis.get(commandOptions({ returnBuffers: true }), `${namespace}:headers:${route.request().url()}`)
+    const cachedHeadersStr = cachedHeadersBuffer?.toString("utf8")
+    if (!cachedBodyBuffer || !cachedHeadersStr) return route.fallback()
 
     if (debug?.showCached) console.log(">>", route.request().method(), route.request().url(), "\x1b[32mFROM CACHE\x1b[0m")
-    return route.fulfill({ body: cachedBody, headers: { "x-fromcache": "true" } })
+    return route.fulfill({ body: cachedBodyBuffer, headers: { ...jsonParse(cachedHeadersStr), "x-fromcache": "true" } })
   }
 
   context.on("response", async (response) => {
@@ -44,7 +47,8 @@ export const enableCacheForContext = async (context: BrowserContext, namespace: 
     const shouldCache = (shouldCacheGlobally || shouldCacheLocally || shouldCacheBecauseForced) && requestMethod === "GET"
     if (shouldCache) {
       const body = await response.body().catch((e) => Buffer.from(""))
-      await redis.setEx(`${namespace}:${response.url()}`, Math.min(maxAge || MAX_CACHE_TIME_S, MAX_CACHE_TIME_S), body)
+      await redis.setEx(`${namespace}:headers:${response.url()}`, Math.min(maxAge || MAX_CACHE_TIME_S, MAX_CACHE_TIME_S), Buffer.from(JSON.stringify(response.headers()), "utf-8"))
+      await redis.setEx(`${namespace}:body:${response.url()}`, Math.min(maxAge || MAX_CACHE_TIME_S, MAX_CACHE_TIME_S), body)
       await context.route(response.url(), runCachedRoute)
     }
 
@@ -60,7 +64,7 @@ export const enableCacheForContext = async (context: BrowserContext, namespace: 
 
   const allKeys = await redis.keys(`${namespace}:*`)
   await Promise.all(allKeys.map((key) => {
-    const url = key.substring(`${namespace}:`.length)  // remove "cache:xyz:" prefix
+    const url = key.substring(`${namespace}:headers:`.length)  // remove "cache:xyz:" prefix
     return context.route(url, runCachedRoute)
   }))
 }
