@@ -52,6 +52,7 @@ export type DebugOptions = {
   noProxy?: boolean,
   showFullResponse?: string[],
   showFullRequest?: string[],
+  pauseAfterRun?: boolean
 }
 
 const NAV_WAIT_COMMIT_MS = 7000
@@ -136,13 +137,26 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     // run scraper
     const scraperResult = await pRetry(async () => {
       sc.page = await context!.newPage()
-      return scraper(sc).finally(() => sc.page.close())
+      return scraper(sc)
 
-    }, { retries: 2, onFailedAttempt(error) {
+    }, { retries: 2, onFailedAttempt: async (error) => {
+      if (debugOptions.pauseAfterRun) {
+        log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8080/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
+        await sc.page.pause()
+      }
       log(sc, c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
-    }, }).catch(e => {
+
+    }}).catch(async e => {
       log(sc, c.red(`Failed to run scraper: ${e.message}`))
       return undefined
+
+    }).finally(async () => {
+      if (debugOptions.pauseAfterRun) {
+        log(sc, c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8080/vnc.html) ***")))
+        await sc.page.pause()
+      }
+
+      await sc.page.close()
     })
 
     success = true
@@ -155,8 +169,10 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   } finally {
     if (debugOptions.trace)
       await context?.tracing.stop({ path: "tmp/trace.zip" })
+    if (context)
+      await context.close()
     if (browser)
-      void browser.close()
+      await browser.close()
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     log(sc, `completed ${!success ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats?.().summary ?? ""})`)
