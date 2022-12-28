@@ -4,7 +4,9 @@
     "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
     "lets-upgrade-packages": "npm-check -u",
     "_": "",
-    "start-arm64": "npm run docker-build-arm64 && npm run docker-run",
+    "start": "npm run start-arm64-native",
+    "start-arm64-docker": "npm run docker-build-arm64 && npm run docker-run",
+    "start-arm64-native": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-debug.js",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
     "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
     "__": "",
@@ -20,6 +22,7 @@
     "@types/express": "^4.17.15",
     "@types/glob-to-regexp": "^0.4.1",
     "@types/node": "^18.11.17",
+    "@types/user-agents": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
     "depcheck": "^1.4.3",
@@ -42,6 +45,7 @@
     "p-retry": "^5.1.2",
     "playwright": "^1.28.1",
     "playwright-extra": "^4.3.5",
-    "puppeteer-extra-plugin-stealth": "^2.11.1"
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "user-agents": "^1.0.1243"
   }
 }

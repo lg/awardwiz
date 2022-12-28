@@ -14,15 +14,15 @@ for (let i: number = 0; i < 1; i += 1) {
     const scraperResults = await scraper.runScraper(sc, query)
     log(sc, c.green(`Completed with ${scraperResults.length} results`))
     return scraperResults
-  }, {
-    ...scraper.meta,
-    useIpTimezone: false
-  }, {
+
+  }, scraper.meta, {
     showUncached: true,
-    noProxy: true,
+    noProxy: false,
     showBlocked: false,
     showFullRequest: [],
     showFullResponse: [],
+    pauseAfterRun: false,
+    pauseAfterError: false,
   })
 }
 

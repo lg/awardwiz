@@ -7,7 +7,7 @@ import c from "ansi-colors"
 
 type WaitUntilStates = "load" | "domcontentloaded" | "networkidle" | "commit"
 
-const NAV_WAIT_COMMIT_MS = 7000
+const NAV_WAIT_COMMIT_MS = 15000
 const NAV_WAIT_EXTRA_MS = 25000
 
 export const gotoPage = async (aw: ScraperRequest, url: string, waitUntil: WaitUntilStates) => {

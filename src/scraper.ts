@@ -10,6 +10,7 @@ import { Browser, BrowserContext, Page } from "playwright"
 import c from "ansi-colors"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
+import UserAgent from "user-agents"
 
 const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 
@@ -28,21 +29,59 @@ export type ScraperResult<ReturnType> = {
 }
 
 export type ScraperMetadata = {
+  /** Unique name for the scraper */
   name: string,
+
+  /** When using proxies, some slyly try to man-in-the-middle to see what you're doing. Do not turn this on unless
+   * you're only scraping publicly available information. */
   unsafeHttpsOk: boolean
 
+  /** Blocks urls (as per [Adblock format](https://github.com/gorhill/uBlock/wiki/Static-filter-syntax)). use
+   * `showBlocked` debug option to iterate. Does not work if `noBlocking` is set to `true`.
+   * @default [] */
   blockUrls?: string[]
-  noRandomUserAgent?: boolean
+
+  /** Normally we use the browser's default user agent, setting this to `true` will use a random user agent that's
+   * associated with the browser and platform. Using the same user agent for a lot of requests will get some websites to
+   * detect you faster, but using a random user agent where they test different features you may/may not support could
+   * also trigger detection.
+   * @default false */
+  useRandomUserAgent?: boolean
+
+  /** By default will auto-block easylist and other similar lists (see `src/blocking.ts`), this disables that. These
+   * blockers can sometimes block telemetry used to assess if you're a not bot or not. Except for beacons or ads or
+   * similar, prefer to rely on default caching or use `forceCache` instead of this since blocking assets can break
+   * expected javascript execution or page layout. `blockUrls` will not work if this is set to `true`.
+   * @default false */
   noBlocking?: boolean
-  noStealth?: boolean
-  useBrowser?: BrowserName
-  noCache?: boolean
-  useIpTimezone?: boolean
+
+  /** Some websites don't return proper cache headers, this forces matching globs to get cached. Use the `showUncached`
+   * debug option to iterate. Does not work if `noCache` is set to `true`.
+   * @default [] */
   forceCache?: string[]
+
+  /** We use puppeteer-extra-plugin-stealth to hide things Playwright/Docker/headlessness does which could expose that
+  * we're a bot versus a human. This disables that.
+  * @default false */
+  noStealth?: boolean
+
+  /** Pick the browser(s) to randomize between. Can be "webkit", "firefox", "chromium", or an array of those.
+   * @default ["webkit", "firefox", "chromium"] */
+  useBrowser?: BrowserName | BrowserName[]
+
+  /** Disable caching (will be much slower, but could be useful for websites that are sensitive about the time it takes
+   * to search). `forceCache` will not work if this is set to `true`.
+   * @default false */
+  noCache?: boolean
+
+  /** Some anti-botting detects when your IP's timezone is different from the browser's settings. This flag looks up the
+  * current IP (which is likely the proxy's IP) and sets the timezone. Note this can add 1-2 seconds to the scraper. Be
+  * aware that if your proxy changes IP with every request, this will be a problem. Best to use session-based proxies.
+  * @default false */
+  useIpTimezone?: boolean
 }
 
 export type DebugOptions = {
-  overrideBrowser?: BrowserName,
   showRequests?: boolean,
   showResponses?: boolean,
   showBlocked?: boolean,
@@ -52,10 +91,12 @@ export type DebugOptions = {
   noProxy?: boolean,
   showFullResponse?: string[],
   showFullRequest?: string[],
-  pauseAfterRun?: boolean
+  pauseAfterRun?: boolean,
+  pauseAfterError?: boolean,
 }
 
-const NAV_WAIT_COMMIT_MS = 7000
+const NAV_WAIT_COMMIT_MS = 15000
+const MAX_ATTEMPTS = 3
 
 export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
@@ -69,7 +110,8 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
   try {
     // randomly select browser
-    const selectedBrowserName = debugOptions.overrideBrowser ?? meta.useBrowser ?? BROWSERS[Math.floor(Math.random() * BROWSERS.length)]
+    const pickFromBrowsers = Array.isArray(meta.useBrowser) ? meta.useBrowser : (typeof meta.useBrowser === "string" ? [meta.useBrowser] : BROWSERS)
+    const selectedBrowserName = pickFromBrowsers[Math.floor(Math.random() * pickFromBrowsers.length)]
     const selectedBrowser = {"firefox": firefox, "webkit": webkit, "chromium": chromium}[selectedBrowserName]
 
     // load stealth and handle incompatible stealth plugins
@@ -101,7 +143,17 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     if (ip && tz)
       log(sc, c.magenta(`Using IP ${ip} (${tz}) (took ${(Date.now() - ipStartTime)}ms)`))
 
-    context = await browser.newContext({ serviceWorkers: "block", timezoneId: tz, ignoreHTTPSErrors: meta.unsafeHttpsOk, locale: "en-US" })
+    // generate random user agent
+    let userAgent
+    if (meta.useRandomUserAgent) {
+      userAgent = new UserAgent({
+        "webkit": { vendor: "Apple Computer, Inc.", deviceCategory: "desktop" },
+        "chromium": { vendor: "Google Inc.", deviceCategory: "desktop" },
+        "firefox": [/Firefox/u, { deviceCategory: "desktop" }]
+      }[selectedBrowserName]).toString()
+    }
+
+    context = await browser.newContext({ serviceWorkers: "block", timezoneId: tz, ignoreHTTPSErrors: meta.unsafeHttpsOk, locale: "en-US", userAgent })
     if (debugOptions.trace)
       await context.tracing.start({ screenshots: true, snapshots: true, sources: true })
 
@@ -195,7 +247,7 @@ const getIPAndTimezone = async (browser: Browser) => {
     .finally(() => context.close())
 
   const json = JSON.parse(ret.out)
-  const [ip, tz] = [json[provider.ip_field], json[provider.tz_field]]
+  const [ip, tz] = [json[provider.ip_field], json[provider.tz_field]] as [string | undefined, string | undefined]
   if (!ret.ok || !ip || !tz)
     throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
 
