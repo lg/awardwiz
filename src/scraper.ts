@@ -72,12 +72,14 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     const selectedBrowser = {"firefox": firefox, "webkit": webkit, "chromium": chromium}[selectedBrowserName]
 
     // load stealth and handle incompatible stealth plugins
-    const stealth = StealthPlugin()
-    if (selectedBrowserName === "webkit")
-      ["navigator.webdriver", "user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
-    if (selectedBrowserName === "firefox")
-      ["user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
-    selectedBrowser.use(stealth)
+    if (!meta.noStealth) {
+      const stealth = StealthPlugin()
+      if (selectedBrowserName === "webkit")
+        ["navigator.webdriver", "user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
+      if (selectedBrowserName === "firefox")
+        ["user-agent-override"].forEach(e => stealth.enabledEvasions.delete(e))
+      selectedBrowser.use(stealth)
+    }
 
     // load proxy
     let proxy = undefined
