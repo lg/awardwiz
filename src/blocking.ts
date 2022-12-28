@@ -7,7 +7,8 @@ export const enableBlockingForContext = async (context: BrowserContext, extraUrl
   const adblockCache = { path: "tmp/adblocker.bin", read: fs.readFile, write: fs.writeFile }
   const engine = await FiltersEngine.fromLists(fetch, [
     "https://easylist.to/easylist/easylist.txt", "https://easylist.to/easylist/easyprivacy.txt", "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
-    "https://easylist.to/easylist/fanboy-social.txt", "https://secure.fanboy.co.nz/fanboy-annoyance.txt", "https://easylist.to/easylist/easylist.txt"
+    "https://easylist.to/easylist/fanboy-social.txt", "https://secure.fanboy.co.nz/fanboy-annoyance.txt", "https://easylist.to/easylist/easylist.txt",
+    "https://cdn.jsdelivr.net/gh/badmojr/1Hosts@master/Xtra/adblock.txt"
    ], undefined, adblockCache )
 
   engine.update({ newNetworkFilters: extraUrls?.map((url) => NetworkFilter.parse(url)!) })
