@@ -3,13 +3,13 @@
 ### Example template
 
 ```typescript
+import { gotoPage, log } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { AwardWizScraper, FlightWithFares } from "../types.js"
 
 export const meta: ScraperMetadata = {
   name: "your-scraper-name",
-  blockUrls: ["*.liveperson.net"],
-  forceCache: ["*.svg", "*.chunk.js"]
+  unsafeHttpsOk: true,
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
@@ -24,11 +24,11 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
 ### ScraperMetadata
 
-- `name`: the scraper name (required).
+- `name`: the scraper name. (required)
+- `unsafeHttpsOk`: when using proxies, some slyly try to mitm to see what you're doing. do not turn this on unless you're only scraping publicly info. (required)
 - `noBlocking`: by default will auto-block easylist and other similar lists (see blocking.ts), this disables that.
 - `blockUrls`: blocks urls (as per Adblock format). use `showBlocked` debug option to iterate.
 - `forceCache`: some websites don't return proper cache headers, this forces matching globs to get cached. use `showUncached` debug option to iterate.
-- `unsafeHttpsOk`: when using proxies, some slyly try to mitm to see what you're doing. do not turn this on unless you're only scraping publicly info.
 - `useIpTimezone`: some anti-botting detects when your IP's timezone is different from the browser, this flag looks up the current IP (which is likely the proxy) and sets the timezone. note this can add 1-2 seconds to the scraper.
 
 ### Helpful best practices when writing scrapers
