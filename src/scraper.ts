@@ -93,6 +93,12 @@ export type DebugOptions = {
   showFullRequest?: string[],
   pauseAfterRun?: boolean,
   pauseAfterError?: boolean,
+
+  /** When using a proxy service that has it's passwords in the format: `/\S{16}_country-\S+_session-)\S{8}$/`, we'll
+   * randomize text for those last 8 characters which should get a new proxy. This happens every time a new browser is
+   * opened (so not on retries).
+   * @default true */
+  changeProxies?: boolean
 }
 
 const NAV_WAIT_COMMIT_MS = 15000
@@ -129,6 +135,11 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     if (url.parse(env.PROXY_ADDRESS ?? "").hostname !== null && !debugOptions.noProxy) {
       const { host, username, password } = new URL(env.PROXY_ADDRESS!)
       proxy = { server: host, username: username, password: password }
+
+      // generate random proxy
+      const psPasswordRegexp = /(?<start>\S{16}_country-\S+_session-)\S{8}$/u.exec(password)
+      if ((debugOptions.changeProxies ?? true) && psPasswordRegexp)
+        proxy.password = psPasswordRegexp.groups!.start + Math.random().toString(36).slice(2).substring(0, 8)
     } else {
       log(sc, c.yellow(`Not using proxy server ${debugOptions.noProxy ? "(noProxy option enabled)" : `(the PROXY_ADDRESS variable is ${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
     }
@@ -192,7 +203,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       return scraper(sc)
 
     }, { retries: 2, onFailedAttempt: async (error) => {
-      if (debugOptions.pauseAfterRun) {
+      if (debugOptions.pauseAfterError) {
         log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8080/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
         await sc.page.pause()
       }

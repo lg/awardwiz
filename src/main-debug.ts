@@ -23,6 +23,7 @@ for (let i: number = 0; i < 1; i += 1) {
     showFullResponse: [],
     pauseAfterRun: false,
     pauseAfterError: false,
+    changeProxies: true
   })
 }
 
