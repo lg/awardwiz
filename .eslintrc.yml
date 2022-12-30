@@ -81,6 +81,7 @@ rules:
   "deprecation/deprecation": "warn"
 
   "regexp/no-unused-capturing-group": off
+  promise/no-nesting: off
 
   "no-restricted-globals": ["error",
     { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },

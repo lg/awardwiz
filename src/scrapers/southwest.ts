@@ -19,20 +19,22 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   await gotoPage(sc, "https://www.southwest.com/air/booking/", "networkidle")
 
   log(sc, "start")
-  sc.page.setDefaultTimeout(5000)
+  sc.page.setDefaultTimeout(15000)
 
   await sc.page.getByLabel("One-way").check()
   await sc.page.getByLabel("Points").check()
 
-  let warn = ""
-  await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click()).catch(() => { warn = "origin not found" })
-  await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click()).catch(() => { warn = "destination not found" })
-  if (warn) {
-    log(sc, c.yellow(`WARN: ${warn}`))
-    return []
-  }
+  const origin = await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin).then(() => Promise.race([
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click().then(() => "ok").catch(() => "origin not found"),
+    sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "origin not found")
+  ]))
+  if (origin !== "ok") { log(sc, c.yellow(`WARN: ${origin}`)) ; return [] }
+
+  const destination = await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination).then(() => Promise.race([
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click().then(() => "ok").catch(() => "destination not found"),
+    sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "destination not found")
+  ]))
+  if (destination !== "ok") { log(sc, c.yellow(`WARN: ${destination}`)) ; return [] }
 
   await sc.page.getByLabel(/^Depart Date {2}.*/u).fill(query.departureDate.substring(5).replace("-", "/")).then(() =>
     sc.page.getByLabel(/^Depart Date {2}.*/u).press("Escape"))
@@ -41,7 +43,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   await sc.page.getByRole("button", { name: /^Search button\./u }).click()
 
   const badDateError = sc.page.getByText("Enter depart date.").waitFor().then(() => "bad departure date").catch(() => "")
-  const response = sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 15000 })
+  const response = sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping")
     .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
   const raw = await Promise.race([badDateError, response])
 
