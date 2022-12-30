@@ -4,7 +4,7 @@ import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
 import dayjs from "dayjs"
 
-for (let i: number = 0; i < 20; i += 1) {
+for (let i: number = 0; i < 3; i += 1) {
   const scraper: AwardWizScraperModule = await import("./scrapers/southwest.js")
   const randomDate = dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
   const flights = [["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
