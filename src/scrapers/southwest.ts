@@ -2,6 +2,7 @@ import { gotoPage, log } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
+import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
@@ -22,23 +23,37 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   await sc.page.getByLabel("One-way").check()
   await sc.page.getByLabel("Points").check()
+
+  let warn = ""
   await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click()),
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click()).catch(() => { warn = "origin not found" })
   await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click()),
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click()).catch(() => { warn = "destination not found" })
+  if (warn) {
+    log(sc, c.yellow(`WARN: ${warn}`))
+    return []
+  }
+
   await sc.page.getByLabel(/^Depart Date {2}.*/u).fill(query.departureDate.substring(5).replace("-", "/")).then(() =>
     sc.page.getByLabel(/^Depart Date {2}.*/u).press("Escape"))
 
-  void sc.page.getByRole("button", { name: /^Search button\./u }).click()
-
   log(sc, "waiting for response")
-  const raw = await sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 15000 })
-    .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
+  await sc.page.getByRole("button", { name: /^Search button\./u }).click()
 
-    if (raw.code === 403050700)       // the code for "we know youre a bot"
-      throw new Error("Failed with anti-botting error")
-    if (!raw.success)
-      throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.code)}`)
+  const badDateError = sc.page.getByText("Enter depart date.").waitFor().then(() => "bad departure date").catch(() => "")
+  const response = sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", { timeout: 15000 })
+    .then((rawResponse) => rawResponse.json() as Promise<SouthwestResponse>)
+  const raw = await Promise.race([badDateError, response])
+
+  if (typeof raw === "string") {
+    if (raw) log(sc, c.yellow(`WARN: ${raw}`))
+    return []
+  }
+
+  if (raw.code === 403050700)       // the code for "we know youre a bot"
+    throw new Error("Failed with anti-botting error")
+  if (!raw.success)
+    throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.code)}`)
 
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
   const results = raw.data?.searchResults?.airProducts[0].details ?? []
