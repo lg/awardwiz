@@ -4,6 +4,8 @@ export type AwardWizScraperModule = { meta: ScraperMetadata, runScraper: AwardWi
 export type AwardWizScraper = (req: ScraperRequest, query: AwardWizQuery) => Promise<FlightWithFares[]>
 export type AwardWizQuery = { origin: string, destination: string, departureDate: string }
 
+export type DatedRoute = { origin: string, destination: string, departureDate: string }
+
 export type FlightWithFares = {
   flightNo: string                       // "UA 123"
   departureDateTime: string              // "2022-04-01 15:12"
