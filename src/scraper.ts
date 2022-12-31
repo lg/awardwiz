@@ -116,7 +116,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
   let browser: Browser | undefined
   let context: BrowserContext | undefined
   let getStats
-  let success = false
+  let scraperResult
 
   try {
     // randomly select browser
@@ -202,11 +202,11 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     })
 
     // run scraper
-    const scraperResult = await pRetry(async () => {
+    scraperResult = await pRetry(async () => {
       sc.page = await context!.newPage()
       return scraper(sc)
 
-    }, { retries: (debugOptions.maxAttempts ?? 3) - 1, onFailedAttempt: async (error) => {
+    }, { retries: (debugOptions.maxAttempts ?? 1) - 1, onFailedAttempt: async (error) => {
       if (debugOptions.pauseAfterError) {
         log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8282/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
         await sc.page.pause()
@@ -226,7 +226,6 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       await sc.page.close()
     })
 
-    success = true
     return { result: scraperResult, logLines: sc.logLines }
 
   } catch (e) {
@@ -242,7 +241,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       await browser.close()
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    log(sc, `completed ${!success ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats?.().summary ?? ""})`)
+    log(sc, `completed ${!scraperResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${getStats?.().summary ?? ""})`)
   }
 }
 

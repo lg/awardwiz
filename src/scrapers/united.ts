@@ -28,6 +28,12 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   if (typeof warn === "string") { log(sc, c.yellow(`WARN: ${warn}`)) ; return [] }
 
   await sc.page.getByPlaceholder("Depart").fill(query.departureDate)
+  const acceptedDate = await sc.page.getByPlaceholder("Depart").inputValue()
+  if (acceptedDate === query.departureDate) {
+    log(sc, c.yellow(`WARN: Departure date ${query.departureDate} not accepted`))
+    return []
+  }
+
   void sc.page.getByRole("button", { name: "Find flights" }).click()
 
   log(sc, "waiting for results")

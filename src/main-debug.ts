@@ -6,8 +6,8 @@ import dayjs from "dayjs"
 
 for (let i: number = 0; i < 1; i += 1) {
   const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
-  const randomDate = "2023-03-30" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
-  const flights = [["SFO", "EWR"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
+  const randomDate = "2023-01-02" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
+  const flights = [["LIH", "SFO"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
   const flight = flights[Math.floor(Math.random() * flights.length)]
   const query: AwardWizQuery = { origin: flight[0], destination: flight[1], departureDate: randomDate }
 
