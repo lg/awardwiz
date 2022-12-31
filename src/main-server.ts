@@ -47,7 +47,7 @@ app.get("/", (req, res) => {
   res.send("Hello!")
 })
 
-const port = parseInt(process.env.PORT ?? "8080")
+const port = parseInt(process.env.PORT ?? "8282")
 app.listen(port, () => {
   console.log(`awardwiz-scrapers listening on port ${port}`)
 

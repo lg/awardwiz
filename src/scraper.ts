@@ -208,7 +208,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
     }, { retries: (debugOptions.maxAttempts ?? 3) - 1, onFailedAttempt: async (error) => {
       if (debugOptions.pauseAfterError) {
-        log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8080/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
+        log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8282/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
         await sc.page.pause()
       }
       log(sc, c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
@@ -219,7 +219,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
 
     }).finally(async () => {
       if (debugOptions.pauseAfterRun) {
-        log(sc, c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8080/vnc.html) ***")))
+        log(sc, c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
         await sc.page.pause()
       }
 

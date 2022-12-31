@@ -2,10 +2,10 @@
 FROM mcr.microsoft.com/playwright:v1.29.1
 WORKDIR /root
 
-# tools to debug via vnc (connect to this instance on port 8080)
+# tools to debug via vnc (connect to this instance on port 8282)
 ENV DISPLAY=:0.0
 RUN apt update && DEBIAN_FRONTEND="noninteractive" TZ="America/Los_Angeles" apt install -y x11vnc novnc xvfb fluxbox
-EXPOSE 8080
+EXPOSE 8282
 
 # redis is used for caching urls
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg \

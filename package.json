@@ -15,7 +15,7 @@
     "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
     "docker-build-arm64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/arm64 ./",
     "docker-build-amd64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/amd64 ./",
-    "docker-run": "docker run -it --rm -p 8080:8080 -p 2222:2222 --volume $(pwd)/tmp:/root/tmp $([ -f .env.local ] && echo '--env-file .env.local') gcr.io/awardwiz/awardwiz:scrapers",
+    "docker-run": "docker run -it --rm -p 8282:8282 -p 2222:2222 --volume $(pwd)/tmp:/root/tmp $([ -f .env.local ] && echo '--env-file .env.local') gcr.io/awardwiz/awardwiz:scrapers",
     "docker-push": "docker push gcr.io/awardwiz/awardwiz:scrapers",
     "gcp-run-job": "gcloud beta run jobs update awardwiz --execute-now --image gcr.io/awardwiz/awardwiz:scrapers --region us-central1 --max-retries=0 --memory=4Gi --cpu=4",
     "gcp-run-server": "gcloud run deploy awardwiz --allow-unauthenticated --region us-central1 --image gcr.io/awardwiz/awardwiz:scrapers --memory=4Gi --cpu=4 --execution-environment=gen2 --set-env-vars=$(cat .env.local | egrep '^PROXY_ADDRESS=' | head -1)"

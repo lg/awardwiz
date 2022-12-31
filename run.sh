@@ -2,11 +2,11 @@
 
 # If this script is started with PORT defined, we're assuming we're in production server mode
 
-# Start a web server on port 8080 so we can view the browser
+# Start a web server on port 8282 so we can view the browser
 Xvfb :0 -screen 0 1280x900x16 -listen tcp -ac &
 if [ -z "${PORT}" ]; then
   x11vnc -forever -shared -nopw -quiet 2>/dev/null >/dev/null &
-  websockify --daemon --web /usr/share/novnc 8080 localhost:5900 2>/dev/null
+  websockify --daemon --web /usr/share/novnc 8282 localhost:5900 2>/dev/null
   fluxbox 2>/dev/null &
 fi
 
