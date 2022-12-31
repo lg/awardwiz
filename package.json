@@ -12,7 +12,7 @@
     "start": "pnpm run schemas && concurrently --kill-others --names firebase,vite,tsc-watch --prefix-colors yellow,white,cyan \"pnpm start-emulators\" \"vite\" \"cd functions; pnpm tsc -w --preserveWatchOutput\" ",
     "start-emulators": "pnpm exec firebase emulators:start",
     "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch",
-    "schemas": "exit 0; json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
+    "schemas": "json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "husky install",
     "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test run && SHOW_VIZ=false pnpm build --log-level=error && cd functions && pnpm check && echo 'ok'",
     "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm npm-check -u",
@@ -37,8 +37,7 @@
     "firebase": "9.15.0",
     "firebase-admin": "^11.3.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "4.9.4"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "8.1.0",
@@ -76,6 +75,7 @@
     "npm-check": "^6.0.1",
     "p-wait-for": "^5.0.0",
     "rollup-plugin-visualizer": "^5.8.3",
+    "typescript": "4.9.4",
     "unplugin-icons": "0.14.14",
     "vite": "4.0.0",
     "vite-node": "0.25.7",

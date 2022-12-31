@@ -70,7 +70,6 @@ dependencies:
   firebase-admin: 11.3.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
-  typescript: 4.9.4
 
 devDependencies:
   '@happy-dom/global-registrator': 8.1.0
@@ -108,6 +107,7 @@ devDependencies:
   npm-check: 6.0.1
   p-wait-for: 5.0.0
   rollup-plugin-visualizer: 5.8.3
+  typescript: 4.9.4
   unplugin-icons: 0.14.14_@svgr+core@6.5.1
   vite: 4.0.0
   vite-node: 0.25.7
@@ -10258,6 +10258,7 @@ packages:
     resolution: {integrity: sha512-Uz+dTXYzxXXbsFpM86Wh3dKCxrQqUcVMxwU54orwlJjOpO3ao8L7j5lH+dWfTwgCwIuM9GQ2kvVotzYJMXTBZg==}
     engines: {node: '>=4.2.0'}
     hasBin: true
+    dev: true
 
   /uc.micro/1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}

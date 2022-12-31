@@ -1,13 +1,13 @@
 import * as ReactQuery from "@tanstack/react-query"
 import axios, { AxiosError } from "axios"
 import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers"
-import scrapersRaw from "../../config.json?raw"
+import scrapersRaw from "../config.json"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
 import { runScraper } from "../helpers/runScraper"
 
-export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
+export const scraperConfig = scrapersRaw as ScrapersConfig
 
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
