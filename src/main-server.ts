@@ -6,7 +6,7 @@ import c from "ansi-colors"
 import cors from "cors"
 const app = express()
 
-app.get("/run/:scraperName/:departureDate/:origin/:destination", async (req, res) => {
+app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
     const { scraperName, origin, destination, departureDate } = req.params
 
@@ -26,7 +26,7 @@ app.get("/run/:scraperName/:departureDate/:origin/:destination", async (req, res
   })
 })
 
-app.get("/fr24/:from/:to", async (req, res) => {
+app.get("/fr24/:from-:to", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
     const { from, to } = req.params
     const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`

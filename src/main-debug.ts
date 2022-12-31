@@ -2,7 +2,7 @@ import { log } from "./common.js"
 import { runScraper } from "./scraper.js"
 import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
-import dayjs from "dayjs"
+// import dayjs from "dayjs"
 
 for (let i: number = 0; i < 1; i += 1) {
   const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
