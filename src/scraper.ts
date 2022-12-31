@@ -107,6 +107,7 @@ export type DebugOptions = {
 }
 
 const NAV_WAIT_COMMIT_MS = 15000
+const MAX_ATTEMPTS = 3
 
 export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Promise<ReturnType>, meta: ScraperMetadata, debugOptions: DebugOptions = {}): Promise<ScraperResult<ReturnType>> => {
   const startTime = Date.now()
@@ -152,7 +153,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
     browser = await selectedBrowser.launch({ headless: false, proxy })
 
     const ipStartTime = Date.now()
-    const { ip, tz } = meta.useIpTimezone ? await pRetry(() => getIPAndTimezone(browser!), { retries: (debugOptions.maxAttempts ?? 3) - 1, onFailedAttempt(error) {
+    const { ip, tz } = meta.useIpTimezone ? await pRetry(() => getIPAndTimezone(browser!), { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, onFailedAttempt(error) {
       log(sc, c.yellow(`Failed to get IP and timezone (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
     }, }) : { ip: undefined, tz: undefined }
     if (ip && tz)
@@ -206,7 +207,7 @@ export const runScraper = async <ReturnType>(scraper: (sc: ScraperRequest) => Pr
       sc.page = await context!.newPage()
       return scraper(sc)
 
-    }, { retries: (debugOptions.maxAttempts ?? 1) - 1, onFailedAttempt: async (error) => {
+    }, { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, onFailedAttempt: async (error) => {
       if (debugOptions.pauseAfterError) {
         log(sc, c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8282/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
         await sc.page.pause()
