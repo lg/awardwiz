@@ -42,7 +42,6 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
     const queryKey = queryKeyForScraperResponse(scraperToRun)
     const isCashOnlyScraper = scraperConfig.scrapers.find((checkScraper) => checkScraper.name === scraperToRun.scraperName)?.cashOnlyFares
     const response = scraperResponses.find((check) => check.forKey && queryKeysEqual(check.forKey, queryKey))
-    const retries = response?.retries ?? 0
 
     return {
       key: queryKey.toString(),
@@ -51,9 +50,6 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
         <>
           <Text code>{scraperToRun.scraperName}</Text>:
           { isCashOnlyScraper ? " Cash-to-points fares" : (` ${scraperToRun.forAirlines.map((airline) => airlineNameByCode(airline)).join(", ")}`) }
-          { retries > 0
-            ? <Text style={{ fontSize: "0.75em", color: "#ff0000" }}><strong> ({retries} {retries === 1 ? "retry" : "retries"})</strong></Text>
-            : "" }
         </>
       ),
       stableIcon: <CarbonPaintBrush />,

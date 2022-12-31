@@ -5,6 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "env": {
+        "VITE_LIVE_SCRAPER_TESTS": "1"
+      }
+    },
+    {
       "name": "Marked Fares Worker",
       "request": "launch",
       "runtimeArgs": ["exec", "vite-node", "src/workers/marked-fares.ts"],

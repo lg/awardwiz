@@ -1,4 +1,5 @@
 import { QueryKey } from "@tanstack/react-query"
+import { FlightRadar24Response } from "./fr24"
 
 export type ScraperQuery = {
   origin: string
@@ -11,14 +12,17 @@ export type BrowserlessPostData = {
   context: ScraperQuery
 }
 
-export type ScraperResponse = {
-  flightsWithFares: FlightWithFares[]
-  errored: boolean
+export type FR24Response = {
+  result: FlightRadar24Response | undefined,
   log: string[]
+}
+
+export type ScraperResponse = {
+  result: FlightWithFares[] | undefined
+  logLines: string[]
 
   // patched on after receiving
   forKey?: QueryKey
-  retries?: number
 }
 
 // the "| undefined" piece makes these require to explicitly be defined

@@ -1,10 +1,9 @@
 import * as ReactQuery from "@tanstack/react-query"
-import axios from "axios"
-import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities } from "../types/scrapers"
-import scrapersRaw from "../scrapers/config.json?raw"
+import axios, { AxiosError } from "axios"
+import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers"
+import scrapersRaw from "../../config.json?raw"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
-import type { FlightRadar24Response } from "../scrapers/samples/fr24"
 import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
 import { runScraper } from "../helpers/runScraper"
 
@@ -13,9 +12,9 @@ export const scraperConfig = JSON.parse(scrapersRaw) as ScrapersConfig
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
 export type ScraperToRun = { scraperName: string, forAirlines: string[], forDatedRoute: DatedRoute }
-export type UseQueryMetaWithHistory = { scraperToRun: ScraperToRun, prevLog: string[], curRetries: number }
+export type UseQueryMeta = { scraperToRun: ScraperToRun }
 
-export type ScraperError = { name: "ScraperError", message: string, log: string[] }
+export type ScraperError = { name: "ScraperError", message: string, logLines: string[] }
 
 export type AwardSearchProgress = {
   datedRoutes: DatedRoute[],                     // [{origin, destination, departureDate}]
@@ -84,9 +83,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     queryKey: queryKeyForScraperResponse(scraperToRun),
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
-    retry: 5,
     queryFn: fetchAwardAvailability,
-    meta: { scraperToRun, prevLog: [], curRetries: -1 } as UseQueryMetaWithHistory,
+    meta: { scraperToRun } as UseQueryMeta,
     refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
@@ -96,7 +94,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const { flights, scraperResponses } = React.useMemo(() => {
     const scraperResponses = scraperQueries.flatMap((query) => query.data).filter((item): item is ScraperResponse => !!item)
-    const flightsWithFares = scraperResponses.flatMap((response) => response.flightsWithFares)
+    const flightsWithFares = scraperResponses.flatMap((response) => response.result ?? [])
 
     const flightsIn = flightsWithFares.map((flight) => reduceFaresToBestPerCabin(flight))
     const flightsOut = mergeFlightsByFlightNo(flightsIn)
@@ -136,16 +134,14 @@ const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => 
 const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
   const datedRoute = meta as DatedRoute
 
-  const request = await axios.post<string>(
-    `${import.meta.env.VITE_BROWSERLESS_AWS_PROXY_URL}/content`,
-    { url: `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${datedRoute.origin}&destination=${datedRoute.destination}` },
-    { headers: { "x-api-key": import.meta.env.VITE_BROWSERLESS_AWS_PROXY_API_KEY }, signal }
-  )
+  const request = await axios.get<FR24Response>(`${import.meta.env.VITE_SCRAPERS_URL}/fr24/${datedRoute.origin}-${datedRoute.destination}`, { signal })
+  if (request.data.result === undefined)
+    throw new Error("Couldn't retrieve airlines serving route")
 
-  if (request.data.includes("Our engineers are working hard"))    // some pairings like FRA-SJC return errors
-    return []
+  // if (request.data.includes("Our engineers are working hard"))    // some pairings like FRA-SJC return errors
+  //   return []
 
-  const data = JSON.parse(new DOMParser().parseFromString(request.data, "text/html").documentElement.textContent ?? "") as FlightRadar24Response
+  const data = request.data.result
 
   if (data.errors)
     throw new Error(`${data.errors.message} -- ${JSON.stringify(data.errors.errors)}`)
@@ -169,28 +165,16 @@ export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string,
 }
 
 const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
-  const meta = metaRaw as UseQueryMetaWithHistory
-  meta.curRetries += 1  // starts at -1
+  const meta = metaRaw as UseQueryMeta
   const scraperToRun = meta.scraperToRun
 
-  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, queryKey, signal).catch((error) => {
-    throw { message: error.message, log: [ ...meta.prevLog, `*** Error calling scraper: ${error.messsage}` ], name: "ScraperError" } as ScraperError
+  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, queryKey, signal).catch((error: AxiosError<ScraperResponse>) => {
+    if (error.response?.data)
+      throw { logLines: error.response.data.logLines, message: "Internal scraper error", name: "ScraperError" } as ScraperError
+    throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
   })
-
-  const scraperResponse = response.data
-  scraperResponse.forKey = queryKey
-
-  // Keep track of logs from all attempts
-  meta.prevLog = [ ...meta.prevLog, ...scraperResponse.log ]
-
-  if (scraperResponse.errored)
-    throw { log: meta.prevLog, message: "Internal scraper error", name: "ScraperError" } as ScraperError
-
-  // Patch the response to contain logs and retry counts from all attempts
-  scraperResponse.log = [...meta.prevLog]
-  scraperResponse.retries = meta.curRetries
-
-  return scraperResponse
+  response.data.forKey = queryKey
+  return response.data
 }
 
 // A scraper can return cash fares for an airline (ex Southwest) which Chase Ultimate Rewards cash fares

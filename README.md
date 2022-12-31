@@ -28,7 +28,7 @@ A few environment variables are used to start the server and frontend. These can
 **Required Variables**
 - `VITE_GOOGLE_CLIENT_ID`: A Google client ID with OAuth capabilities (used for identity of users). You can get this from your Firebase Auth instance (Authentication > Sign-in method > Google > Web SDK confirmation > Web client ID)
 - `VITE_FIREBASE_CONFIG_JSON`: Set to the config information (in JSON format with quoted attribute names) from 'Settings > Project settings > General' and scroll to the bottom and select Config for your web app. The format is: `{"apiKey": "...", "authDomain": "...", ...}`
-- `VITE_BROWSERLESS_AWS_PROXY_URL` and `VITE_BROWSERLESS_AWS_PROXY_API_KEY`: AWS API Gateway credentials for fronting Browserless. You can also just set the URL to your Browserless instance and the API key.
+- `VITE_SCRAPERS_URL`: The URL on Google Functions where the scrapers are deployed. ex: `https://awardwiz-abcdefgh-uc.a.run.app`
 
 **Optional Variables**
 - `VITE_USE_FIREBASE_EMULATORS`: When running locally, setting this to `true` will use the default Firebase emulators. Don't forget to start them using `firebase emulators:start`.

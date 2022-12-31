@@ -1,7 +1,7 @@
 import * as ReactQuery from "@tanstack/react-query"
 import { ScraperResponse } from "../types/scrapers"
 import { Alert, Button, Tabs } from "antd"
-import { default as dayjs, Dayjs } from "dayjs"
+import Ansi from "ansi-to-react"
 
 type ScraperResultDetailsProps = {
   response: ScraperResponse | undefined
@@ -10,27 +10,12 @@ type ScraperResultDetailsProps = {
 
 export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetailsProps) => {
   const queryClient = ReactQuery.useQueryClient()
-  const meta = queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKey)
-  const rawLog = response?.log ?? meta?.error?.log ?? []
-
-  let initialTime: Dayjs
-  const logLines = rawLog.map((line, lineNumber) => {
-    const parts = line.match(/^\[(.*, .+ (?:AM|PM)).*?\] (.*)$/)
-    if (!parts || parts.length !== 3) return line
-    if (lineNumber === 0) initialTime = dayjs(parts[1])
-
-    return (
-      <div key={line}>
-        <span style={{ color: "red" }}>{dayjs(parts[1]).diff(initialTime, "seconds")}s </span>
-        { parts[2].startsWith("*") ? <span style={{ color: "red" }}>{parts[2]}</span> : parts[2] }
-        <br />
-      </div>
-    )
-  })
+  const meta = queryClient.getQueryState<ScraperResponse, { message: string, logLines: string[]}>(queryKey)
+  const logLines = meta?.error?.logLines ?? response?.logLines ?? []
 
   let log = <Alert showIcon message="Loading..." type="info" />
   if (logLines.length > 0)
-    log = <pre style={{ fontSize: 10, height: "100%" }}>{logLines}</pre>
+    log = <pre style={{ fontSize: 10, height: "100%" }}><Ansi>{logLines.join("\n")}</Ansi></pre>
 
   const buttons = <Button style={{ marginLeft: 100 }} onClick={() => queryClient.resetQueries(queryKey)} size="small">Reload</Button>
   const tabItems = [

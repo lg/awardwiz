@@ -32,7 +32,7 @@ export default defineConfig({
 
   test: {
     globals: true,
-    maxConcurrency: 10,
+    maxConcurrency: 3,
     testTimeout: 3 * 60000, // incase we get in the test queue on browserless
     environment: "jsdom",
     onConsoleLog: (log, type) => {

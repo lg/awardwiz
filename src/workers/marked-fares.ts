@@ -14,7 +14,9 @@ dayjs.extend(LocalizedFormat)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-for (const key of ["VITE_BROWSERLESS_AWS_PROXY_URL", "VITE_BROWSERLESS_AWS_PROXY_API_KEY"])
+const BETA_USERS = ["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73"]
+
+for (const key of ["VITE_SCRAPERS_URL"])
   if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
 
 let app: admin.app.App
@@ -41,12 +43,13 @@ await runListrTask("Cleaning up old marked fares...", async () => {
   return batch.commit()
 }, (returnData) => `${returnData.length} removed`)
 
-const markedFaresQuery = await runListrTask("Getting all marked fares...", async () => {
+const markedFaresQuery = await runListrTask("Getting all marked fares for beta users...", async () => {
   return admin.firestore(app)
     .collection("marked_fares")
     .get()
 }, (returnData) => `${returnData.size} found`)
 const markedFares = markedFaresQuery.docs.map((doc) => ({ ...doc.data(), id: doc.id } as MarkedFare))
+  .filter((markedFare) => BETA_USERS.includes(markedFare.uid!))
 
 // Prep email transport
 const { transporter, template } = await runListrTask("Creating email transport...", async () => {
@@ -71,13 +74,6 @@ await new Listr<{}>(
   markedFares.map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid}`,
     task: async (_context, task) => {
-      const user = await admin.auth(app).getUser(markedFare.uid!)
-      if (!["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73"].includes(user.uid)) {
-        // eslint-disable-next-line no-param-reassign
-        task.title = `${task.title} (skipped)`
-        return
-      }
-
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
       const foundSaver = results.searchResults.some((result) =>
         result.flightNo === markedFare.checkFlightNo
@@ -93,6 +89,7 @@ await new Listr<{}>(
         title: "Sending notification email...",
         task: async (_context2, task2) => {
           // TODO: make the buttons work and remove the email restriction above
+          const user = await admin.auth(app).getUser(markedFare.uid!)
           const sendResult = await transporter.sendMail({
             from: "\"AwardWiz\" <no-reply@awardwiz.com>",
             to: `"${user.displayName ?? user.email!}" <${user.email!}>`,
