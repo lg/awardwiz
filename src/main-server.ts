@@ -5,23 +5,8 @@ import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
 import cors from "cors"
 import { logGlobal } from "./log.js"
-import https from "https"
-import http from "http"
-import fs from "fs"
 
 const app = express()
-const port = parseInt(process.env.PORT ?? "8282")
-let server
-if (process.env.HTTPS_KEY_PATH && process.env.HTTPS_CERT_PATH) {
-  logGlobal(`Starting HTTPS server on port ${port}}`)
-  server = https.createServer({
-    key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
-    cert: fs.readFileSync(process.env.HTTPS_CERT_PATH),
-  }, app)
-} else {
-  logGlobal(`Starting HTTP server on port ${port}}`)
-  server = http.createServer(app)
-}
 
 const pool = new ScraperPool({
   showBrowserDebug: false,
@@ -73,7 +58,9 @@ app.get("/", (req, res) => {
   res.send("Hello!\n")
 })
 
-server.listen(port, () => {
+const port = parseInt(process.env.PORT ?? "8282")
+logGlobal(`Starting HTTP server on port ${port}`)
+app.listen(port, () => {
   app._router.stack.forEach((r: any) => {
     if (r.route?.path)
       logGlobal(r.route.path)
