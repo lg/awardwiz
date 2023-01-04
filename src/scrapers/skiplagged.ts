@@ -4,8 +4,7 @@ import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { Segment, SkipLaggedResponse } from "./samples/skiplagged.js"
 
 export const meta: ScraperMetadata = {
-  name: "skiplagged",
-  unsafeHttpsOk: true,
+  name: "skiplagged"
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

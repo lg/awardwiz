@@ -11,6 +11,7 @@
     "start-arm64-native-server": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-server.js",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
     "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
+    "start-prod": "pnpm exec tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push gcr.io/awardwiz/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz && kubectl rollout status deployment/awardwiz --timeout=90s",
     "__": "",
     "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
     "docker-build-arm64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/arm64 ./",
@@ -29,7 +30,7 @@
     "@typescript-eslint/eslint-plugin": "^5.46.1",
     "@typescript-eslint/parser": "^5.46.1",
     "depcheck": "^1.4.3",
-    "eslint": "^8.30.0",
+    "eslint": "^8.31.0",
     "eslint-plugin-deprecation": "^1.3.3",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
@@ -45,11 +46,12 @@
     "cross-fetch": "^3.1.5",
     "dayjs": "^1.11.7",
     "express": "^4.18.2",
+    "generic-pool": "^3.9.0",
     "glob-to-regexp": "^0.4.1",
     "p-retry": "^5.1.2",
     "playwright": "^1.28.1",
     "playwright-extra": "^4.3.5",
     "puppeteer-extra-plugin-stealth": "^2.11.1",
-    "user-agents": "^1.0.1243"
+    "user-agents": "^1.0.1248"
   }
 }

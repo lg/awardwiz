@@ -47,9 +47,8 @@ rules:
   "@typescript-eslint/no-non-null-assertion": off
   import/extensions: off
   no-debugger: off
-  no-console: off
+  no-console: ["warn", { "allow": ["warn", "error"] }]
   object-curly-newline: off
-  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result", "acc"] }]
   lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
 
   import/prefer-default-export: off

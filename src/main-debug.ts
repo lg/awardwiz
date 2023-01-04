@@ -1,34 +1,42 @@
-import { log } from "./common.js"
-import { runScraper } from "./scraper.js"
+import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
-// import dayjs from "dayjs"
+import { logGlobal } from "./log.js"
+
+const pool = new ScraperPool({
+  showBrowserDebug: true,
+  showUncached: true,
+  useProxy: false,
+  showBlocked: true,
+  showFullRequest: [],
+  showFullResponse: [],
+  pauseAfterRun: false,
+  pauseAfterError: true,
+  changeProxies: true,
+  maxAttempts: 1,
+})
 
 for (let i: number = 0; i < 1; i += 1) {
   const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
-  const randomDate = "2023-01-02" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
-  const flights = [["LIH", "SFO"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
+  const randomDate = "2023-01-03" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
+  const flights = [["SFO", "LAX"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
   const flight = flights[Math.floor(Math.random() * flights.length)]
   const query: AwardWizQuery = { origin: flight[0], destination: flight[1], departureDate: randomDate }
 
-  await runScraper(async (sc) => {
-    log(sc, "Using query:", query)
+  await pool.runScraper(async (sc) => {
+    sc.log("Using query:", query)
     const scraperResults = await scraper.runScraper(sc, query)
-    log(sc, c.green(`Completed with ${scraperResults.length} results`))
+    sc.log(c.green(`Completed with ${scraperResults.length} results`))
     return scraperResults
-
-  }, scraper.meta, {
-    showUncached: true,
-    noProxy: false,
-    showBlocked: false,
-    showFullRequest: [],
-    showFullResponse: [],
-    pauseAfterRun: true,
-    pauseAfterError: true,
-    changeProxies: true,
-    maxAttempts: 3,
-  })
+  }, scraper.meta)
 }
+
+logGlobal("Ending")
+await pool.drainAll()
+await pool.browserPools.chromium.clear()
+await pool.browserPools.firefox.clear()
+await pool.browserPools.webkit.clear()
+logGlobal("Ended")
 
 // await runScraper(async (sc) => {
 // }, { name: "test", noBlocking: true, noProxy: false }, { showUncached: true })

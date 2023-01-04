@@ -1,29 +1,28 @@
 /// <reference lib="dom" />
 
 import { Page, Response } from "playwright"
-import dayjs from "dayjs"
-import { ScraperMetadata, ScraperRequest } from "./scraper.js"
 import c from "ansi-colors"
+import { Scraper } from "./scraper.js"
 
 type WaitUntilStates = "load" | "domcontentloaded" | "networkidle" | "commit"
 
 const NAV_WAIT_COMMIT_MS = 15000
 const NAV_WAIT_EXTRA_MS = 25000
 
-export const gotoPage = async (aw: ScraperRequest, url: string, waitUntil: WaitUntilStates) => {
-  log(aw, `Going to ${url}`)
-  const load = await aw.page.goto(url, { waitUntil: "commit", timeout: NAV_WAIT_COMMIT_MS })
-  log(aw, `Headers received, waiting for ${waitUntil}`)
+export const gotoPage = async (sc: Scraper, url: string, waitUntil: WaitUntilStates) => {
+  sc.log(`Going to ${url}`)
+  const load = await sc.page.goto(url, { waitUntil: "commit", timeout: NAV_WAIT_COMMIT_MS })
+  sc.log(`Headers received, waiting for ${waitUntil}`)
   if (waitUntil !== "commit")
-    await aw.page.waitForLoadState(waitUntil, { timeout: NAV_WAIT_EXTRA_MS })
+    await sc.page.waitForLoadState(waitUntil, { timeout: NAV_WAIT_EXTRA_MS })
 
-  await throwIfBadResponse(aw, load)
+  await throwIfBadResponse(sc, load)
 
-  log(aw, "Completed loading url")
+  sc.log("Completed loading url")
   return load ?? undefined
 }
 
-export const throwIfBadResponse = async (aw: ScraperRequest, response: Response | null) => {
+export const throwIfBadResponse = async (sc: Scraper, response: Response | null) => {
   if (!response)
     throw new Error("Response was null!")
 
@@ -33,7 +32,7 @@ export const throwIfBadResponse = async (aw: ScraperRequest, response: Response 
       throw new Error(`Access Denied while loading page (status: ${response.status()})`)
     if (pageText.includes("div class=\"px-captcha-error-header\""))
       throw new Error("Perimeter-X captcha while loading page")
-    log(aw, pageText)
+    sc.log(pageText)
 
     throw new Error(`Page loading failed with status ${response.status()}`)
   }
@@ -52,18 +51,11 @@ export const xhrFetch = async (page: Page, url: string, init: RequestInit, timeo
   }, { url, init, timeoutMs })
 }
 
-type ScraperRequestMinimumForLogging = { meta: ScraperMetadata, randId: number, logLines: string[] }
-export const log = (aw: ScraperRequestMinimumForLogging, ...toLog: any) => {
-  const start = `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")} ${aw.meta.name}-${aw.randId}]`
-  aw.logLines.push([start, ...toLog].map((line) => ((typeof line === "string") ? line : JSON.stringify(line))).join(" "))
-  console.log(start, ...toLog)
-}
-
-export const jsonParseLoggingError = <Type>(aw: ScraperRequestMinimumForLogging, json: string): Type => {
+export const jsonParseLoggingError = <Type>(sc: Scraper, json: string): Type => {
   try {
     return JSON.parse(json)
   } catch (e) {
-    log(aw, c.red("Error parsing JSON"), e, c.red("JSON:"), `${json}`)
+    sc.log(c.red("Error parsing JSON"), e, c.red("JSON:"), `${json}`)
     throw e
   }
 }

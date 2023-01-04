@@ -1,7 +1,7 @@
-import { ScraperMetadata, ScraperRequest } from "./scraper.js"
+import { Scraper, ScraperMetadata } from "./scraper.js"
 
 export type AwardWizScraperModule = { meta: ScraperMetadata, runScraper: AwardWizScraper }
-export type AwardWizScraper = (req: ScraperRequest, query: AwardWizQuery) => Promise<FlightWithFares[]>
+export type AwardWizScraper = (req: Scraper, query: AwardWizQuery) => Promise<FlightWithFares[]>
 export type AwardWizQuery = { origin: string, destination: string, departureDate: string }
 
 export type DatedRoute = { origin: string, destination: string, departureDate: string }

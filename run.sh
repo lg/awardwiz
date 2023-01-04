@@ -11,12 +11,16 @@ if [ -z "${PORT}" ]; then
 fi
 
 mkdir -p ./tmp
-echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp" | redis-server -
-
-if [ -z "${PORT}" ]; then
-  node --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-debug.js
+if [ -z "${REDIS_URL}" ]; then
+  echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp" | redis-server -
 else
-  node --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
+  echo "Using redis server at: ${REDIS_URL}"
 fi
 
-exec redis-cli shutdown
+if [ -z "${PORT}" ]; then
+  exec node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-debug.js
+else
+  exec node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
+fi
+
+# exec redis-cli shutdown

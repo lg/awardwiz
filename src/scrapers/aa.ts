@@ -1,5 +1,5 @@
 import pRetry from "p-retry"
-import { gotoPage, jsonParseLoggingError, log, xhrFetch } from "../common.js"
+import { gotoPage, jsonParseLoggingError, xhrFetch } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
@@ -9,14 +9,13 @@ export const meta: ScraperMetadata = {
   blockUrls: [
     "customer.cludo.com", "*.entrust.net", "*.tiqcdn.com"
   ],
-  forceCache: ["*_cookieBanner.jsp", "*/airport/countries*"],
-  unsafeHttpsOk: true
+  forceCacheUrls: ["*_cookieBanner.jsp", "*/airport/countries*"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   await gotoPage(sc, "https://www.aa.com/booking/find-flights", "commit")
 
-  log(sc, "fetching itinerary")
+  sc.log("fetching itinerary")
   const raw = await pRetry(() => xhrFetch(sc.page, "https://www.aa.com/booking/api/search/itinerary", {
     method: "POST",
     headers: {
@@ -45,7 +44,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     })
   }), { retries: 2 })
 
-  log(sc, "parsing")
+  sc.log("parsing")
   const json = jsonParseLoggingError(sc, raw) as AAResponse
   if (json.error && json.error !== "309")
     throw new Error(json.error)

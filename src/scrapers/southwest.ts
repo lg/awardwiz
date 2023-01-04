@@ -1,24 +1,21 @@
-import { gotoPage, log } from "../common.js"
-import { ScraperMetadata } from "../scraper.js"
+import { gotoPage } from "../common.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
 import c from "ansi-colors"
+import { ScraperMetadata } from "../scraper.js"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
-  unsafeHttpsOk: true,
-  forceCache: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
+  forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
     "*/swa-resources/config/status.js"],
-  useIpTimezone: true,  // no messing around with Southwest
-  noBlocking: false,    // seems we can get away with it
+  useAdblockLists: true,    // this was false for a while and was working solidly, not sure if we need to set it back
   useBrowser: ["firefox", "chromium"],  // webkit has issues re- using http/1.1 vs http/2 on docker vs macos (which southwest likely detects)
-  useRandomUserAgent: true,
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   await gotoPage(sc, "https://www.southwest.com/air/booking/", "networkidle")
 
-  log(sc, "start")
+  sc.log("start")
   sc.page.setDefaultTimeout(15000)
 
   await sc.page.getByLabel("One-way").check()
@@ -28,18 +25,18 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click().then(() => "ok").catch(() => "origin not found"),
     sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "origin not found")
   ]))
-  if (origin !== "ok") { log(sc, c.yellow(`WARN: ${origin}`)) ; return [] }
+  if (origin !== "ok") { sc.log(c.yellow(`WARN: ${origin}`)) ; return [] }
 
   const destination = await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination).then(() => Promise.race([
     sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click().then(() => "ok").catch(() => "destination not found"),
     sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "destination not found")
   ]))
-  if (destination !== "ok") { log(sc, c.yellow(`WARN: ${destination}`)) ; return [] }
+  if (destination !== "ok") { sc.log(c.yellow(`WARN: ${destination}`)) ; return [] }
 
   await sc.page.getByLabel(/^Depart Date {2}.*/u).fill(query.departureDate.substring(5).replace("-", "/")).then(() =>
     sc.page.getByLabel(/^Depart Date {2}.*/u).press("Escape"))
 
-  log(sc, "waiting for response")
+  sc.log("waiting for response")
   await sc.page.getByRole("button", { name: /^Search button\./u }).click()
 
   const badDateError = sc.page.getByText("Enter depart date.").waitFor().then(() => "bad departure date").catch(() => "")
@@ -48,7 +45,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   const raw = await Promise.race([badDateError, response])
 
   if (typeof raw === "string") {
-    if (raw) log(sc, c.yellow(`WARN: ${raw}`))
+    if (raw) sc.log(c.yellow(`WARN: ${raw}`))
     return []
   }
 
@@ -60,7 +57,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
   const results = raw.data?.searchResults?.airProducts[0].details ?? []
   if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
-    log(sc, "No routes exist between the origin and destination")
+    sc.log("No routes exist between the origin and destination")
 
   const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)

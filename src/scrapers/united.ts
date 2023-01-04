@@ -1,14 +1,13 @@
-import { gotoPage, jsonParseLoggingError, log, throwIfBadResponse } from "../common.js"
-import { ScraperMetadata } from "../scraper.js"
+import { gotoPage, jsonParseLoggingError, throwIfBadResponse } from "../common.js"
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
 import type { Trip, UnitedResponse } from "./samples/united.js"
 import c from "ansi-colors"
+import { ScraperMetadata } from "../scraper.js"
 
 export const meta: ScraperMetadata = {
   name: "united",
-  unsafeHttpsOk: true,
   blockUrls: ["*.liveperson.net", "tags.tiqcdn.com"],
-  forceCache: [
+  forceCacheUrls: [
     "*.svg", "*/npm.*", "*/fonts/*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
     "*/api/airports/lookup/?airport=*&allAirports=true", "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
     "*/api/User/IsEmployee", "*/api/flight/recentSearch"]
@@ -25,25 +24,25 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     sc.page.getByRole("button", { name: new RegExp(`.+\\s\\(${query.origin}[) ]`, "g") }).nth(0).click()).catch(() => warn = "Origin not found")
   await sc.page.getByRole("combobox", { name: "Enter your destination city, airport name, or airport code." }).fill(query.destination).then(() =>
     sc.page.getByRole("button", { name: new RegExp(`.+\\s\\(${query.destination}[) ]`, "g") }).nth(0).click()).catch(() => warn = "Destination not found")
-  if (typeof warn === "string") { log(sc, c.yellow(`WARN: ${warn}`)) ; return [] }
+  if (typeof warn === "string") { sc.log(c.yellow(`WARN: ${warn}`)) ; return [] }
 
   await sc.page.getByPlaceholder("Depart").fill(query.departureDate)
   const acceptedDate = await sc.page.getByPlaceholder("Depart").inputValue()
   if (acceptedDate === query.departureDate) {
-    log(sc, c.yellow(`WARN: Departure date ${query.departureDate} not accepted`))
+    sc.log(c.yellow(`WARN: Departure date ${query.departureDate} not accepted`))
     return []
   }
 
   void sc.page.getByRole("button", { name: "Find flights" }).click()
 
-  log(sc, "waiting for results")
+  sc.log("waiting for results")
   const fetchFlights = await sc.page.waitForResponse("https://www.united.com/api/flight/FetchFlights")
     .then(async (rawResponse) => {
       await throwIfBadResponse(sc, rawResponse)
       return jsonParseLoggingError(sc, await rawResponse.text()) as UnitedResponse
     })
 
-  log(sc, "parsing results")
+  sc.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
   if ((fetchFlights.data?.Trips || []).length) {
     const flights = standardizeResults(query, fetchFlights.data!.Trips[0])

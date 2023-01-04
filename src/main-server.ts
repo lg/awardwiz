@@ -1,22 +1,46 @@
 import express from "express"
-import { gotoPage, log } from "./common.js"
-import { runScraper } from "./scraper.js"
+import { gotoPage } from "./common.js"
+import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
 import cors from "cors"
+import { logGlobal } from "./log.js"
+import https from "https"
+import http from "http"
+import fs from "fs"
+
 const app = express()
+const port = parseInt(process.env.PORT ?? "8282")
+let server
+if (process.env.HTTPS_KEY_PATH && process.env.HTTPS_CERT_PATH) {
+  logGlobal(`Starting HTTPS server on port ${port}}`)
+  server = https.createServer({
+    key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
+    cert: fs.readFileSync(process.env.HTTPS_CERT_PATH),
+  }, app)
+} else {
+  logGlobal(`Starting HTTP server on port ${port}}`)
+  server = http.createServer(app)
+}
+
+const pool = new ScraperPool({
+  showBrowserDebug: false,
+  showUncached: false,
+  maxAttempts: 5
+})
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
+    logGlobal("Received query:", req.params)
     const { scraperName, origin, destination, departureDate } = req.params
 
     const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
     const query = { origin, destination, departureDate }
 
-    const results = await runScraper(async (sc) => {
-      log(sc, "Using query:", query)
+    const results = await pool.runScraper(async (sc) => {
+      sc.log("Running scraper for", query)
       const scraperResults = await scraper.runScraper(sc, query)
-      log(sc, c.green(`Completed with ${scraperResults.length} results`))
+      sc.log(c.green(`Completed with ${scraperResults.length} results`))
       return scraperResults
     }, { ...scraper.meta })
 
@@ -28,14 +52,15 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
 
 app.get("/fr24/:from-:to", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
+    logGlobal("Received query:", req.params)
     const { from, to } = req.params
     const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`
 
-    const result = await runScraper(async (sc) => {
-      log(sc, "Querying FlightRader24 for carriers between:", req.params)
+    const result = await pool.runScraper(async (sc) => {
+      sc.log("Querying FlightRader24 for carriers between:", req.params)
       const response = await gotoPage(sc, fr24Url, "domcontentloaded")
       return JSON.parse(await response!.text())
-    }, { name: "fr24", unsafeHttpsOk: true, forceCache: [fr24Url] })
+    }, { name: "fr24", forceCacheUrls: [fr24Url] })
 
     res.contentType("application/json")
     res.status(result.result === undefined ? 500 : 200)
@@ -44,15 +69,13 @@ app.get("/fr24/:from-:to", async (req, res) => {
 })
 
 app.get("/", (req, res) => {
-  res.send("Hello!")
+  logGlobal("Received query:", req.params)
+  res.send("Hello!\n")
 })
 
-const port = parseInt(process.env.PORT ?? "8282")
-app.listen(port, () => {
-  console.log(`awardwiz-scrapers listening on port ${port}`)
-
+server.listen(port, () => {
   app._router.stack.forEach((r: any) => {
     if (r.route?.path)
-      console.log(r.route.path)
+      logGlobal(r.route.path)
   })
 })
