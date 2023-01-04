@@ -13,11 +13,6 @@ export type ScraperResult<ReturnType> = {
 export const NAV_WAIT_COMMIT_MS = 15000
 const MAX_ATTEMPTS = 3
 
-process.on("uncaughtException", function(err) {
-  // Handle the error safely
-  logGlobal(c.redBright("UNCAUGHT EXCEPTION"), err)
-})
-
 export class ScraperPool {
   browserPools: Record<BrowserName, GenericPool.Pool<Scraper>>
 
