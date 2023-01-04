@@ -2,6 +2,13 @@
 
 # If this script is started with PORT defined, we're assuming we're in production server mode
 
+if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
+  echo "Moving browsers to ${MOVE_BROWSERS_TO_PATH}"
+  cp -r /ms-playwright/* "${MOVE_BROWSERS_TO_PATH}"
+  export PLAYWRIGHT_BROWSERS_PATH="${MOVE_BROWSERS_TO_PATH}"
+  rm -rf "/ms-playwright"
+fi
+
 # Start a web server on port 8282 so we can view the browser
 Xvfb :0 -screen 0 1280x900x16 -listen tcp -ac &
 if [ -z "${PORT}" ]; then
