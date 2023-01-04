@@ -11,7 +11,7 @@
     "start-arm64-native-server": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-server.js",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
     "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
-    "start-prod": "pnpm exec tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push gcr.io/awardwiz/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz && kubectl rollout status deployment/awardwiz --timeout=90s",
+    "start-prod": "npm exec tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push gcr.io/awardwiz/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz && kubectl rollout status deployment/awardwiz --timeout=90s",
     "__": "",
     "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
     "docker-build-arm64": "tsc && docker buildx build -t gcr.io/awardwiz/awardwiz:scrapers --platform linux/arm64 ./",
