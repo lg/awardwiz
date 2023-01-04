@@ -60,9 +60,15 @@ app.get("/", (req, res) => {
 
 const port = parseInt(process.env.PORT ?? "8282")
 logGlobal(`Starting HTTP server on port ${port}`)
-app.listen(port, () => {
+const server = app.listen(port, () => {
   app._router.stack.forEach((r: any) => {
     if (r.route?.path)
       logGlobal(r.route.path)
   })
+})
+
+process.on("SIGTERM", () => {
+  logGlobal("Received SIGTERM, shutting down")
+  server.close()
+  void pool.drainAll()
 })

@@ -33,9 +33,6 @@ for (let i: number = 0; i < 1; i += 1) {
 
 logGlobal("Ending")
 await pool.drainAll()
-await pool.browserPools.chromium.clear()
-await pool.browserPools.firefox.clear()
-await pool.browserPools.webkit.clear()
 logGlobal("Ended")
 
 // await runScraper(async (sc) => {

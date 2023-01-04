@@ -18,9 +18,9 @@ else
 fi
 
 if [ -z "${PORT}" ]; then
-  node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-debug.js
+  exec node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-debug.js
 else
-  node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
+  exec node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
 fi
 
 # exec redis-cli shutdown
