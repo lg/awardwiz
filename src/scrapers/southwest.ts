@@ -8,7 +8,7 @@ export const meta: ScraperMetadata = {
   name: "southwest",
   forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
     "*/swa-resources/config/status.js"],
-  useAdblockLists: true,    // this was false for a while and was working solidly, not sure if we need to set it back
+  useAdblockLists: false,    // i think this helps with not getting blocked
   useBrowser: ["firefox", "chromium"],  // webkit has issues re- using http/1.1 vs http/2 on docker vs macos (which southwest likely detects)
 }
 
