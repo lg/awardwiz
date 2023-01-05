@@ -78,7 +78,7 @@ process.on("SIGTERM", async () => {
 
 process.on("uncaughtException", function(err) {
   if (err.stack?.toString().includes("playwright-extra")) {
-    logGlobal(c.yellow("Uncaught exception, but not quitting:"), err)
+    logGlobal(c.yellow("Playwright-extra race condition error, ignoring"))
   } else {
     logGlobal(c.red("Uncaught exception, quitting:"), err)
     process.exit(1)
