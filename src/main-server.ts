@@ -7,6 +7,10 @@ import cors from "cors"
 import { logGlobal } from "./log.js"
 
 const app = express()
+app.use((req, res, next) => {
+  logGlobal("Received request:", c.magenta(req.url))
+  next()
+})
 
 const pool = new ScraperPool({
   showBrowserDebug: false,
@@ -16,7 +20,6 @@ const pool = new ScraperPool({
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
-    logGlobal("Received query:", req.params)
     const { scraperName, origin, destination, departureDate } = req.params
 
     const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
@@ -37,7 +40,6 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
 
 app.get("/fr24/:from-:to", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
-    logGlobal("Received query:", req.params)
     const { from, to } = req.params
     const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`
 
@@ -53,8 +55,12 @@ app.get("/fr24/:from-:to", async (req, res) => {
   })
 })
 
+app.get("/health-check", async (req, res) => {
+  const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }).catch(() => "error")
+  res.status(result === "ok" ? 200 : 500).send(result)
+})
+
 app.get("/", (req, res) => {
-  logGlobal("Received query:", req.params)
   res.send("Hello!\n")
 })
 
