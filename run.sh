@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # If this script is started with PORT defined, we're assuming we're in production server mode
 
@@ -28,4 +28,4 @@ else
   node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
 fi
 
-# exec redis-cli shutdown
+exec redis-cli shutdown

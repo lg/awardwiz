@@ -77,9 +77,17 @@ export type DebugOptions = {
   changeProxies?: boolean
 
   /** If a scraper fails, we'll retry until this many attempts.
-   * @default 3
-   */
+   * @default 3 */
   maxAttempts?: number
+
+  /** Minimum number of browsers of each type to keep in the pool.
+   * @default 2 */
+  minBrowserPool?: number
+
+  /** Maximum number of browsers of each type to keep in the pool.
+   * @default 3 */
+  maxBrowserPool?: number
+
 }
 
 export class Scraper {

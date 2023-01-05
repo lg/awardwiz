@@ -1,6 +1,6 @@
 /// <reference lib="dom" />
 
-import { Page, Response } from "playwright"
+import { Locator, Page, Response } from "playwright"
 import c from "ansi-colors"
 import { Scraper } from "./scraper.js"
 
@@ -66,4 +66,13 @@ export const jsonParse = <Type>(json: string): Type | undefined => {
   } catch (e) {
     return undefined
   }
+}
+
+export const waitForLocatorAndClick = async (locator: Locator, notFoundLocator: Locator) => {
+  const found = await Promise.race([
+    locator.waitFor().then(() => "found").catch(() => "not found"),
+    notFoundLocator.waitFor().then(() => "not found").catch(() => "not found"),
+  ])
+  if (found === "not found") { return false }
+  return true
 }

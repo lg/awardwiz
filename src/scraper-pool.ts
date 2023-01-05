@@ -27,8 +27,8 @@ export class ScraperPool {
 
   constructor(private readonly debugOptions: DebugOptions = {}) {
     const browserPoolOpts: GenericPool.Options = {
-      min: 2,
-      max: 5,
+      min: debugOptions.minBrowserPool ?? 2,
+      max: debugOptions.maxBrowserPool ?? 3,
       autostart: true,
     }
 
@@ -56,6 +56,12 @@ export class ScraperPool {
 
       sc = await browserPool.acquire()
       const attemptResult = await sc.runAttempt(scraper, meta, id)
+
+      if (debugOptions.pauseAfterRun) {
+        sc.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
+        await sc.page.pause()
+      }
+
       await browserPool.destroy(sc)
       return attemptResult
 
@@ -72,11 +78,6 @@ export class ScraperPool {
       sc?.log(c.red(`Failed to run scraper: ${e.message}`))
       return undefined
     })
-
-    if (debugOptions.pauseAfterRun) {
-      sc?.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
-      await sc?.page.pause()
-    }
 
     if (sc) {
       const statsSummary = `${sc.stats.totCacheHits} cache hits · ${sc.stats.totCacheMisses} cache misses · ${sc.stats.totBlocked} blocked · ${sc.stats.bytesDownloaded.toLocaleString("en-US")} bytes`

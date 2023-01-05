@@ -6,20 +6,22 @@ import { logGlobal } from "./log.js"
 const pool = new ScraperPool({
   showBrowserDebug: true,
   showUncached: true,
-  useProxy: false,
+  useProxy: true,
   showBlocked: true,
   showFullRequest: [],
   showFullResponse: [],
-  pauseAfterRun: false,
+  pauseAfterRun: true,
   pauseAfterError: true,
   changeProxies: true,
   maxAttempts: 1,
+  minBrowserPool: 1,
+  maxBrowserPool: 1,
 })
 
 for (let i: number = 0; i < 1; i += 1) {
-  const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
-  const randomDate = "2023-01-03" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
-  const flights = [["SFO", "LAX"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
+  const scraper: AwardWizScraperModule = await import("./scrapers/southwest.js")
+  const randomDate = "2023-01-23" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
+  const flights = [["SJC", "HNL"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
   const flight = flights[Math.floor(Math.random() * flights.length)]
   const query: AwardWizQuery = { origin: flight[0], destination: flight[1], departureDate: randomDate }
 

@@ -1,4 +1,4 @@
-import { gotoPage } from "../common.js"
+import { gotoPage, waitForLocatorAndClick } from "../common.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
 import c from "ansi-colors"
@@ -21,17 +21,21 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   await sc.page.getByLabel("One-way").check()
   await sc.page.getByLabel("Points").check()
 
-  const origin = await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin).then(() => Promise.race([
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }).click().then(() => "ok").catch(() => "origin not found"),
-    sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "origin not found")
-  ]))
-  if (origin !== "ok") { sc.log(c.yellow(`WARN: ${origin}`)) ; return [] }
+  await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin)
+  if (!await waitForLocatorAndClick(
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }),
+    sc.page.getByRole("option", { name: "No match found" })
+  )) {
+    sc.log(c.yellow("WARN: origin not found")) ; return []
+  }
 
-  const destination = await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination).then(() => Promise.race([
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }).click().then(() => "ok").catch(() => "destination not found"),
-    sc.page.getByRole("option", { name: "No match found" }).waitFor().then(() => "destination not found")
-  ]))
-  if (destination !== "ok") { sc.log(c.yellow(`WARN: ${destination}`)) ; return [] }
+  await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination)
+  if (!await waitForLocatorAndClick(
+    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }),
+    sc.page.getByRole("option", { name: "No match found" })
+  )) {
+    sc.log(c.yellow("WARN: destination not found")) ; return []
+  }
 
   await sc.page.getByLabel(/^Depart Date {2}.*/u).fill(query.departureDate.substring(5).replace("-", "/")).then(() =>
     sc.page.getByLabel(/^Depart Date {2}.*/u).press("Escape"))
