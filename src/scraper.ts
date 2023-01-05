@@ -83,7 +83,7 @@ export type DebugOptions = {
 }
 
 export class Scraper {
-  private id: string = `b${Math.round(Math.random() * 1000).toString().padStart(3, "0")}`
+  private id: string = ""
   private debugOptions: DebugOptions
   private filtersEngine?: FiltersEngine
   private browserType: AugmentedBrowserLauncher
@@ -218,7 +218,9 @@ export class Scraper {
     })
   }
 
-  public async runAttempt<ReturnType>(scraper: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata): Promise<ReturnType> {
+  public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
+    this.id = id
+
     // enable blocking urls (and add extra urls requested by scraper)
     if (meta.useAdblockLists ?? true)
       this.filtersEngine = FiltersEngine.empty()    // wipe the precached adblock lists
@@ -242,7 +244,7 @@ export class Scraper {
 
     // create page for scraping
     this.page = await this.context.newPage()
-    return scraper(this)
+    return code(this)
   }
 }
 

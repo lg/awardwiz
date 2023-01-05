@@ -30,7 +30,7 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
       const scraperResults = await scraper.runScraper(sc, query)
       sc.log(c.green(`Completed with ${scraperResults.length} results`))
       return scraperResults
-    }, { ...scraper.meta })
+    }, { ...scraper.meta }, `${Math.random().toString(36).substring(2, 6)}-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)    // [2013-01-01 05:32:00.123 U7fw-united-SFOLAX-0220]
 
     res.contentType("application/json")
     res.status(results.result === undefined ? 500 : 200)
@@ -47,7 +47,7 @@ app.get("/fr24/:from-:to", async (req, res) => {
       sc.log("Querying FlightRader24 for carriers between:", req.params)
       const response = await gotoPage(sc, fr24Url, "domcontentloaded")
       return JSON.parse(await response!.text())
-    }, { name: "fr24", forceCacheUrls: [fr24Url] })
+    }, { name: "fr24", forceCacheUrls: [fr24Url] }, `fr24-${from}-${to}`)
 
     res.contentType("application/json")
     res.status(result.result === undefined ? 500 : 200)
@@ -56,7 +56,7 @@ app.get("/fr24/:from-:to", async (req, res) => {
 })
 
 app.get("/health-check", async (req, res) => {
-  const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }).catch(() => undefined)
+  const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }, "health-check").catch(() => undefined)
   res.status(result ? 200 : 500).send(result)
 })
 

@@ -28,7 +28,7 @@ for (let i: number = 0; i < 1; i += 1) {
     const scraperResults = await scraper.runScraper(sc, query)
     sc.log(c.green(`Completed with ${scraperResults.length} results`))
     return scraperResults
-  }, scraper.meta)
+  }, scraper.meta, `${query.origin}-${query.destination}-${query.departureDate}`)
 }
 
 logGlobal("Ending")

@@ -43,7 +43,7 @@ export class ScraperPool {
     this.browserPools = { chromium: genPool(chromium), webkit: genPool(webkit), firefox: genPool(firefox) }
   }
 
-  async runScraper<ReturnType>(scraper: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata): Promise<ScraperResult<ReturnType>> {
+  async runScraper<ReturnType>(scraper: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ScraperResult<ReturnType>> {
     const startTime = Date.now()
     let sc: Scraper | undefined
     const debugOptions = this.debugOptions
@@ -54,9 +54,8 @@ export class ScraperPool {
       const selectedBrowserName = pickFromBrowsers[Math.floor(Math.random() * pickFromBrowsers.length)]
       browserPool = this.browserPools[selectedBrowserName]
 
-      logGlobal("getting a", c.green(selectedBrowserName), "instance from pool")
       sc = await browserPool.acquire()
-      const attemptResult = await sc.runAttempt(scraper, meta)
+      const attemptResult = await sc.runAttempt(scraper, meta, id)
       await browserPool.destroy(sc)
       return attemptResult
 
