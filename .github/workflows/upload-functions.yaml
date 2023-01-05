@@ -8,6 +8,7 @@ jobs:
   deploy:
     name: upload-firebase-functions
     environment: workers
+    timeout-minutes: 5
     env:
       PUPPETEER_SKIP_DOWNLOAD: "true"
       VITE_FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.VITE_FIREBASE_SERVICE_ACCOUNT_JSON }}

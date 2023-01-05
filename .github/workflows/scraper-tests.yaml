@@ -8,6 +8,7 @@ jobs:
   run-scraper-tests:
     name: run-scraper-tests
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     environment: ci
     env:
       PUPPETEER_SKIP_DOWNLOAD: "true"

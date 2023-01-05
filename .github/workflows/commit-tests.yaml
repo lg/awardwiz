@@ -6,6 +6,7 @@ jobs:
   run-checks:
     name: run-checks
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     environment: ci
     env:
       PUPPETEER_SKIP_DOWNLOAD: "true"
