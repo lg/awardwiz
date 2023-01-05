@@ -10,7 +10,7 @@ import { enableStatsForContext } from "./stats.js"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
 import fetch from "cross-fetch"
-import { logGlobal, logWithId } from "./log.js"
+import { logWithId } from "./log.js"
 import { enableCacheForContext } from "./cache.js"
 import globToRegexp from "glob-to-regexp"
 
@@ -99,7 +99,6 @@ export class Scraper {
   }
 
   static {
-    logGlobal("Configuring browsers for evasions")
     chromium.use(StealthPlugin())
     const webkitStealth = StealthPlugin();
     ["navigator.webdriver", "user-agent-override"].forEach(e => webkitStealth.enabledEvasions.delete(e))

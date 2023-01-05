@@ -1,9 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 # If this script is started with PORT defined, we're assuming we're in production server mode
 
 if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
-  echo "Moving browsers to ${MOVE_BROWSERS_TO_PATH}"
   cp -r /ms-playwright/* "${MOVE_BROWSERS_TO_PATH}"
   export PLAYWRIGHT_BROWSERS_PATH="${MOVE_BROWSERS_TO_PATH}"
   rm -rf "/ms-playwright"
@@ -20,8 +20,6 @@ fi
 mkdir -p ./tmp
 if [ -z "${REDIS_URL}" ]; then
   echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp" | redis-server -
-else
-  echo "Using redis server at: ${REDIS_URL}"
 fi
 
 if [ -z "${PORT}" ]; then

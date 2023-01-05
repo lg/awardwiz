@@ -56,8 +56,8 @@ app.get("/fr24/:from-:to", async (req, res) => {
 })
 
 app.get("/health-check", async (req, res) => {
-  const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }).catch(() => "error")
-  res.status(result === "ok" ? 200 : 500).send(result)
+  const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }).catch(() => undefined)
+  res.status(result ? 200 : 500).send(result)
 })
 
 app.get("/", (req, res) => {
@@ -65,16 +65,13 @@ app.get("/", (req, res) => {
 })
 
 const port = parseInt(process.env.PORT ?? "8282")
-logGlobal(`Starting HTTP server on port ${port}`)
 const server = app.listen(port, () => {
-  app._router.stack.forEach((r: any) => {
-    if (r.route?.path)
-      logGlobal(r.route.path)
-  })
+  logGlobal(`Started Awardwiz HTTP server on port ${port}`)
 })
 
-process.on("SIGTERM", () => {
+process.on("SIGTERM", async () => {
   logGlobal("Received SIGTERM, shutting down")
   server.close()
-  void pool.drainAll()
+  await pool.drainAll()
+  process.exit(0)
 })
