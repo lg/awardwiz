@@ -75,3 +75,12 @@ process.on("SIGTERM", async () => {
   await pool.drainAll()
   process.exit(0)
 })
+
+process.on("uncaughtException", function(err) {
+  if (err.stack?.toString().includes("playwright-extra")) {
+    logGlobal(c.yellow("Uncaught exception, but not quitting:"), err)
+  } else {
+    logGlobal(c.red("Uncaught exception, quitting:"), err)
+    process.exit(1)
+  }
+})
