@@ -134,7 +134,7 @@ export class Scraper {
     }})
 
     if (this.debugOptions.showBrowserDebug)
-      this.log(`created browser in ${Date.now() - startTime}ms${retries > 0 ? ` (after ${retries} retry)` : "" }`)
+      this.log(`created browser in ${Date.now() - startTime}ms${retries > 0 ? ` (after ${retries + 1} attempts)` : "" }`)
     return browser
   }
 
@@ -210,20 +210,16 @@ export class Scraper {
 
   public async destroy(debugReason: string = "") {
     if (this.debugOptions.showBrowserDebug)
-      this.log(`destroying context and browser${debugReason ? ` (${debugReason})` : ""}`)
+      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     for (const page of this.context?.pages() ?? [])
-      await page.close()
+      await page.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close page") })
 
-    // eslint-disable-next-line no-restricted-globals
-    void new Promise((resolve) => setTimeout(resolve, 1000)).then(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (this.context) await this.context.close()
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (this.browser) await this.browser.close()
-      return
-    })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.browser) await this.browser.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close browser") })
   }
 
   public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
