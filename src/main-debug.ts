@@ -2,6 +2,7 @@ import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule, AwardWizQuery } from "./types.js"
 import c from "ansi-colors"
 import { logGlobal } from "./log.js"
+import { createClient } from "@redis/client"
 
 const pool = new ScraperPool({
   showBrowserDebug: true,
@@ -20,8 +21,8 @@ const pool = new ScraperPool({
 
 for (let i: number = 0; i < 1; i += 1) {
   const scraper: AwardWizScraperModule = await import("./scrapers/southwest.js")
-  const randomDate = "2023-01-23" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
-  const flights = [["SJC", "HNL"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
+  const randomDate = "2023-01-29" // dayjs().add(Math.floor(Math.random() * 180), "day").format("YYYY-MM-DD")
+  const flights = [["LAX", "SFO"]] //[["SFO", "LAX"], ["LAX", "SFO"], ["SAN", "SJC"], ["SJC", "SAN"], ["OAK", "HNL"]]
   const flight = flights[Math.floor(Math.random() * flights.length)]
   const query: AwardWizQuery = { origin: flight[0], destination: flight[1], departureDate: randomDate }
 
@@ -34,6 +35,8 @@ for (let i: number = 0; i < 1; i += 1) {
 }
 
 logGlobal("Ending")
+const redis = createClient({ url: process.env.REDIS_URL })
+await redis.save().catch(() => {})
 await pool.drainAll()
 logGlobal("Ended")
 
