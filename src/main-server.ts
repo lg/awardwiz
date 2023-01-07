@@ -15,7 +15,9 @@ app.use((req, res, next) => {
 const pool = new ScraperPool({
   showBrowserDebug: false,
   showUncached: false,
-  maxAttempts: 5
+  maxAttempts: 5,
+  minBrowserPool: 3,
+  maxBrowserPool: 4,
 })
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
