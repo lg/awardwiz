@@ -1,5 +1,5 @@
 # tags here: https://mcr.microsoft.com/en-us/product/playwright/tags
-FROM mcr.microsoft.com/playwright:v1.29.1
+FROM mcr.microsoft.com/playwright:v1.29.2
 WORKDIR /root
 ARG DEBUG=0
 

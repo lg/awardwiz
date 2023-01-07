@@ -3,6 +3,7 @@
   "scripts": {
     "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
     "lets-upgrade-packages": "npm-check -u",
+    "link-debug": "npm link ../puppeteer-extra/packages/playwright-extra/",
     "_": "",
     "start": "npm run start-arm64-docker",
     "start-amd64-docker": "npm run docker-build-amd64",
@@ -11,7 +12,7 @@
     "start-arm64-native-server": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-server.js",
     "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
     "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
-    "start-prod": "npm exec tsc && docker buildx build -t registry.kub.lg.io:31119/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push registry.kub.lg.io:31119/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz && npm run k8s-logs",
+    "start-prod": "npm exec tsc && docker buildx build -t registry.kub.lg.io:31119/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push registry.kub.lg.io:31119/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz",
     "__": "",
     "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
     "docker-build-arm64": "tsc && docker buildx build -t awardwiz:scrapers --platform linux/arm64 --build-arg DEBUG=1 ./",
@@ -20,7 +21,7 @@
     "docker-push": "docker push awardwiz:scrapers",
     "gcp-run-job": "gcloud beta run jobs update awardwiz --execute-now --image awardwiz:scrapers --region us-central1 --max-retries=0 --memory=4Gi --cpu=4",
     "gcp-run-server": "gcloud run deploy awardwiz --allow-unauthenticated --region us-central1 --image awardwiz:scrapers --memory=4Gi --cpu=4 --execution-environment=gen2 --set-env-vars=$(cat .env.local | egrep '^PROXY_ADDRESS=' | head -1)",
-    "k8s-logs": "kubectl logs -l app=awardwiz --ignore-errors --follow --all-containers --max-log-requests=50 | grep --line-buffered -v 'health-check'"
+    "k8s-logs": "while true; do kubectl logs -l app=awardwiz --follow --all-containers --max-log-requests=50 --tail=0 | grep --line-buffered -v 'health-check'; sleep 1; done"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
@@ -28,14 +29,14 @@
     "@types/glob-to-regexp": "^0.4.1",
     "@types/node": "^18.11.17",
     "@types/user-agents": "^1.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.46.1",
-    "@typescript-eslint/parser": "^5.46.1",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
     "depcheck": "^1.4.3",
     "eslint": "^8.31.0",
     "eslint-plugin-deprecation": "^1.3.3",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-regexp": "^1.11.0",
+    "eslint-plugin-regexp": "^1.12.0",
     "npm-check": "^6.0.1",
     "typescript": "^4.9.4"
   },
@@ -50,9 +51,9 @@
     "generic-pool": "^3.9.0",
     "glob-to-regexp": "^0.4.1",
     "p-retry": "^5.1.2",
-    "playwright": "^1.28.1",
+    "playwright": "^1.29.2",
     "playwright-extra": "^4.3.5",
     "puppeteer-extra-plugin-stealth": "^2.11.1",
-    "user-agents": "^1.0.1248"
+    "user-agents": "^1.0.1253"
   }
 }

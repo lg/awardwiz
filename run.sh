@@ -1,5 +1,6 @@
 #!/bin/bash
 set -eo pipefail
+shopt -s dotglob
 
 if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
   if ! [ "$(ls -A "$MOVE_BROWSERS_TO_PATH")" ]; then
@@ -9,7 +10,7 @@ if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
   fi
 fi
 
-rm -f /tmp/.X0-lock
+rm -rf /tmp/*
 Xvfb :0 -screen 0 1280x900x16 -listen tcp -ac &
 
 # Start a web server on port 8282 so we can view the browser
