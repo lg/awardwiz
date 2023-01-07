@@ -128,7 +128,7 @@ export class Scraper {
 
     let retries = 0
     const sc = this
-    const browser = await pRetry(() => this.createAttempt(), { retries: 5, async onFailedAttempt(error) {
+    const browser = await pRetry(() => this.createAttempt(), { retries: 5, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
       retries += 1
       await sc.destroy(error.message.split("\n")[0])
     }})
