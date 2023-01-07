@@ -55,7 +55,7 @@ export class ScraperPool {
       browserPool = this.browserPools[selectedBrowserName]
 
       sc = await browserPool.acquire()
-      const attemptResult = await sc.runAttempt(scraper, meta, id)
+      const attemptResult = await sc.runAttempt(scraper, meta, `${id}-${{"firefox": "ff", "chromium": "ch", "webkit": "wk"}[selectedBrowserName]}`)
 
       if (debugOptions.pauseAfterRun) {
         sc.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))

@@ -14,7 +14,7 @@ export const logWithId = (id: string, ...args: any[]) => origConsoleLog(`[${dayj
 
 const colorFromId = (id: string) => {
   const hash = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  const allColors = [c.green, c.greenBright, c.yellow, c.yellowBright, c.blue, c.blueBright, c.magenta, c.magentaBright,
-    c.cyan, c.cyanBright, c.white, c.whiteBright, c.gray]
+  const allColors = [c.green, c.greenBright, c.blue, c.blueBright, c.magenta, c.magentaBright, c.cyan, c.cyanBright,
+    c.white, c.whiteBright, c.gray]
   return allColors[hash % allColors.length]
 }
