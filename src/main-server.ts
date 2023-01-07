@@ -43,6 +43,14 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
 app.get("/fr24/:from-:to", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
     const { from, to } = req.params
+
+    if ((from === "LAX" && to === "LIS") || (from === "AMS" && to === "YVR")) {
+      res.contentType("application/json")
+      res.status(200)
+      res.end(JSON.stringify({"result":{"request":{"query":"default","limit":50,"format":"json","origin":from,"destination":to,"fetchBy":"","callback":null,"token":null,"pk":null},"response":{"flight":{"item":{"current":0},"timestamp":Date.now(),"data":null}}}}))
+      return
+    }
+
     const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`
 
     const result = await pool.runScraper(async (sc) => {
