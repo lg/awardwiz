@@ -11,8 +11,8 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
 import fetch from "cross-fetch"
 import { logWithId } from "./log.js"
-import { enableCacheForContext } from "./cache.js"
 import globToRegexp from "glob-to-regexp"
+import { Cache } from "./cache.js"
 
 export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 const IPTZ_MAX_WAIT_MS = 4000
@@ -95,6 +95,7 @@ export class Scraper {
   private debugOptions: DebugOptions
   private filtersEngine?: FiltersEngine
   private browserType: AugmentedBrowserLauncher
+  private cache?: Cache
 
   public browser!: Browser
   public context!: BrowserContext
@@ -243,8 +244,10 @@ export class Scraper {
     })
 
     // enable caching
-    if (meta.useCache ?? true)
-      await enableCacheForContext(this, `cache:${meta.name}`, meta.forceCacheUrls ?? [], { showCached: this.debugOptions.showCached, showUncached: this.debugOptions.showUncached })
+    if (meta.useCache ?? true) {
+      this.cache = new Cache(this, `cache:${meta.name}`, meta.forceCacheUrls ?? [], this.debugOptions)
+      await this.cache.start()
+    }
 
     // create page for scraping
     this.page = await this.context.newPage()

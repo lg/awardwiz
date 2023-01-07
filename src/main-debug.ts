@@ -11,12 +11,12 @@ const pool = new ScraperPool({
   showBlocked: true,
   showFullRequest: [],
   showFullResponse: [],
-  pauseAfterRun: true,
-  pauseAfterError: true,
   changeProxies: true,
   maxAttempts: 1,
   minBrowserPool: 1,
   maxBrowserPool: 1,
+  pauseAfterRun: false,
+  pauseAfterError: false,
 })
 
 for (let i: number = 0; i < 1; i += 1) {
@@ -36,7 +36,9 @@ for (let i: number = 0; i < 1; i += 1) {
 
 logGlobal("Ending")
 const redis = createClient({ url: process.env.REDIS_URL })
-await redis.save().catch(() => {})
+await redis.connect()
+await redis.save()
+await redis.disconnect()
 await pool.drainAll()
 logGlobal("Ended")
 

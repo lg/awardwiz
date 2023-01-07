@@ -3,7 +3,6 @@
   "scripts": {
     "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
     "lets-upgrade-packages": "npm-check -u",
-    "link-debug": "npm link ../puppeteer-extra/packages/playwright-extra/",
     "_": "",
     "start": "npm run start-arm64-docker",
     "start-amd64-docker": "npm run docker-build-amd64",
