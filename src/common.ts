@@ -22,7 +22,7 @@ export const gotoPage = async (sc: Scraper, url: string, waitUntil: WaitUntilSta
   return load ?? undefined
 }
 
-export const throwIfBadResponse = async (sc: Scraper, response: Response | null) => {
+export const throwIfBadResponse = async (sc: Scraper, response: Response | null | undefined) => {
   if (!response)
     throw new Error("Response was null!")
 

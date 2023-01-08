@@ -90,16 +90,19 @@ export type DebugOptions = {
 
 }
 
+type PlaywrightProxy = { server: string, username: string, password: string }
 export class Scraper {
   private id: string = ""
   private debugOptions: DebugOptions
   private filtersEngine?: FiltersEngine
   private browserType: AugmentedBrowserLauncher
-  private cache?: Cache
+  private proxy?: PlaywrightProxy
+  private tz?: string
 
-  public browser!: Browser
-  public context!: BrowserContext
+  public browser?: Browser
+  public context?: BrowserContext
   public page!: Page
+  public cache?: Cache
   public logLines: string[] = []
   public stats = { totCacheHits: 0, totCacheMisses: 0, totDomains: 0, bytesDownloaded: 0, totBlocked: 0 }
 
@@ -129,7 +132,7 @@ export class Scraper {
 
     let retries = 0
     const sc = this
-    const browser = await pRetry(() => this.createAttempt(), { retries: 5, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
+    const browser = await pRetry(() => this.createBrowserAttempt(), { retries: 5, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
       retries += 1
       await sc.destroy(error.message.split("\n")[0])
     }})
@@ -139,31 +142,43 @@ export class Scraper {
     return browser
   }
 
-  async createAttempt() {
-    // Select a proxy server
+  async createBrowserAttempt() {
+    // Start browser
+    this.browser = await this.browserType.launch({ headless: false })
+
+    // Select a proxy
     const proxies = env.PROXY_ADDRESS?.split(",")
     const selectedProxy = proxies ? proxies[Math.floor(Math.random() * proxies.length)] : undefined
-    let proxy
     if ((this.debugOptions.useProxy ?? true) && selectedProxy && url.parse(selectedProxy).hostname !== null) {
       const { host, username, password, protocol } = new URL(selectedProxy)
-      proxy = { server: `${protocol}//${host}`, username: username, password: password }
+      this.proxy = { server: `${protocol}//${host}`, username: username, password: password }
 
       // generate random proxy
       const psPasswordRegexp = /(?<start>\S{16}_country-\S+_session-)\S{8}$/u.exec(password)
       if ((this.debugOptions.changeProxies ?? true) && psPasswordRegexp)
-        proxy.password = psPasswordRegexp.groups!.start + Math.random().toString(36).slice(2).substring(0, 8)
+        this.proxy.password = psPasswordRegexp.groups!.start + Math.random().toString(36).slice(2).substring(0, 8)
     } else {
       if (this.debugOptions.showBrowserDebug)
         this.log(c.yellow(`Not using proxy server ${!(this.debugOptions.useProxy ?? true) ? "(useProxy option not enabled)" : `(${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
     }
 
-    // Start browser
-    this.browser = await this.browserType.launch({ headless: false, proxy })
-
     // Get current IP and timezone
-    const { tz } = await getIPAndTimezone(this.browser)
+    const { tz } = await getIPAndTimezone(this.browser, this.proxy)
+    this.tz = tz
     if (this.debugOptions.showBrowserDebug)
-      this.log(c.magenta(`IP resolved to timezone ${tz}`))
+      this.log(c.magenta(`IP resolved to timezone ${this.tz}`))
+
+    // enable adblocking (assuming we're going to use them)
+    const adblockCache = { path: "tmp/adblocker.bin", read: fs.readFile, write: fs.writeFile }
+    this.filtersEngine = await FiltersEngine.fromLists(fetch, [
+      "https://easylist.to/easylist/easylist.txt", "https://easylist.to/easylist/easyprivacy.txt", "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
+      "https://easylist.to/easylist/fanboy-social.txt", "https://secure.fanboy.co.nz/fanboy-annoyance.txt", "https://easylist.to/easylist/easylist.txt",
+      "https://cdn.jsdelivr.net/gh/badmojr/1Hosts@master/Xtra/adblock.txt"
+    ], undefined, adblockCache)
+  }
+
+  public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
+    this.id = id
 
     // generate random user agent
     const userAgent = new UserAgent({
@@ -173,15 +188,8 @@ export class Scraper {
     }[this.browserType.name()]).toString()
 
     // create the context
-    this.context = await this.browser.newContext({ serviceWorkers: "block", timezoneId: tz, locale: "en-US", userAgent })
-
-    // enable adblocking (assuming we're going to use them)
-    const adblockCache = { path: "tmp/adblocker.bin", read: fs.readFile, write: fs.writeFile }
-    this.filtersEngine = await FiltersEngine.fromLists(fetch, [
-      "https://easylist.to/easylist/easylist.txt", "https://easylist.to/easylist/easyprivacy.txt", "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
-      "https://easylist.to/easylist/fanboy-social.txt", "https://secure.fanboy.co.nz/fanboy-annoyance.txt", "https://easylist.to/easylist/easylist.txt",
-      "https://cdn.jsdelivr.net/gh/badmojr/1Hosts@master/Xtra/adblock.txt"
-    ], undefined, adblockCache)
+    this.context = await this.browser!.newContext({ serviceWorkers: "block", timezoneId: this.tz, locale: "en-US",
+      userAgent, proxy: this.proxy, ignoreHTTPSErrors: true })
 
     // enable stats
     enableStatsForContext(this)
@@ -207,24 +215,6 @@ export class Scraper {
           c.whiteBright(await response.text()), "\n", c.whiteBright("*******"))
       }
     })
-  }
-
-  public async destroy(debugReason: string = "") {
-    if (this.debugOptions.showBrowserDebug)
-      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    for (const page of this.context?.pages() ?? [])
-      await page.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close page") })
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.browser) await this.browser.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close browser") })
-  }
-
-  public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
-    this.id = id
 
     // enable blocking urls (and add extra urls requested by scraper)
     if (meta.useAdblockLists ?? true)
@@ -253,10 +243,24 @@ export class Scraper {
     this.page = await this.context.newPage()
     return code(this)
   }
+
+  public async destroy(debugReason: string = "") {
+    if (this.debugOptions.showBrowserDebug)
+      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    for (const page of this.context?.pages() ?? [])
+      await page.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close page") })
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (this.browser) await this.browser.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close browser") })
+  }
 }
 
-const getIPAndTimezone = async (browser: Browser) => {
-  const context = await browser.newContext()
+const getIPAndTimezone = async (browser: Browser, proxy?: PlaywrightProxy) => {
+  const context = await browser.newContext({ proxy })
   const page = await context.newPage()
 
   const PROVIDERS = [

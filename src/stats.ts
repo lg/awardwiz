@@ -3,7 +3,7 @@ import { Scraper } from "./scraper.js"
 export const enableStatsForContext = (sc: Scraper) => {
   const domains: Record<string, number> = {}
 
-  sc.context.on("requestfinished", async (req) => {
+  sc.context?.on("requestfinished", async (req) => {
     const response = await req.response()
     if (response?.headers()["x-fromcache"]) {
       sc.stats.totCacheHits += 1
@@ -20,7 +20,7 @@ export const enableStatsForContext = (sc: Scraper) => {
     }
   })
 
-  sc.context.on("requestfailed", async request => {
+  sc.context?.on("requestfailed", async request => {
     if (["NS_ERROR_FAILURE", "net::ERR_FAILED", "Blocked by Web Inspector"].includes(request.failure()?.errorText ?? ""))
     sc.stats.totBlocked += 1
   })

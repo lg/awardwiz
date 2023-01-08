@@ -1,5 +1,5 @@
 import express from "express"
-import { gotoPage } from "./common.js"
+import { throwIfBadResponse } from "./common.js"
 import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
@@ -12,8 +12,16 @@ app.use((req, res, next) => {
   next()
 })
 
-const pool = new ScraperPool({
+const pool = new ScraperPool(process.env.DEBUG ? {
   showBrowserDebug: true,
+  showUncached: true,
+  maxAttempts: 5,
+  minBrowserPool: 1,
+  maxBrowserPool: 1,
+  pauseAfterError: false,
+
+} : {
+  showBrowserDebug: false,
   showUncached: false,
   maxAttempts: 5,
   minBrowserPool: 3,
@@ -43,21 +51,28 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
 app.get("/fr24/:from-:to", async (req, res) => {
   cors({ origin: true })(req, res, async () => {
     const { from, to } = req.params
-
-    if ((from === "LAX" && to === "LIS") || (from === "AMS" && to === "YVR")) {
-      res.contentType("application/json")
-      res.status(200)
-      res.end(JSON.stringify({"result":{"request":{"query":"default","limit":50,"format":"json","origin":from,"destination":to,"fetchBy":"","callback":null,"token":null,"pk":null},"response":{"flight":{"item":{"current":0},"timestamp":Date.now(),"data":null}}}}))
-      return
-    }
-
     const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`
 
     const result = await pool.runScraper(async (sc) => {
       sc.log("Querying FlightRader24 for carriers between:", req.params)
-      const response = await gotoPage(sc, fr24Url, "domcontentloaded")
+      sc.log(`Going to ${fr24Url}`)
+
+      // on certain pairs fr24 times out after 10s even though it should have returned a 'no pairs' response
+      const response = await sc.page.goto(fr24Url, { waitUntil: "domcontentloaded", timeout: 15000 })
+      const textResponse = await response?.text()
+      if (textResponse?.includes("Our engineers are working hard")) {
+        sc.log(c.yellow(`FR24 returned an internal error, adding ${from}-${to} to cache regardless`))
+
+        const newBody = {"result":{"request":{"query":"default","limit":50,"format":"json","origin":from,"destination":to,"fetchBy":"","callback":null,"token":null,"pk":null},"response":{"flight":{"item":{"current":0},"timestamp":Date.now(),"data":null}}}}
+        const bodyBuffer = Buffer.from(JSON.stringify(newBody), "utf8")
+        const headersBuffer = Buffer.from(JSON.stringify({ "Content-type": "application/json" }), "utf8")
+        await sc.cache?.insertURLIntoCache(fr24Url, bodyBuffer, headersBuffer, 3600 * 24 * 7)
+        return newBody
+      }
+
+      await throwIfBadResponse(sc, response)
       return JSON.parse(await response!.text())
-    }, { name: "fr24", forceCacheUrls: [fr24Url] }, `fr24-${from}-${to}`)
+    }, { name: "fr24" }, `fr24-${from}-${to}`)
 
     res.contentType("application/json")
     res.status(result.result === undefined ? 500 : 200)

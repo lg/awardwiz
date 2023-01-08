@@ -27,13 +27,16 @@ export class Cache {
   }
 
   public async start() {
+    if (!this.sc.context)
+      throw new Error("No context")
+
     await this.redis.connect()
 
     // add all existing routes to cache
     const allKeys = await this.redis.keys(`${this.namespace}:*`)
     await Promise.all(allKeys.map((key) => {
       const url = key.substring(`${this.namespace}:headers:`.length)  // remove "cache:xyz:" prefix
-      return this.sc.context.route(url, this.runCachedRoute.bind(this))
+      return this.sc.context?.route(url, this.runCachedRoute.bind(this))
     }))
 
     this.sc.context.on("response", this.onResponse.bind(this))
@@ -99,6 +102,6 @@ export class Cache {
   public async insertURLIntoCache(url: string, body: Buffer, headers: Buffer, ttl: number) {
     await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers)
     await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body)
-    await this.sc.context.route(url, this.runCachedRoute.bind(this))
+    await this.sc.context?.route(url, this.runCachedRoute.bind(this))
   }
 }

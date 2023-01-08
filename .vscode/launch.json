@@ -12,7 +12,9 @@
         "<node_internals>/**", "**/node_modules/**"
       ],
       "type": "node",
-      "preLaunchTask": "tsc"
+      "preLaunchTask": "tsc",
+      "envFile": "${workspaceFolder}/.env.local",
+      "console": "integratedTerminal",
     }
   ],
 }
