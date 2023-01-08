@@ -57,11 +57,6 @@ export class ScraperPool {
       sc = await browserPool.acquire()
       const attemptResult = await sc.runAttempt(scraper, meta, `${id}-${{"firefox": "ff", "chromium": "ch", "webkit": "wk"}[selectedBrowserName]}`)
 
-      if (debugOptions.pauseAfterRun) {
-        sc.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
-        await sc.page.pause()
-      }
-
       await browserPool.destroy(sc)
       return attemptResult
 
@@ -79,10 +74,8 @@ export class ScraperPool {
       return undefined
     })
 
-    if (sc) {
-      const statsSummary = `${sc.stats.totCacheHits} cache hits · ${sc.stats.totCacheMisses} cache misses · ${sc.stats.totBlocked} blocked · ${sc.stats.bytesDownloaded.toLocaleString("en-US")} bytes`
-      sc.log(`completed ${!scraperResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${statsSummary})`)
-    }
+    if (sc)
+      sc.log(`completed ${!scraperResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${sc.stats?.toString()})`)
 
     return { result: scraperResult, logLines: sc?.logLines ?? [] }
   }

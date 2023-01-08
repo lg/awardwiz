@@ -6,13 +6,13 @@ import { Browser, BrowserContext, Page } from "playwright"
 import UserAgent from "user-agents"
 import { promises as fs } from "fs" // used for caching
 import { FiltersEngine, fromPlaywrightDetails, NetworkFilter } from "@cliqz/adblocker-playwright"
-import { enableStatsForContext } from "./stats.js"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
 import fetch from "cross-fetch"
 import { logWithId } from "./log.js"
 import globToRegexp from "glob-to-regexp"
 import { Cache } from "./cache.js"
+import { Stats } from "./stats.js"
 
 export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 const IPTZ_MAX_WAIT_MS = 4000
@@ -104,7 +104,7 @@ export class Scraper {
   public page!: Page
   public cache?: Cache
   public logLines: string[] = []
-  public stats = { totCacheHits: 0, totCacheMisses: 0, totDomains: 0, bytesDownloaded: 0, totBlocked: 0 }
+  public stats?: Stats
 
   public log(...args: any[]) {
     logWithId(this.id, ...args)
@@ -192,7 +192,7 @@ export class Scraper {
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true })
 
     // enable stats
-    enableStatsForContext(this)
+    this.stats = new Stats(this)
 
     // debugging options to see requests and responses (and optionally the full bodies)
     if (this.debugOptions.showRequests)
