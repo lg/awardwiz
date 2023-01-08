@@ -241,7 +241,14 @@ export class Scraper {
 
     // create page for scraping
     this.page = await this.context.newPage()
-    return code(this)
+    const result = await code(this)
+
+    if (this.debugOptions.pauseAfterRun) {
+      this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
+      await this.page.pause()
+    }
+
+    return result
   }
 
   public async destroy(debugReason: string = "") {
