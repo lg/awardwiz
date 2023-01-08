@@ -217,7 +217,7 @@ export class Scraper {
     })
 
     // enable blocking urls (and add extra urls requested by scraper)
-    if (meta.useAdblockLists ?? true)
+    if (!(meta.useAdblockLists ?? true))
       this.filtersEngine = FiltersEngine.empty()    // wipe the precached adblock lists
     if (meta.blockUrls)
       this.filtersEngine?.update({ newNetworkFilters: meta.blockUrls.map((urlToAdd) => NetworkFilter.parse(urlToAdd)!) })
