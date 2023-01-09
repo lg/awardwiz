@@ -198,7 +198,7 @@ export class Scraper {
     }[this.browserType.name()]).toString() : undefined
 
     // generate window and viewport sizes
-    const SCREEN_SIZES = [[1920, 1080], [1366, 768], [1440, 900], [1536, 864], [2560, 1440], [1680, 1050], [1280, 720], [1280, 800], [1792, 1120], [1600, 900]]
+    const SCREEN_SIZES = [[1920, 1080], [1536, 864], [2560, 1440], [1680, 1050], [1792, 1120], [1600, 900]]
     const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]
     const screen = { width: screenSize[0], height: screenSize[1] }
     const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.3 + 0.7)), height: Math.ceil(screen.height * (Math.random() * 0.3 + 0.7)) }

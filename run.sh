@@ -11,7 +11,7 @@ if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
 fi
 
 rm -rf /tmp/*
-Xvfb :0 -screen 0 1280x900x16 -listen tcp -ac &
+Xvfb :0 -screen 0 2560x1440x16 -listen tcp -ac &
 
 # Start a web server on port 8282 so we can view the browser
 if which x11vnc > /dev/null; then
