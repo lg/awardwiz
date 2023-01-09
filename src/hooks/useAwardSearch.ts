@@ -138,9 +138,6 @@ const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionCont
   if (request.data.result === undefined)
     throw new Error("Couldn't retrieve airlines serving route")
 
-  // if (request.data.includes("Our engineers are working hard"))    // some pairings like FRA-SJC return errors
-  //   return []
-
   const data = request.data.result
 
   if (data.errors)
