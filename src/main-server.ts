@@ -14,14 +14,14 @@ app.use((req, res, next) => {
 
 const pool = new ScraperPool(process.env.DEBUG ? {
   showBrowserDebug: false,
-  showUncached: true,
   maxAttempts: 5,
   minBrowserPool: 1,
   maxBrowserPool: 1,
-  pauseAfterError: true,
+  pauseAfterError: false,
   showProxyUrl: true,
   saveAfterCaching: true,
   showFullResponse: [],
+  showUncached: false,
 
 } : {
   showBrowserDebug: false,

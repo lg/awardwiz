@@ -48,6 +48,11 @@ export type ScraperMetadata = {
    * catch certain improperly configured servers. `forceCacheUrls` will not work if this is set to `false`.
    * @default true */
   useCache?: boolean
+
+  /** Picks a random useragent that matches the browser type that's launched. Note that enabling this could enable faster
+   * detection of the botting if the anti-bot is checking for certain browser features.
+   * @default false */
+  randomizeUserAgent?: boolean
 }
 
 export type DebugOptions = {
@@ -186,17 +191,19 @@ export class Scraper {
     this.id = id
 
     // generate random user agent
-    const userAgent = new UserAgent({
+    const userAgent = meta.randomizeUserAgent ? new UserAgent({
       "webkit": { vendor: "Apple Computer, Inc.", deviceCategory: "desktop" },
       "chromium": { vendor: "Google Inc.", deviceCategory: "desktop" },
       "firefox": [/Firefox/u, { deviceCategory: "desktop" }]
-    }[this.browserType.name()]).toString()
+    }[this.browserType.name()]).toString() : undefined
 
     // create the context
     if (this.debugOptions.showProxyUrl)
       this.log(c.magenta("Using proxy server:"), this.proxy)
     this.context = await this.browser!.newContext({ serviceWorkers: "block", timezoneId: this.tz, locale: "en-US",
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true })
+    this.context.setDefaultNavigationTimeout(15000)
+    this.context.setDefaultTimeout(15000)
 
     // enable stats
     this.stats = new Stats(this)
