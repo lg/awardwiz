@@ -14,7 +14,7 @@ export class Cache {
   private namespace
   private forceRegexps
 
-  constructor(sc: Scraper, namespace: string, forceCache: string[], debug: { showCached?: boolean, showUncached?: boolean }) {
+  constructor(sc: Scraper, namespace: string, forceCache: string[], debug: { showCached?: boolean, showUncached?: boolean, saveAfterCaching?: boolean }) {
     this.sc = sc
     this.debug = debug
     this.namespace = namespace
@@ -103,5 +103,8 @@ export class Cache {
     await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers)
     await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body)
     await this.sc.context?.route(url, this.runCachedRoute.bind(this))
+
+    if (this.debug.saveAfterCaching)
+      await this.redis.save()
   }
 }

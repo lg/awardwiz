@@ -62,8 +62,8 @@ export class ScraperPool {
 
     }, { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {    // retrying
       if (debugOptions.pauseAfterError) {
-        sc?.log(c.bold(c.redBright(`\n*** paused (open browser to http://127.0.0.1:8282/vnc.html): ${error.message.split("\n")[0]} ***\n`)), error)
-        await sc?.page.pause()
+        sc?.log(error)
+        await sc?.pause()
       }
       sc?.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
       if (sc)

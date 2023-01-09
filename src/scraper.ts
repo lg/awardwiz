@@ -88,9 +88,18 @@ export type DebugOptions = {
    * @default 3 */
   maxBrowserPool?: number
 
+  /** When debugging, it might be useful to show the proxy URL (with username/password)
+   * @default false */
+  showProxyUrl?: boolean
+
+  /** Normally cache is saved on it's own schedule, but especially when debugging, sometimes the cache server is run
+   * adhoc and never gets a chance to save, this will save after each set call. This is not recommended for production.
+   * @default false */
+  saveAfterCaching?: boolean
 }
 
 type PlaywrightProxy = { server: string, username: string, password: string }
+
 export class Scraper {
   private id: string = ""
   private debugOptions: DebugOptions
@@ -105,10 +114,6 @@ export class Scraper {
   public cache?: Cache
   public logLines: string[] = []
   public stats?: Stats
-
-  public log(...args: any[]) {
-    logWithId(this.id, ...args)
-  }
 
   static {
     chromium.use(StealthPlugin())
@@ -188,6 +193,8 @@ export class Scraper {
     }[this.browserType.name()]).toString()
 
     // create the context
+    if (this.debugOptions.showProxyUrl)
+      this.log(c.magenta("Using proxy server:"), this.proxy)
     this.context = await this.browser!.newContext({ serviceWorkers: "block", timezoneId: this.tz, locale: "en-US",
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true })
 
@@ -243,10 +250,8 @@ export class Scraper {
     this.page = await this.context.newPage()
     const result = await code(this)
 
-    if (this.debugOptions.pauseAfterRun) {
-      this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
-      await this.page.pause()
-    }
+    if (this.debugOptions.pauseAfterRun)
+      await this.pause()
 
     return result
   }
@@ -263,6 +268,18 @@ export class Scraper {
     if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.browser) await this.browser.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close browser") })
+  }
+
+  /////////////////////////////////////////
+  /////////////////////////////////////////
+
+  public log(...args: any[]) {
+    logWithId(this.id, ...args)
+  }
+
+  public async pause() {
+    this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
+    await this.page.pause()
   }
 }
 
