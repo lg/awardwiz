@@ -9,15 +9,14 @@ const MAX_CACHE_TIME_S = 3600 * 24
 
 export class Cache {
   private redis = createClient({ url: process.env.REDIS_URL })
-  private debug
-  private sc
-  private namespace
   private forceRegexps
 
-  constructor(sc: Scraper, namespace: string, forceCache: string[], debug: { showCached?: boolean, showUncached?: boolean, saveAfterCaching?: boolean }) {
-    this.sc = sc
-    this.debug = debug
-    this.namespace = namespace
+  constructor(
+    private sc: Scraper,
+    private namespace: string,
+    forceCache: string[],
+    private debug: { showCached?: boolean, showUncached?: boolean, saveAfterCaching?: boolean }
+  ) {
     this.forceRegexps = forceCache.map((glob) => globToRegexp(glob, { extended: true }))
 
     this.redis.on("error", (err) => {

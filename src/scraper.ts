@@ -107,9 +107,7 @@ type PlaywrightProxy = { server: string, username: string, password: string }
 
 export class Scraper {
   private id: string = ""
-  private debugOptions: DebugOptions
   private filtersEngine?: FiltersEngine
-  private browserType: AugmentedBrowserLauncher
   private proxy?: PlaywrightProxy
   private tz?: string
 
@@ -120,6 +118,8 @@ export class Scraper {
   public logLines: string[] = []
   public stats?: Stats
 
+  constructor(private browserType: AugmentedBrowserLauncher, private debugOptions: DebugOptions) {}
+
   static {
     chromium.use(StealthPlugin())
     const webkitStealth = StealthPlugin();
@@ -128,11 +128,6 @@ export class Scraper {
     const firefoxStealth = StealthPlugin();
     ["user-agent-override"].forEach(e => firefoxStealth.enabledEvasions.delete(e))
     firefox.use(firefoxStealth)
-  }
-
-  constructor(browserType: AugmentedBrowserLauncher, debugOptions: DebugOptions) {
-    this.debugOptions = debugOptions
-    this.browserType = browserType
   }
 
   async create() {

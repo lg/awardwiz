@@ -2,7 +2,6 @@ import { Scraper } from "./scraper.js"
 import { Request } from "playwright"
 
 export class Stats {
-  sc?: Scraper
   domains: Record<string, number> = {}
 
   totCacheHits = 0
@@ -11,8 +10,7 @@ export class Stats {
   totDomains = 0
   bytesDownloaded = 0
 
-  constructor(sc: Scraper) {
-    this.sc = sc
+  constructor(private sc: Scraper) {
     this.sc.context!.on("requestfinished", this.onRequestFinished.bind(this))
     this.sc.context!.on("requestfailed", this.onRequestFailed.bind(this))
   }
