@@ -39,17 +39,23 @@ export class Cache {
     }))
 
     this.sc.context.on("response", this.onResponse.bind(this))
-    this.sc.context.once("close", () => {
-      return this.redis.disconnect()  // disconnect async
+    this.sc.context.once("close", async () => {
+      return this.redis.disconnect().catch(() => {})
     })
+  }
+
+  public async stop() {
+    // routes are expected to be removed by parent
+    this.sc.context?.off("response", this.onResponse.bind(this))
+    return this.redis.disconnect().catch(() => {})
   }
 
   private async runCachedRoute(route: Route) {
     if (route.request().method() !== "GET")
       return route.fallback()
 
-    const cachedBodyBuffer = await this.redis.get(commandOptions({ returnBuffers: true }), `${this.namespace}:body:${route.request().url()}`)
-    const cachedHeadersBuffer = await this.redis.get(commandOptions({ returnBuffers: true }), `${this.namespace}:headers:${route.request().url()}`)
+    const cachedBodyBuffer = await this.redis.get(commandOptions({ returnBuffers: true }), `${this.namespace}:body:${route.request().url()}`).catch(() => null)
+    const cachedHeadersBuffer = await this.redis.get(commandOptions({ returnBuffers: true }), `${this.namespace}:headers:${route.request().url()}`).catch(() => null)
     const cachedHeadersStr = cachedHeadersBuffer?.toString("utf8")
     if (!cachedBodyBuffer || !cachedHeadersStr) return route.fallback()
 
@@ -99,11 +105,11 @@ export class Cache {
   }
 
   public async insertURLIntoCache(url: string, body: Buffer, headers: Buffer, ttl: number) {
-    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers)
-    await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body)
+    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers).catch(() => { this.sc.log(`Error caching headers for ${url}}`) })
+    await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body).catch(() => { this.sc.log(`Error caching headers for ${url}}`) })
     await this.sc.context?.route(url, this.runCachedRoute.bind(this))
 
     if (this.debug.saveAfterCaching)
-      await this.redis.save()
+      await this.redis.save().catch(() => { this.sc.log("Error saving redis") })
   }
 }

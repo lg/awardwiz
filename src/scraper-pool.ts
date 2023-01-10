@@ -63,7 +63,10 @@ export class ScraperPool {
       sc = await browserPool.acquire()
       const attemptResult = await sc.runAttempt(scraper, meta, `${id}-${{"firefox": "ff", "chromium": "ch", "webkit": "wk"}[selectedBrowserName]}`)
 
-      await browserPool.destroy(sc)
+      // as this was a successful run, do not destroy the browser/proxy
+      await sc.release()
+      await browserPool.release(sc)
+
       return attemptResult
 
     }, { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {    // retrying

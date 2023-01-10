@@ -15,6 +15,11 @@ export class Stats {
     this.sc.context!.on("requestfailed", this.onRequestFailed.bind(this))
   }
 
+  public async stop() {
+    this.sc.context?.off("requestfinished", this.onRequestFinished.bind(this))
+    this.sc.context?.off("requestfailed", this.onRequestFailed.bind(this))
+  }
+
   private async onRequestFinished(req: Request) {
     const response = await req.response()
     if (response?.headers()["x-fromcache"]) {

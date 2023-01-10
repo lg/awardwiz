@@ -264,9 +264,12 @@ export class Scraper {
     return result
   }
 
-  public async destroy(debugReason: string = "") {
-    if (this.debugOptions.showBrowserDebug)
-      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
+  public async release() {
+    if (this.stats)
+      await this.stats.stop()
+    await this.context?.unroute("*")
+    if (this.cache)
+      await this.cache.stop()
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     for (const page of this.context?.pages() ?? [])
@@ -274,6 +277,14 @@ export class Scraper {
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
+  }
+
+  public async destroy(debugReason: string = "") {
+    if (this.debugOptions.showBrowserDebug)
+      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
+
+    await this.release()
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (this.browser) await this.browser.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close browser") })
   }
