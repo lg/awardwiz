@@ -11,7 +11,7 @@ export const meta: ScraperMetadata = {
   name: "delta",
   forceCacheUrls: ["*/predictivetext/getPredictiveCities?code=*", "*/flight-search/getdevicetype", "*/custlogin/getDashBrdData.action",
     "*/databroker/bcdata.action"],
-  useBrowser: ["chromium"]
+  useBrowsers: ["chromium"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

@@ -9,7 +9,7 @@ export const meta: ScraperMetadata = {
   forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
     "*/swa-resources/config/status.js"],
   useAdblockLists: true,    // i think sometimes keeping this as false helps with not getting blocked, TBD
-  useBrowser: ["firefox", "chromium"],  // webkit has issues re- using http/1.1 vs http/2 on docker vs macos (which southwest likely detects)
+  useBrowsers: ["firefox", "chromium"],  // webkit has issues re- using http/1.1 vs http/2 on docker vs macos (which southwest likely detects)
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {

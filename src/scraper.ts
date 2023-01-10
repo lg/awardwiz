@@ -40,9 +40,9 @@ export type ScraperMetadata = {
    * @default [] */
   forceCacheUrls?: string[]
 
-  /** Pick the browser(s) to randomize between. Can be "webkit", "firefox", "chromium", or an array of those.
+  /** Pick the browser(s) to randomize between. Can be any array containing ["webkit", "firefox", "chromium"].
    * @default ["webkit", "firefox", "chromium"] */
-  useBrowser?: BrowserName | BrowserName[]
+  useBrowsers?: BrowserName[]
 
   /** Caching is on by default, but can be turned off using this flag. This will make requests much slower, but could
    * catch certain improperly configured servers. `forceCacheUrls` will not work if this is set to `false`.

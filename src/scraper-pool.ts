@@ -48,10 +48,16 @@ export class ScraperPool {
     let sc: Scraper | undefined
     const debugOptions = this.debugOptions
     let browserPool: GenericPool.Pool<Scraper> | undefined
+
     const scraperResult = await pRetry(async () => {
-      // randomly select browser
-      const pickFromBrowsers = Array.isArray(meta.useBrowser) ? meta.useBrowser : (typeof meta.useBrowser === "string" ? [meta.useBrowser] : BROWSERS)
-      const selectedBrowserName = pickFromBrowsers[Math.floor(Math.random() * pickFromBrowsers.length)]
+      // randomly select browser that's available yet compatible
+      const compatibleBrowsers = meta.useBrowsers ? BROWSERS.filter(b => meta.useBrowsers!.includes(b)) : BROWSERS
+      const availableBrowsers = compatibleBrowsers.filter(b => this.browserPools[b].available > 0)
+      const possibleBrowsers = availableBrowsers.length > 0 ? availableBrowsers : compatibleBrowsers
+      const selectedBrowserName = possibleBrowsers[Math.floor(Math.random() * possibleBrowsers.length)]
+      if (availableBrowsers.length === 0)
+        logGlobal(c.yellow(`No available browsers for scraper ${id}, need one of: [${compatibleBrowsers.join(", ")}], will wait...`))
+
       browserPool = this.browserPools[selectedBrowserName]
 
       sc = await browserPool.acquire()
@@ -61,13 +67,13 @@ export class ScraperPool {
       return attemptResult
 
     }, { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {    // retrying
+      if (!sc) return
       if (debugOptions.pauseAfterError) {
-        sc?.log(error)
-        await sc?.pause()
+        sc.log(error)
+        await sc.pause()
       }
-      sc?.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
-      if (sc)
-        await browserPool?.destroy(sc)    // we'll be getting a new browser for the next attempt
+      sc.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+      await browserPool?.destroy(sc)    // we'll be getting a new browser for the next attempt
 
     }}).catch(async e => {    // failed all retries
       sc?.log(c.red(`Failed to run scraper: ${e.message}`))
