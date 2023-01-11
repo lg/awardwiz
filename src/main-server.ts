@@ -18,7 +18,7 @@ const pool = new ScraperPool(process.env.DEBUG ? {
   minBrowserPool: 2,
   maxBrowserPool: 2,
   pauseAfterError: false,
-  showProxyUrl: true,
+  showProxyUrl: false,
   saveAfterCaching: true,
   showFullResponse: [],
   showUncached: false,

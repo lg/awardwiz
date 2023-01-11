@@ -7,7 +7,7 @@ import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
 
 const debugOptions: DebugOptions = {
   showBrowserDebug: true,
-  maxAttempts: 1,
+  maxAttempts: 5,
   minBrowserPool: 1,
   maxBrowserPool: 1,
 
@@ -29,7 +29,12 @@ const query: AwardWizQuery = { origin: "SFO", destination: "LAX", departureDate:
 
 const result = await browser.runAttempt(async (sc) => {
   sc.log("Using query:", query)
-  const scraperResults = await scraper.runScraper(sc, query)
+  const scraperResults = await scraper.runScraper(sc, query).catch(async (e) => {
+    sc.log(c.red("Error in scraper"), e)
+    sc.context?.setDefaultTimeout(0)
+    await sc.pause()
+    return []
+  })
   sc.log(c.green(`Completed with ${scraperResults.length} results`), sc.stats?.toString())
   return scraperResults
 }, scraper.meta, "debug")
