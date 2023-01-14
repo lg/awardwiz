@@ -94,7 +94,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   sc.log("clicked Continue, waiting for search results")
   const result2 = await Promise.race([
     sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/shop/ow/search" && resp.request().method() === "POST")).then((resp) => resp).catch((e: Error) => e.message),
-    sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/content/www/en_US/system-unavailable1.html")).then(() => "Search result anti-botting").catch((e: Error) => e.message)
+    sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/content/www/en_US/system-unavailable1.html")).then(() => "Search result anti-botting").catch((e: Error) => e.message),
+    sc.page.getByRole("heading", { name: "BOOK A FLIGHT" }).waitFor().then(() => "Search result anti-botting").catch((e: Error) => e.message)
   ])
   if (typeof result2 === "string" || !result2.ok())
     throw new Error(typeof result2 === "string" ? result2 : "Search result anti-botting")
