@@ -6,9 +6,7 @@ import { AAResponse, Slice } from "./samples/aa.js"
 
 export const meta: ScraperMetadata = {
   name: "aa",
-  blockUrls: [
-    "customer.cludo.com", "*.entrust.net", "*.tiqcdn.com"
-  ],
+  blockUrls: ["customer.cludo.com", "*.entrust.net", "*.tiqcdn.com"],
   forceCacheUrls: ["*_cookieBanner.jsp", "*/airport/countries*"]
 }
 

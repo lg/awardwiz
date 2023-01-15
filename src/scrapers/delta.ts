@@ -1,7 +1,7 @@
 // WARNING: this delta scraper is getting detected too quickly, plus also it doesnt have edge cases implemented yet
 
 import dayjs from "dayjs"
-import { gotoPage } from "../common.js"
+import { gotoPage, waitFor, waitForJsonSuccess } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { DeltaResponse } from "./samples/delta.js"
@@ -80,30 +80,25 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   void sc.page.locator("#btnSubmit").first().click()    // async
 
   sc.log("waiting for interstitial page")
-  const result = await Promise.race([
-    sc.page.locator("td.selected .naText").waitFor().then(() => "no flights").catch((e: Error) => e.message),
-    sc.page.getByRole("button", { name: "Continue" }).click().then(() => "ok").catch((e: Error) => e.message),
-    sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/content/www/en_US/system-unavailable1.html")).then(() => "Pre-interstitial anti-botting").catch((e: Error) => e.message)
-  ])
+  const result = await waitFor(sc, {
+    "no flights": sc.page.locator("td.selected .naText"),
+    "ok": sc.page.getByRole("button", { name: "Continue" }).click(),
+    "pre-interstitial anti-botting": sc.page.waitForResponse("https://www.delta.com/content/www/en_US/system-unavailable1.html")
+  })
   if (result === "no flights")
     return []
   if (result !== "ok")
     throw new Error(result)
 
   // clicked the continue button on the interstitial page, now wait for search results
-  sc.log("clicked Continue, waiting for search results")
-  const result2 = await Promise.race([
-    sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/shop/ow/search" && resp.request().method() === "POST")).then((resp) => resp).catch((e: Error) => e.message),
-    sc.page.waitForResponse((resp) => (resp.url() === "https://www.delta.com/content/www/en_US/system-unavailable1.html")).then(() => "Search result anti-botting").catch((e: Error) => e.message),
-    sc.page.getByRole("heading", { name: "BOOK A FLIGHT" }).waitFor().then(() => "Search result anti-botting").catch((e: Error) => e.message)
-  ])
-  if (typeof result2 === "string" || !result2.ok())
-    throw new Error(typeof result2 === "string" ? result2 : "Search result anti-botting")
+  const searchResults = await waitForJsonSuccess<DeltaResponse>(sc, "https://www.delta.com/shop/ow/search", {
+    "system unavailable anti-botting": sc.page.waitForResponse("https://www.delta.com/content/www/en_US/system-unavailable1.html"),
+    "back to search anti-botting": sc.page.getByRole("heading", { name: "BOOK A FLIGHT" })
+  })
+  if (typeof searchResults === "string")
+    throw new Error(searchResults)
 
-  sc.log("got results start")
-  const searchResults = await result2.finished().then(() => result2.json()) as DeltaResponse
   sc.log("finished getting results, parsing")
-
   const flightsWithFares: FlightWithFares[] = []
   if (searchResults.itinerary.length > 0) {
     const flights = standardizeResults(searchResults)

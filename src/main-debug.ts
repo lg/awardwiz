@@ -17,7 +17,7 @@ const debugOptions: DebugOptions = {
   useProxy: true,
 
   showUncached: true,
-  pauseAfterRun: true,
+  pauseAfterRun: false,
   pauseAfterError: true,
 }
 

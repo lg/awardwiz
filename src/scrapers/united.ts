@@ -1,4 +1,4 @@
-import { gotoPage, waitForJSONSuccess } from "../common.js"
+import { gotoPage, waitForJsonSuccess } from "../common.js"
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
 import type { Trip, UnitedResponse } from "./samples/united.js"
 import c from "ansi-colors"
@@ -16,7 +16,6 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  sc.page.setDefaultTimeout(15000)
   await gotoPage(sc, "https://www.united.com/en/us/book-flight/united-one-way", "networkidle")
 
   await sc.page.locator("label").filter({ hasText: "Miles" }).click()
@@ -33,7 +32,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   void sc.page.getByRole("button", { name: "Find flights" }).click()
 
-  const fetchFlights = await waitForJSONSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
+  const fetchFlights = await waitForJsonSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
     "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." })
   })
   if (typeof fetchFlights === "string") {
