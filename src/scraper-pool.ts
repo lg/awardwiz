@@ -4,11 +4,7 @@ import { BrowserName, BROWSERS, DebugOptions, Scraper, ScraperMetadata } from ".
 import { logGlobal } from "./log.js"
 import c from "ansi-colors"
 import pRetry from "p-retry"
-
-export type ScraperResult<ReturnType> = {
-  result: ReturnType | undefined
-  logLines: string[]
-}
+import { ScraperResult } from "./types.js"
 
 export const NAV_WAIT_COMMIT_MS = 15000
 const MAX_ATTEMPTS = 3

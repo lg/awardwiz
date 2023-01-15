@@ -20,10 +20,14 @@ deploy tag="registry.kub.lg.io:31119/awardwiz:scrapers2" platform="amd64" kubect
   kubectl rollout restart {{kubectl-deployment}}
   kubectl rollout status {{kubectl-deployment}}
 
-# builds and run in docker main-server
-run-server port="2222" tag="awardwiz:scrapers": (build-docker "1" tag)
-  docker run -it --rm -p {{port}}:{{port}} --volume $(pwd)/tmp:/root/tmp -e PORT={{port}} {{tag}}
-
 # builds and run in docker main-debug
-run-debug x11vncport="8282" tag="awardwiz:scrapers": build-docker
-  docker run -it --rm -p {{x11vncport}}:{{x11vncport}} --volume $(pwd)/tmp:/root/tmp {{tag}}
+run-debug tag="awardwiz:scrapers": build-docker
+  docker run -it --rm -p 8282:8282 --volume $(pwd)/.env.local:/root/.env:ro --volume $(pwd)/tmp:/root/tmp {{tag}}
+
+# tail logs in production on k8s
+tail-prod-logs k8s-app-name="awardwiz":
+  #!/bin/sh
+  while true; do
+    kubectl logs -l app={{k8s-app-name}} --follow --all-containers --max-log-requests=50 --tail=5 | grep --line-buffered -v 'health-check'
+    sleep 1
+  done

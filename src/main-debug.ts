@@ -1,7 +1,7 @@
 import c from "ansi-colors"
 import { logGlobal } from "./log.js"
 import { createClient } from "@redis/client"
-import { firefox } from "playwright-extra"
+import { chromium } from "playwright-extra"
 import { DebugOptions, Scraper } from "./scraper.js"
 import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
 
@@ -17,11 +17,11 @@ const debugOptions: DebugOptions = {
   useProxy: true,
 
   showUncached: true,
-  pauseAfterRun: false,
+  pauseAfterRun: true,
   pauseAfterError: true,
 }
 
-const browser = new Scraper(firefox, debugOptions)
+const browser = new Scraper(chromium, debugOptions)
 await browser.create()
 
 const scraper: AwardWizScraperModule = await import("./scrapers/delta.js")

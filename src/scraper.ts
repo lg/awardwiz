@@ -1,6 +1,4 @@
-import { env } from "node:process"
 import c from "ansi-colors"
-import url from "url"
 import pRetry from "p-retry"
 import { Browser, BrowserContext, Page } from "playwright"
 import UserAgent from "user-agents"
@@ -13,6 +11,7 @@ import { logWithId } from "./log.js"
 import globToRegexp from "glob-to-regexp"
 import { Cache } from "./cache.js"
 import { Stats } from "./stats.js"
+import * as dotenv from "dotenv"
 
 export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 const IPTZ_MAX_WAIT_MS = 4000
@@ -106,9 +105,11 @@ export type DebugOptions = {
 type PlaywrightProxy = { server: string, username: string, password: string }
 
 export class Scraper {
+  private static proxies
   private id: string = ""
   private filtersEngine?: FiltersEngine
   private proxy?: PlaywrightProxy
+  private lastProxyGroup = "default"
   private tz?: string
 
   public browser?: Browser
@@ -121,6 +122,15 @@ export class Scraper {
   constructor(private browserType: AugmentedBrowserLauncher, private debugOptions: DebugOptions) {}
 
   static {
+    dotenv.config()
+    this.proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
+      if (!k.startsWith("PROXY_ADDRESS_"))
+        return acc
+      const groupName = k.replace("PROXY_ADDRESS_", "").toLowerCase()
+      acc[groupName] = (process.env[k] ?? "").split(",")
+      return acc
+    }, {})
+
     chromium.use(StealthPlugin())
     const webkitStealth = StealthPlugin();
     ["navigator.webdriver", "user-agent-override"].forEach(e => webkitStealth.enabledEvasions.delete(e))
@@ -147,31 +157,38 @@ export class Scraper {
     return browser
   }
 
-  async createBrowserAttempt() {
-    // Start browser
-    this.browser = await this.browserType.launch({ headless: false })
-
-    // Select a proxy
-    const proxies = env.PROXY_ADDRESS?.split(",")
-    const selectedProxy = proxies ? proxies[Math.floor(Math.random() * proxies.length)] : undefined
-    if ((this.debugOptions.useProxy ?? true) && selectedProxy && url.parse(selectedProxy).hostname !== null) {
-      const { host, username, password, protocol } = new URL(selectedProxy)
-      this.proxy = { server: `${protocol}//${host}`, username: username, password: password }
-
-      // generate random proxy
-      const psPasswordRegexp = /(?<start>\S{16}_country-\S+_session-)\S{8}$/u.exec(password)
-      if ((this.debugOptions.changeProxies ?? true) && psPasswordRegexp)
-        this.proxy.password = psPasswordRegexp.groups!.start + Math.random().toString(36).slice(2).substring(0, 8)
-    } else {
-      if (this.debugOptions.showBrowserDebug)
-        this.log(c.yellow(`Not using proxy server ${!(this.debugOptions.useProxy ?? true) ? "(useProxy option not enabled)" : `(${env.PROXY_ADDRESS === undefined ? "missing" : "invalid"})` }`))
+  private async selectProxy(group: string) {
+    if (!this.debugOptions.useProxy) {
+      this.log(c.yellowBright("Not using proxy server (useProxy option not enabled)"))
+      return
     }
+
+    const proxies = Scraper.proxies[group]
+    if (!proxies || proxies.length === 0)
+      throw new Error(`No proxies found for ${group}`)
+    const selectedProxy = proxies[Math.floor(Math.random() * proxies.length)]
+
+    const { host, username, password, protocol } = new URL(selectedProxy!)
+    this.proxy = { server: `${protocol}//${host}`, username: username, password: password }
+
+    // generate random proxy when using proxy services that have the password format define which ip to use
+    const psPasswordRegexp = /(?<start>\S{16}_country-\S+_session-)\S{8}$/u.exec(password)
+    if ((this.debugOptions.changeProxies ?? true) && psPasswordRegexp)
+    this.proxy.password = psPasswordRegexp.groups!["start"] + Math.random().toString(36).slice(2).substring(0, 8)
 
     // Get current IP and timezone
     const { tz } = await getIPAndTimezone(this.browser!, this.proxy)
     this.tz = tz
     if (this.debugOptions.showBrowserDebug)
-      this.log(c.magenta(`IP resolved to timezone ${this.tz}`))
+      this.log(c.magenta(`Using ${group} proxy group, resolving to timezone ${this.tz}`))
+
+    this.lastProxyGroup = group
+  }
+
+  async createBrowserAttempt() {
+    // Start browser w/ default proxy
+    this.browser = await this.browserType.launch({ headless: false })
+    await this.selectProxy("default")
 
     // enable adblocking (assuming we're going to use them)
     const adblockCache = { path: "tmp/adblocker.bin", read: fs.readFile, write: fs.writeFile }
@@ -184,6 +201,18 @@ export class Scraper {
 
   public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
     this.id = id
+
+    // if there's a proxy for this scraper name, use it. note that this will slow down the scraper creation process
+    // we'll need to re-validate the proxy
+    const extraProxies = Scraper.proxies[meta.name]
+    if (extraProxies && extraProxies.length > 0) {
+      if (this.lastProxyGroup !== meta.name)
+        await this.selectProxy(meta.name)
+
+    } else {
+      if (this.lastProxyGroup !== "default")
+        await this.selectProxy("default")
+    }
 
     // generate random user agent
     const userAgent = meta.randomizeUserAgent ? new UserAgent({
