@@ -42,7 +42,7 @@ const result = await browser.runAttempt(async (sc) => {
 logGlobal(result)
 
 logGlobal("Ending")
-const redis = createClient({ url: process.env.REDIS_URL })
+const redis = createClient({ url: process.env["REDIS_URL"] })
 await redis.connect()
 await redis.save()
 await redis.disconnect()

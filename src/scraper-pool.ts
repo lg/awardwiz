@@ -54,7 +54,7 @@ export class ScraperPool {
       const compatibleBrowsers = meta.useBrowsers ? BROWSERS.filter(b => meta.useBrowsers!.includes(b)) : BROWSERS
       const availableBrowsers = compatibleBrowsers.filter(b => this.browserPools[b].available > 0)
       const possibleBrowsers = availableBrowsers.length > 0 ? availableBrowsers : compatibleBrowsers
-      const selectedBrowserName = possibleBrowsers[Math.floor(Math.random() * possibleBrowsers.length)]
+      const selectedBrowserName = possibleBrowsers[Math.floor(Math.random() * possibleBrowsers.length)]!
       if (availableBrowsers.length === 0)
         logGlobal(c.yellow(`No available browsers for scraper ${id}, need one of: [${compatibleBrowsers.join(", ")}], will wait...`))
 

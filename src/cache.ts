@@ -8,7 +8,7 @@ import { Scraper } from "./scraper.js"
 const MAX_CACHE_TIME_S = 3600 * 24
 
 export class Cache {
-  private redis = createClient({ url: process.env.REDIS_URL })
+  private redis = createClient({ url: process.env["REDIS_URL"] })
   private forceRegexps
 
   constructor(
@@ -71,7 +71,7 @@ export class Cache {
     const requestMethod = response.request().method()
     const cacheControl = await response.headerValue("cache-control")
 
-    const maxAge = parseInt(/max-age=(?<maxAge>\d+)/u.exec(cacheControl ?? "")?.groups?.maxAge ?? "0")
+    const maxAge = parseInt(/max-age=(?<maxAge>\d+)/u.exec(cacheControl ?? "")?.groups?.["maxAge"] ?? "0")
     const isPublic = !!cacheControl?.includes("public")
     const isPrivate = !!cacheControl?.includes("private")
     const isNoCache = !!cacheControl?.includes("no-cache")

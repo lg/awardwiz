@@ -62,8 +62,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
 const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFares[] => (
   slices.map((slice) => {
-    const segment = slice.segments[0]
-    const leg = segment.legs[0]
+    const segment = slice.segments[0]!
+    const leg = segment.legs[0]!
     const result: FlightWithFares = {
       departureDateTime: segment.departureDateTime.replace(" ", "").replace("T", " ").slice(0, 16),
       arrivalDateTime: segment.arrivalDateTime.replace(" ", "").replace("T", " ").slice(0, 16),
@@ -100,7 +100,7 @@ const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFa
 
     if (slice.segments.length > 1)
       return
-    if (slice.segments[0].origin.code !== query.origin || slice.segments[0].destination.code !== query.destination)
+    if (segment.origin.code !== query.origin || segment.destination.code !== query.destination)
       return
 
     return result

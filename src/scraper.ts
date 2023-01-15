@@ -168,7 +168,7 @@ export class Scraper {
     }
 
     // Get current IP and timezone
-    const { tz } = await getIPAndTimezone(this.browser, this.proxy)
+    const { tz } = await getIPAndTimezone(this.browser!, this.proxy)
     this.tz = tz
     if (this.debugOptions.showBrowserDebug)
       this.log(c.magenta(`IP resolved to timezone ${this.tz}`))
@@ -194,8 +194,8 @@ export class Scraper {
 
     // generate window and viewport sizes
     const SCREEN_SIZES = [[1920, 1080], [1536, 864], [2560, 1440], [1680, 1050], [1792, 1120], [1600, 900]]
-    const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]
-    const screen = { width: screenSize[0], height: screenSize[1] }
+    const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]!
+    const screen = { width: screenSize[0]!, height: screenSize[1]! }
     const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.3 + 0.7)), height: Math.ceil(screen.height * (Math.random() * 0.3 + 0.7)) }
 
     // create the context
@@ -311,7 +311,7 @@ const getIPAndTimezone = async (browser: Browser, proxy?: PlaywrightProxy) => {
     { url: "https://ipapi.co/json", ip_field: "ip", tz_field: "timezone" },
     { url: "https://ipinfo.io/json", ip_field: "ip", tz_field: "timezone" }
   ]
-  const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]
+  const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]!
 
   const ret = await page.goto(provider.url, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
     .then(async response => ({ ok: !!response, status: response?.status() ?? 0, out: await response?.text() ?? "" }))

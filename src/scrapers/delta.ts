@@ -116,25 +116,26 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 const standardizeResults = (raw: DeltaResponse) => {
   const results: FlightWithFares[] = []
   for (const itinerary of raw.itinerary) {
-    const trip = itinerary.trip[0]
+    const trip = itinerary.trip[0]!
+    const segment = trip.flightSegment[0]!
 
     const result: FlightWithFares = {
       departureDateTime: trip.schedDepartLocalTs.replace("T", " "),
       arrivalDateTime: trip.schedArrivalLocalTs.replace("T", " "),
       origin: trip.originAirportCode,
       destination: trip.destAirportCode,
-      flightNo: `${trip.flightSegment[0].marketingCarrier.code} ${trip.flightSegment[0].marketingFlightNum}`,
-      duration: trip.flightSegment[0].totalAirTime.day * 24 * 60 + trip.flightSegment[0].totalAirTime.hour * 60 + trip.flightSegment[0].totalAirTime.minute,
-      aircraft: trip.flightSegment[0].flightLeg[0].aircraft.fleetName,
-      fares: trip.viewSeatUrls[0].fareOffer.itineraryOfferList
+      flightNo: `${segment.marketingCarrier.code} ${segment.marketingFlightNum}`,
+      duration: segment.totalAirTime.day * 24 * 60 + segment.totalAirTime.hour * 60 + segment.totalAirTime.minute,
+      aircraft: segment.flightLeg[0]?.aircraft.fleetName,
+      fares: trip.viewSeatUrls[0]!.fareOffer.itineraryOfferList
         .filter((offer) => !offer.soldOut && offer.offered)
         .map((offer) => ({
           cash: offer.totalPrice?.currency?.amount ?? -1,
           currencyOfCash: offer.totalPrice?.currency?.code ?? "USD",
           miles: offer.totalPrice?.miles?.miles ?? 0,
-          cabin: offer.brandInfoByFlightLegs[0].cos[0] === "O" ? "business" : "economy",
+          cabin: offer.brandInfoByFlightLegs[0]!.cos[0] === "O" ? "business" : "economy",
           scraper: "delta",
-          bookingClass: offer.brandInfoByFlightLegs[0].cos
+          bookingClass: offer.brandInfoByFlightLegs[0]!.cos
         }))
         .filter((fare) => fare.cash !== -1 && fare.miles !== 0)
         .reduce<FlightFare[]>((bestForCabin, fare) => {
@@ -144,14 +145,14 @@ const standardizeResults = (raw: DeltaResponse) => {
           return [...bestForCabin.filter((check) => check.cabin !== fare.cabin), fare]
         }, []),
       amenities: {
-        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
-        hasWiFi: trip.summarizedProducts.some((product) => product.productIconId === "wif") || (trip.flightSegment[0].marketingCarrier.code === "DL" ? false : undefined),
+        hasPods: trip.summarizedProducts.some((product) => product.productIconId === "fla") || (segment.marketingCarrier.code === "DL" ? false : undefined),
+        hasWiFi: trip.summarizedProducts.some((product) => product.productIconId === "wif") || (segment.marketingCarrier.code === "DL" ? false : undefined),
       }
     }
 
-    if (itinerary.trip[0].flightSegment.length > 1)
+    if (trip.flightSegment.length > 1)
       continue
-    if (itinerary.trip[0].originAirportCode !== raw.tripOriginAirportCode || itinerary.trip[0].destAirportCode !== raw.tripDestinationAirportCode)
+    if (trip.originAirportCode !== raw.tripOriginAirportCode || trip.destAirportCode !== raw.tripDestinationAirportCode)
       continue
 
     results.push(result)

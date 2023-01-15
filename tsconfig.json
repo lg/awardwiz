@@ -7,15 +7,20 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,       // makes sure all cases are covered
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
+
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,             // allows for importing .json files (and creating the schema)
     "isolatedModules": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,         // Record<X, Y | undefined> is automaticly checked for
+    "noFallthroughCasesInSwitch": true,       // makes sure all cases are covered
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
 
     "sourceMap": true,
     "outDir": "dist"

@@ -12,7 +12,7 @@ app.use((req, res, next) => {
   next()
 })
 
-const pool = new ScraperPool(process.env.DEBUG ? {
+const pool = new ScraperPool(process.env["DEBUG"] ? {
   showBrowserDebug: false,
   maxAttempts: 5,
   minBrowserPool: 2,
@@ -36,7 +36,7 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
     const { scraperName, origin, destination, departureDate } = req.params
 
     const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
-    const query = { origin, destination, departureDate }
+    const query = { origin: origin!, destination: destination!, departureDate: departureDate! }
 
     const results = await pool.runScraper(async (sc) => {
       sc.log("Running scraper for", query)
@@ -92,7 +92,7 @@ app.get("/", (req, res) => {
   res.send("Hello!\n")
 })
 
-const port = parseInt(process.env.PORT ?? "8282")
+const port = parseInt(process.env["PORT"] ?? "8282")
 const server = app.listen(port, () => {
   logGlobal(`Started Awardwiz HTTP server on port ${port}`)
 })

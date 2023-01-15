@@ -59,7 +59,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.code)}`)
 
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
-  const results = raw.data?.searchResults?.airProducts[0].details ?? []
+  const results = raw.data?.searchResults?.airProducts[0]?.details ?? []
   if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
     sc.log("No routes exist between the origin and destination")
 
@@ -74,13 +74,13 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
       arrivalDateTime: result.arrivalDateTime.slice(0, 19).replace("T", " "),
       origin: result.originationAirportCode,
       destination: result.destinationAirportCode,
-      flightNo: `${result.segments[0].operatingCarrierCode} ${result.segments[0].flightNumber}`,
+      flightNo: `${result.segments[0]!.operatingCarrierCode} ${result.segments[0]!.flightNumber}`,
       duration: result.totalDuration,
-      aircraft: equipmentTypeLookup[result.segments[0].aircraftEquipmentType],
+      aircraft: equipmentTypeLookup[result.segments[0]!.aircraftEquipmentType],
       fares: [],
       amenities: {
         hasPods: undefined,
-        hasWiFi: result.segments[0].wifiOnBoard,
+        hasWiFi: result.segments[0]!.wifiOnBoard,
       }
     }
     const bestFare = Object.values(result.fareProducts.ADULT).reduce<FlightFare | undefined>((lowestFare: FlightFare | undefined, product) => {

@@ -45,7 +45,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   sc.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
   if ((fetchFlights.data?.Trips || []).length) {
-    const flights = standardizeResults(query, fetchFlights.data!.Trips[0])
+    const flights = standardizeResults(query, fetchFlights.data!.Trips[0]!)
     flightsWithFares.push(...flights)
   }
 
@@ -87,9 +87,9 @@ const standardizeResults = (query: AwardWizQuery, unitedTrip: Trip) => {
       if (product.Prices.length === 0)
         continue
 
-      const miles = product.Prices[0].Amount
-      const cash = product.Prices.length >= 2 ? product.Prices[1].Amount : 0
-      const currencyOfCash = product.Prices.length >= 2 ? product.Prices[1].Currency : ""
+      const miles = product.Prices[0]!.Amount
+      const cash = product.Prices.length >= 2 ? product.Prices[1]!.Amount : 0
+      const currencyOfCash = product.Prices.length >= 2 ? product.Prices[1]!.Currency : ""
       const bookingClass = product.BookingCode
 
       const cabin = { "United First": "business", "United Economy": "economy", "United Business": "business", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
