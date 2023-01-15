@@ -158,7 +158,7 @@ export class Scraper {
   }
 
   private async selectProxy(group: string) {
-    if (!this.debugOptions.useProxy) {
+    if (!(this.debugOptions.useProxy ?? true)) {
       this.log(c.yellowBright("Not using proxy server (useProxy option not enabled)"))
       return
     }
