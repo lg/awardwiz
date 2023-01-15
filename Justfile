@@ -20,7 +20,11 @@ deploy tag="registry.kub.lg.io:31119/awardwiz:scrapers2" platform="amd64" kubect
   kubectl rollout restart {{kubectl-deployment}}
   kubectl rollout status {{kubectl-deployment}}
 
-# builds and run in docker main-debug
+# builds and runs main-server in docker
+run-server tag="awardwiz:scrapers": build-docker
+  docker run -it --rm -p 8282:8282 -p 2222:2222 --volume $(pwd)/.env.local:/root/.env:ro --volume $(pwd)/tmp:/root/tmp -e PORT=2222 {{tag}}
+
+# builds and runs main-debug in docker
 run-debug tag="awardwiz:scrapers": build-docker
   docker run -it --rm -p 8282:8282 --volume $(pwd)/.env.local:/root/.env:ro --volume $(pwd)/tmp:/root/tmp {{tag}}
 
