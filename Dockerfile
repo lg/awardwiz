@@ -15,9 +15,8 @@ RUN if [ $DEBUG = 1 ]; then curl -fsSL https://packages.redis.io/gpg | gpg --dea
   && apt update && apt install -y redis; fi
 
 # code should already be available in dist/ as javascript
-ENV NODE_ENV production
 COPY package.json package-lock.json ./
-RUN npm install -g npm && npm i
+RUN NODE_ENV=production npm install -g npm && npm i
 
 COPY run.sh ./
 COPY dist/ dist/
