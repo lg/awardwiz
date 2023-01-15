@@ -31,7 +31,7 @@ export class Stats {
       const sizes = await req.sizes().catch(() => ({ responseBodySize: 0, responseHeadersSize: 0 }))
       const bytes = sizes.responseBodySize + sizes.responseHeadersSize
 
-      this.domains[hostname] = (this.domains[hostname] || 0) + bytes
+      this.domains[hostname] = (this.domains[hostname] ?? 0) + bytes
       this.totDomains = Object.keys(this.domains).length
       this.bytesDownloaded += bytes
     }
