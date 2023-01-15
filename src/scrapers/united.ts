@@ -1,4 +1,4 @@
-import { gotoPage, jsonParseLoggingError, throwIfBadResponse } from "../common.js"
+import { gotoPage, waitForJSONSuccess } from "../common.js"
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
 import type { Trip, UnitedResponse } from "./samples/united.js"
 import c from "ansi-colors"
@@ -6,10 +6,12 @@ import { ScraperMetadata } from "../scraper.js"
 
 export const meta: ScraperMetadata = {
   name: "united",
-  blockUrls: ["*.liveperson.net", "tags.tiqcdn.com"],
+  blockUrls: [
+    "*.liveperson.net", "tags.tiqcdn.com",
+    "https://www.united.com/api/airports/lookup/?airport=*" /* needed since we don't want dropdowns */ ],
   forceCacheUrls: [
     "*.svg", "*/npm.*", "*/fonts/*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
-    "*/api/airports/lookup/?airport=*&allAirports=true", "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
+    "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
     "*/api/User/IsEmployee", "*/api/flight/recentSearch"]
 }
 
@@ -19,12 +21,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   await sc.page.locator("label").filter({ hasText: "Miles" }).click()
 
-  let warn = undefined
-  await sc.page.getByLabel("From").fill(query.origin).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(`.+\\s\\(${query.origin}[) ]`, "g") }).nth(0).click()).catch(() => warn = "Origin not found")
-  await sc.page.getByRole("combobox", { name: "Enter your destination city, airport name, or airport code." }).fill(query.destination).then(() =>
-    sc.page.getByRole("button", { name: new RegExp(`.+\\s\\(${query.destination}[) ]`, "g") }).nth(0).click()).catch(() => warn = "Destination not found")
-  if (typeof warn === "string") { sc.log(c.yellow(`WARN: ${warn}`)) ; return [] }
+  await sc.page.getByLabel("From").fill(query.origin)   // we block the as-you-type requests
+  await sc.page.getByRole("combobox", { name: "Enter your destination city, airport name, or airport code." }).fill(query.destination)
 
   await sc.page.getByPlaceholder("Depart").fill(query.departureDate)
   const acceptedDate = await sc.page.getByPlaceholder("Depart").inputValue()
@@ -35,12 +33,13 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   void sc.page.getByRole("button", { name: "Find flights" }).click()
 
-  sc.log("waiting for results")
-  const fetchFlights = await sc.page.waitForResponse("https://www.united.com/api/flight/FetchFlights")
-    .then(async (rawResponse) => {
-      await throwIfBadResponse(sc, rawResponse)
-      return jsonParseLoggingError(sc, await rawResponse.text()) as UnitedResponse
-    })
+  const fetchFlights = await waitForJSONSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
+    "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." })
+  })
+  if (typeof fetchFlights === "string") {
+    sc.log(c.yellow(`WARN: ${fetchFlights}`))
+    return []
+  }
 
   sc.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []

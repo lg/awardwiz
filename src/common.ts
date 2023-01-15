@@ -26,12 +26,12 @@ export const throwIfBadResponse = async (sc: Scraper, response: Response | null 
   if (!response)
     throw new Error("Response was null!")
 
-  if (response.status() !== 200) {
+  if (!response.ok()) {
     const pageText = await response.text()
     if (pageText.includes("<H1>Access Denied</H1>"))
-      throw new Error(`Access Denied while loading page (status: ${response.status()})`)
+      throw new Error(`Access Denied anti-botting while loading page (status: ${response.status()})`)
     if (pageText.includes("div class=\"px-captcha-error-header\""))
-      throw new Error("Perimeter-X captcha while loading page")
+      throw new Error("Perimeter-X captcha anti-botting while loading page")
     sc.log(pageText)
 
     throw new Error(`Page loading failed with status ${response.status()}`)
@@ -75,4 +75,19 @@ export const waitForLocatorAndClick = async (locator: Locator, notFoundLocator: 
   ])
   if (found === "not found") { return false }
   return true
+}
+
+export const waitForJSONSuccess = async <JSONType>(sc: Scraper, url: string, problems: Record<string, Locator>) => {
+  sc.log("waiting for success response...")
+  const response = await Promise.race([
+    sc.page.waitForResponse((resp) => (resp.url() === url && resp.request().method() === "POST")).then((resp) => resp).catch((e: Error) => e),
+    ...Object.entries(problems).map(([key, locator]) => locator.waitFor().then(() => key).catch((e: Error) => e))
+  ])
+  if (response instanceof Error)
+    throw response
+  else if (typeof response === "string")
+    return response
+
+  await throwIfBadResponse(sc, response)
+  return jsonParseLoggingError(sc, await response.text()) as JSONType
 }
