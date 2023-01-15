@@ -22,4 +22,7 @@ RUN npm install -g npm && npm i
 COPY run.sh ./
 COPY dist/ dist/
 
+# code for playwright tracing
+COPY src/ src/
+
 CMD ["/root/run.sh"]

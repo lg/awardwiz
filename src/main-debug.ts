@@ -19,6 +19,8 @@ const debugOptions: DebugOptions = {
   showUncached: true,
   pauseAfterRun: false,
   pauseAfterError: true,
+
+  tracingPath: "./tmp/traces",
 }
 
 const browser = new Scraper(chromium, debugOptions)
@@ -37,16 +39,15 @@ const result = await browser.runAttempt(async (sc) => {
   })
   sc.log(c.green(`Completed with ${scraperResults.length} results`), sc.stats?.toString())
   return scraperResults
-}, scraper.meta, "debug")
+}, scraper.meta, `debug-${Math.random().toString(36).substring(2, 8)}`)
 
 logGlobal(result)
 
 logGlobal("Ending")
+await browser.destroy()
+
 const redis = createClient({ url: process.env["REDIS_URL"] })
 await redis.connect()
 await redis.save()
 await redis.disconnect()
-
-await browser.context?.close()
-await browser.browser?.close()
 logGlobal("Ended")

@@ -100,6 +100,10 @@ export type DebugOptions = {
    * adhoc and never gets a chance to save, this will save after each set call. This is not recommended for production.
    * @default false */
   saveAfterCaching?: boolean
+
+  /** Enables tracing and places the Playwright tracing .zip file in this directory.
+   * @default undefined */
+  tracingPath?: string
 }
 
 type PlaywrightProxy = { server: string, username: string, password: string }
@@ -232,6 +236,8 @@ export class Scraper {
       this.log(c.magenta("Using proxy server:"), this.proxy)
     this.context = await this.browser!.newContext({ serviceWorkers: "block", timezoneId: this.tz, locale: "en-US",
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true, viewport, screen })
+    if (this.debugOptions.tracingPath ?? undefined)
+      await this.context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: id })
     this.context.setDefaultNavigationTimeout(15000)
     this.context.setDefaultTimeout(15000)
 
@@ -294,6 +300,15 @@ export class Scraper {
   }
 
   public async release() {
+    if (this.debugOptions.tracingPath ?? undefined) {
+      if (this.id) {
+        await this.context?.tracing.stop({ path: `${this.debugOptions.tracingPath}/${this.id}.zip` })
+        this.log(c.magenta(`Saved trace to: ${this.debugOptions.tracingPath}/${this.id}.zip`))
+      } else {
+        await this.context?.tracing.stop()
+      }
+    }
+
     if (this.stats)
       await this.stats.stop()
     await this.context?.unroute("*")
