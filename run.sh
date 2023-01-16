@@ -27,11 +27,4 @@ if [ -z "${REDIS_URL}" ]; then
   fi
 fi
 
-if [ -n "${PORT}" ]; then
-  node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-server.js
-else
-  echo "* debug mode *"
-  node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings dist/main-debug.js
-fi
-
-# redis-cli shutdown
+node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings "dist/main-${SCRIPT}.js"

@@ -1,12 +1,10 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "lib": ["ESNext"],
     "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,                   // doesnt type check .d.ts files
+    "esModuleInterop": true,                // also enables allowSyntheticDefaultImports (allows for importing default exports)
 
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
@@ -21,6 +19,8 @@
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noPropertyAccessFromIndexSignature": true,
+
+    "useDefineForClassFields": false,      // set to true to compile #private to something more compatible
 
     "sourceMap": true,
     "outDir": "dist"

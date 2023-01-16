@@ -24,4 +24,5 @@ COPY dist/ dist/
 # code for playwright tracing
 COPY src/ src/
 
+ENV SCRIPT="server"
 CMD ["/root/run.sh"]
