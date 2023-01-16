@@ -59,6 +59,9 @@ export type DebugOptions = {
   showResponses?: boolean,
   showBlocked?: boolean,
   showCached?: boolean,
+
+  /** Shows requests that are not cached (nor blocked). Useful for finding patterns to add to `forceCacheUrls`.
+   * @default false */
   showUncached?: boolean,
 
   /** Shows browsers being created/destroyed by the pool
@@ -71,7 +74,13 @@ export type DebugOptions = {
 
   showFullResponse?: string[],
   showFullRequest?: string[],
+
+  /** Will pause after each run, useful for debugging. Server only.
+   * @default false */
   pauseAfterRun?: boolean,
+
+  /** Will pause after each error, useful for debugging. Server only.
+   * @default false */
   pauseAfterError?: boolean,
 
   /** When using a proxy service that has it's passwords in the format: `/\S{16}_country-\S+_session-)\S{8}$/`, we'll
@@ -114,7 +123,7 @@ export class Scraper {
   private filtersEngine?: FiltersEngine
   private proxy?: PlaywrightProxy
   private lastProxyGroup = "default"
-  private tz?: string
+  private ipInfo?: { ip: string, countryCode: string, tz: string }
 
   public browser?: Browser
   public context?: BrowserContext
@@ -163,7 +172,9 @@ export class Scraper {
 
   private async selectProxy(group: string) {
     if (!(this.debugOptions.useProxy ?? true)) {
-      this.log(c.yellowBright("Not using proxy server (useProxy option not enabled)"))
+      // Even though we're not using a proxy, we need to know our perceived timezone
+      this.ipInfo = await getIPInfo(this.browser!, this.proxy)
+      this.log(c.yellowBright(`Not using proxy server (useProxy option not enabled), tz is: ${this.ipInfo.tz}, country is: ${this.ipInfo.countryCode}`))
       return
     }
 
@@ -181,10 +192,9 @@ export class Scraper {
     this.proxy.password = psPasswordRegexp.groups!["start"] + Math.random().toString(36).slice(2).substring(0, 8)
 
     // Get current IP and timezone
-    const { tz } = await getIPAndTimezone(this.browser!, this.proxy)
-    this.tz = tz
+    this.ipInfo = await getIPInfo(this.browser!, this.proxy)
     if (this.debugOptions.showBrowserDebug)
-      this.log(c.magenta(`Using ${group} proxy group, resolving to timezone ${this.tz}`))
+      this.log(c.magenta(`Using ${group} proxy group, resolving to timezone ${this.ipInfo.tz} and country ${this.ipInfo.countryCode}`))
 
     this.lastProxyGroup = group
   }
@@ -229,17 +239,21 @@ export class Scraper {
     const SCREEN_SIZES = [[1920, 1080], [1536, 864], [2560, 1440], [1680, 1050], [1792, 1120], [1600, 900]]
     const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]!
     const screen = { width: screenSize[0]!, height: screenSize[1]! }
-    const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.3 + 0.7)), height: Math.ceil(screen.height * (Math.random() * 0.3 + 0.7)) }
+    const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.2 + 0.8)), height: Math.ceil(screen.height * (Math.random() * 0.2 + 0.8)) }
 
     // create the context
     if (this.debugOptions.showProxyUrl)
       this.log(c.magenta("Using proxy server:"), this.proxy)
-    this.context = await this.browser!.newContext({ serviceWorkers: "block", timezoneId: this.tz, locale: "en-US",
+    this.context = await this.browser!.newContext({ timezoneId: this.ipInfo!.tz, locale: `en-${this.ipInfo!.countryCode}`,
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true, viewport, screen })
+
     if (this.debugOptions.tracingPath ?? undefined)
       await this.context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: id })
     this.context.setDefaultNavigationTimeout(15000)
     this.context.setDefaultTimeout(15000)
+
+    // disable webrtc
+    await this.context.addInitScript("navigator.mediaDevices.getUserMedia = navigator.webkitGetUserMedia = navigator.mozGetUserMedia = navigator.getUserMedia = webkitRTCPeerConnection = RTCPeerConnection = MediaStreamTrack = undefined;")
 
     // enable stats
     this.stats = new Stats(this)
@@ -346,25 +360,21 @@ export class Scraper {
   }
 }
 
-const getIPAndTimezone = async (browser: Browser, proxy?: PlaywrightProxy) => {
+const getIPInfo = async (browser: Browser, proxy?: PlaywrightProxy) => {
   const context = await browser.newContext({ proxy })
   const page = await context.newPage()
 
-  const PROVIDERS = [
-    { url: "https://json.geoiplookup.io", ip_field: "ip", tz_field: "timezone_name" },
-    { url: "https://ipapi.co/json", ip_field: "ip", tz_field: "timezone" },
-    { url: "https://ipinfo.io/json", ip_field: "ip", tz_field: "timezone" }
-  ]
+  const PROVIDERS = [ "https://json.geoiplookup.io", "https://ipinfo.io/json" ]    // possibly inaccurate tz: "https://ipapi.co/json"
   const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]!
 
-  const ret = await page.goto(provider.url, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
+  const ret = await page.goto(provider, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
     .then(async response => ({ ok: !!response, status: response?.status() ?? 0, out: await response?.text() ?? "" }))
     .finally(() => context.close())
 
   const json = JSON.parse(ret.out)
-  const [ip, tz] = [json[provider.ip_field], json[provider.tz_field]] as [string | undefined, string | undefined]
-  if (!ret.ok || !ip || !tz)
+  const [ip, tz, countryCode] = [json.ip, json.timezone ?? json.timezone_name, json.country_code ?? json.country] as [string | undefined, string | undefined, string | undefined]
+  if (!ret.ok || !ip || !tz || !countryCode)
     throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
 
-  return { ip, tz }
+  return { ip, tz, countryCode }
 }
