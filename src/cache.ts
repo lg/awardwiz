@@ -105,8 +105,8 @@ export class Cache {
   }
 
   public async insertURLIntoCache(url: string, body: Buffer, headers: Buffer, ttl: number) {
-    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers).catch(() => { this.sc.log(`Error caching headers for ${url}}`) })
-    await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body).catch(() => { this.sc.log(`Error caching headers for ${url}}`) })
+    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers).catch((e) => { this.sc.log(c.red(`Error caching headers for ${url}`), e) })
+    await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body).catch((e) => { this.sc.log(c.red(`Error caching body for ${url}`), e) })
     await this.sc.context?.route(url, this.runCachedRoute.bind(this))
 
     if (this.debug.saveAfterCaching)
