@@ -37,6 +37,3 @@ run-server: (run-docker "-p 2222:2222 -e PORT=2222 -e SCRIPT=server")
 
 # main-debug.ts
 run-debug: (run-docker "-e SCRIPT=debug")
-
-# main-tests.ts
-run-tests: (run-docker "-e SCRIPT=tests")
