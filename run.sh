@@ -23,7 +23,7 @@ fi
 mkdir -p ./tmp
 if [ -z "${REDIS_URL}" ]; then
   if which redis-server > /dev/null; then
-    echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp" | redis-server -
+    echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp\\nsave 5 1" | redis-server -
   fi
 fi
 

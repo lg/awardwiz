@@ -105,11 +105,6 @@ export type DebugOptions = {
    * @default false */
   showProxyUrl?: boolean
 
-  /** Normally cache is saved on it's own schedule, but especially when debugging, sometimes the cache server is run
-   * adhoc and never gets a chance to save, this will save after each set call. This is not recommended for production.
-   * @default false */
-  saveAfterCaching?: boolean
-
   /** Enables tracing and places the Playwright tracing .zip file in this directory.
    * @default undefined */
   tracingPath?: string

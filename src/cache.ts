@@ -15,7 +15,7 @@ export class Cache {
     private sc: Scraper,
     private namespace: string,
     forceCache: string[],
-    private debug: { showCached?: boolean, showUncached?: boolean, saveAfterCaching?: boolean }
+    private debug: { showCached?: boolean, showUncached?: boolean }
   ) {
     this.forceRegexps = forceCache.map((glob) => globToRegexp(glob, { extended: true }))
 
@@ -108,8 +108,5 @@ export class Cache {
     await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers).catch((e) => { this.sc.log(c.red(`Error caching headers for ${url}`), e) })
     await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body).catch((e) => { this.sc.log(c.red(`Error caching body for ${url}`), e) })
     await this.sc.context?.route(url, this.runCachedRoute.bind(this))
-
-    if (this.debug.saveAfterCaching)
-      await this.redis.save().catch(() => { this.sc.log("Error saving redis") })
   }
 }
