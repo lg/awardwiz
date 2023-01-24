@@ -77,7 +77,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   // submit and skip past interstitial page
   sc.log("submitting search")
-  void sc.page.locator("#btnSubmit").first().click()    // async
+  sc.page.locator("#btnSubmit").first().click().catch(() => {})    // async
 
   sc.log("waiting for interstitial page")
   const result = await waitFor(sc, {
