@@ -14,7 +14,7 @@ import { Stats } from "./stats.js"
 import * as dotenv from "dotenv"
 
 export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
-const IPTZ_MAX_WAIT_MS = 4000
+const IPTZ_MAX_WAIT_MS = 5000
 
 export type BrowserName = "chromium" | "webkit" | "firefox"
 
@@ -359,7 +359,8 @@ const getIPInfo = async (browser: Browser, proxy?: PlaywrightProxy) => {
   const context = await browser.newContext({ proxy })
   const page = await context.newPage()
 
-  const PROVIDERS = [ "https://json.geoiplookup.io", "https://ipinfo.io/json" ]    // possibly inaccurate tz: "https://ipapi.co/json"
+  const PROVIDERS = [ "https://json.geoiplookup.io", "https://ipinfo.io/json", "http://ip-api.com/json/",
+    "https://ipapi.co/json", "http://ifconfig.co/json", "https://ifconfig.es/json" ]    // these three use maxmind and are possibly inaccurate (199.249.230.22 should be texas)
   const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]!
 
   const ret = await page.goto(provider, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
@@ -367,7 +368,7 @@ const getIPInfo = async (browser: Browser, proxy?: PlaywrightProxy) => {
     .finally(() => context.close())
 
   const json = JSON.parse(ret.out)
-  const [ip, tz, countryCode] = [json.ip, json.timezone ?? json.timezone_name, json.country_code ?? json.country] as [string | undefined, string | undefined, string | undefined]
+  const [ip, tz, countryCode] = [json.ip ?? json.query, json.timezone ?? json.timezone_name ?? json.time_zone, json.country_code ?? json.country] as [string | undefined, string | undefined, string | undefined]
   if (!ret.ok || !ip || !tz || !countryCode)
     throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
 
