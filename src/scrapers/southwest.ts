@@ -14,6 +14,7 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
+  // TODO: i think we can go to: https://www.southwest.com/air/booking/select.html?adultPassengersCount=1&adultsCount=1&departureDate=2023-02-05&departureTimeOfDay=ALL_DAY&destinationAirportCode=HNL&fareType=POINTS&originationAirportCode=OAK&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway
   await gotoPage(sc, "https://www.southwest.com/air/booking/", "networkidle")
 
   sc.log("start")
