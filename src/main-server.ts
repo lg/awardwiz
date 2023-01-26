@@ -29,6 +29,8 @@ const pool = new ScraperPool(process.env["DEBUG"] ? {
   maxAttempts: 5,
   minBrowserPool: 3,
   maxBrowserPool: 4,
+  tracingPath: "/tmp",
+  cacheTracing: true
 })
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
@@ -80,6 +82,19 @@ app.get("/fr24/:from-:to", async (req, res) => {
     res.contentType("application/json")
     res.status(result.result === undefined ? 500 : 200)
     res.end(JSON.stringify(result))
+  })
+})
+
+app.get("/trace/:traceId", async (req, res) => {
+  cors({ origin: true })(req, res, async () => {
+    const { traceId } = req.params
+    const result = await pool.runScraper(async (sc) => sc.cache?.getFromCache(`tracing:${traceId}`), { name: "trace" }, `trace-${traceId}`)
+    if (result.result) {
+      res.writeHead(200, { "Content-Type": "application/zip" })
+      res.end(result.result)
+    } else {
+      res.status(404).send("Not found")
+    }
   })
 })
 

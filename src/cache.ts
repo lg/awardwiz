@@ -104,9 +104,17 @@ export class Cache {
     }
   }
 
-  public async insertURLIntoCache(url: string, body: Buffer, headers: Buffer, ttl: number) {
-    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttl, headers).catch((e) => { this.sc.log(c.red(`Error caching headers for ${url}`), e) })
-    await this.redis.setEx(`${this.namespace}:body:${url}`, ttl, body).catch((e) => { this.sc.log(c.red(`Error caching body for ${url}`), e) })
+  public async insertURLIntoCache(url: string, body: Buffer, headers: Buffer, ttlSeconds: number) {
+    await this.redis.setEx(`${this.namespace}:headers:${url}`, ttlSeconds, headers).catch((e) => { this.sc.log(c.red(`Error caching headers for ${url}`), e) })
+    await this.redis.setEx(`${this.namespace}:body:${url}`, ttlSeconds, body).catch((e) => { this.sc.log(c.red(`Error caching body for ${url}`), e) })
     await this.sc.context?.route(url, this.runCachedRoute.bind(this))
+  }
+
+  public async insertIntoCache(key: string, data: Buffer, ttlSeconds: number) {
+    return this.redis.setEx(key, ttlSeconds, data).catch((e) => { this.sc.log(c.red(`Error caching data for ${key}`), e) })
+  }
+
+  public async getFromCache(key: string) {
+    return this.redis.get(commandOptions({ returnBuffers: true }), key)
   }
 }

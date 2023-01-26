@@ -87,7 +87,6 @@ export const waitFor = async (sc: Scraper, locators: Record<string, Locator | Pr
 }
 
 export const waitForJsonSuccess = async <JSONType>(sc: Scraper, url: string, problems: Record<string, Locator | Promise<any>>) => {
-  sc.log("waiting for success response...")
   const response = await Promise.race([
     sc.page.waitForResponse((resp) => (resp.url() === url && resp.request().method() === "POST")).then((resp) => resp).catch((e: Error) => e),
     ...Object.entries(problems).map(([key, locator]) => (locator instanceof Promise ? locator : locator.waitFor()).then(() => key).catch((e: Error) => e))

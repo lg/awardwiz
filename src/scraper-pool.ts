@@ -67,6 +67,7 @@ export class ScraperPool {
 
     }, { retries: (debugOptions.maxAttempts ?? MAX_ATTEMPTS) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {    // retrying
       if (!sc) return
+      sc.failed = true
       if (debugOptions.pauseAfterError) {
         sc.log(error)
         await sc.pause()
@@ -76,6 +77,7 @@ export class ScraperPool {
 
     }}).catch(async e => {    // failed all retries
       sc?.log(c.red(`Failed to run scraper: ${e.message}`))
+      if (sc) sc.failed = true
       return undefined
     })
 

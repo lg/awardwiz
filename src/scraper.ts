@@ -108,6 +108,15 @@ export type DebugOptions = {
   /** Enables tracing and places the Playwright tracing .zip file in this directory.
    * @default undefined */
   tracingPath?: string
+
+  /** Writes the trace to the cache instead of the filesystem. Note that `tracingPath` is still necessary, but will be
+   * used as temporary storage.
+   * @default false */
+  cacheTracing?: boolean
+
+  /** Only save/cache trace when there's an error.
+   * @default true */
+  tracingOnErrorOnly?: boolean
 }
 
 type PlaywrightProxy = { server: string, username: string, password: string }
@@ -126,6 +135,7 @@ export class Scraper {
   public cache?: Cache
   public logLines: string[] = []
   public stats?: Stats
+  public failed: boolean = false
 
   constructor(private browserType: AugmentedBrowserLauncher, private debugOptions: DebugOptions) {}
 
@@ -157,8 +167,10 @@ export class Scraper {
     const sc = this
     const browser = await pRetry(() => this.createBrowserAttempt(), { retries: 5, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
       retries += 1
-      await sc.destroy(error.message.split("\n")[0])
+      sc.failed = true
+      await sc.destroy()
     }})
+    sc.failed = false
 
     if (this.debugOptions.showBrowserDebug)
       this.log(`created browser in ${Date.now() - startTime}ms${retries > 0 ? ` (after ${retries + 1} attempts)` : "" }`)
@@ -209,6 +221,7 @@ export class Scraper {
   }
 
   public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
+    this.failed = false
     this.id = id
 
     // if there's a proxy for this scraper name, use it. note that this will slow down the scraper creation process
@@ -248,7 +261,11 @@ export class Scraper {
     this.context.setDefaultTimeout(15000)
 
     // disable webrtc
-    await this.context.addInitScript("navigator.mediaDevices.getUserMedia = navigator.webkitGetUserMedia = navigator.mozGetUserMedia = navigator.getUserMedia = webkitRTCPeerConnection = RTCPeerConnection = MediaStreamTrack = undefined;")
+    if (this.browserType.name() === "webkit") {
+      await this.context.addInitScript("window.RTCPeerConnection = undefined;")
+    } else {
+      await this.context.addInitScript("navigator.mediaDevices.getUserMedia = navigator.webkitGetUserMedia = navigator.mozGetUserMedia = navigator.getUserMedia = webkitRTCPeerConnection = RTCPeerConnection = MediaStreamTrack = undefined;")
+    }
 
     // enable stats
     this.stats = new Stats(this)
@@ -309,12 +326,21 @@ export class Scraper {
   }
 
   public async release() {
-    if (this.debugOptions.tracingPath ?? undefined) {
-      if (this.id) {
-        await this.context?.tracing.stop({ path: `${this.debugOptions.tracingPath}/${this.id}.zip` })
-        this.log(c.magenta(`Saved trace to: ${this.debugOptions.tracingPath}/${this.id}.zip`))
-      } else {
-        await this.context?.tracing.stop()
+    if (!(this.debugOptions.tracingOnErrorOnly ?? true) || (this.debugOptions.tracingOnErrorOnly ?? true) && this.failed) {
+      if (this.debugOptions.tracingPath ?? undefined) {
+        if (this.id) {
+          await this.context?.tracing.stop({ path: `${this.debugOptions.tracingPath}/${this.id}.zip` })
+          if (this.debugOptions.cacheTracing ?? false) {
+            const zip = await fs.readFile(`${this.debugOptions.tracingPath}/${this.id}.zip`)
+            await this.cache?.insertIntoCache(`tracing:${this.id}`, zip, 60 * 60 * 24)  // 1 day
+            this.log(c.magenta(`Saved trace to cache: tracing:${this.id}`))
+            await fs.unlink(`${this.debugOptions.tracingPath}/${this.id}.zip`)
+          } else {
+            this.log(c.magenta(`Saved trace to: ${this.debugOptions.tracingPath}/${this.id}.zip`))
+          }
+        } else {
+          await this.context?.tracing.stop()
+        }
       }
     }
 
@@ -332,9 +358,9 @@ export class Scraper {
     if (this.context) await this.context.close().catch(() => { if (this.debugOptions.showBrowserDebug) this.log("DESTROY: failed to close context") })
   }
 
-  public async destroy(debugReason: string = "") {
+  public async destroy() {
     if (this.debugOptions.showBrowserDebug)
-      this.log(`destroying context and browser${debugReason ? ` (called because: ${debugReason})` : ""}`)
+      this.log("destroying context and browser")
 
     await this.release()
 
