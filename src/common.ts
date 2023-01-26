@@ -3,6 +3,7 @@
 import { Locator, Page, Response } from "playwright"
 import c from "ansi-colors"
 import { Scraper } from "./scraper.js"
+import pRetry from "p-retry"
 
 type WaitUntilStates = "load" | "domcontentloaded" | "networkidle" | "commit"
 
@@ -11,7 +12,16 @@ const NAV_WAIT_EXTRA_MS = 25000
 
 export const gotoPage = async (sc: Scraper, url: string, waitUntil: WaitUntilStates) => {
   sc.log(`Going to ${url}`)
-  const load = await sc.page.goto(url, { waitUntil: "commit", timeout: NAV_WAIT_COMMIT_MS })
+  const load = await pRetry(async () => {
+    const response = await sc.page.goto(url, { waitUntil: "commit", timeout: NAV_WAIT_COMMIT_MS })
+    if (response?.status() === 407)
+      throw new Error("Proxy auth error")
+    return response
+  }, {
+    retries: 3,
+    onFailedAttempt: (err) => sc.log(`Failed (${err.message.split("\n")[0]}), retrying...`),
+  })
+
   sc.log(`Headers received, waiting for ${waitUntil}`)
   if (waitUntil !== "commit")
     await sc.page.waitForLoadState(waitUntil, { timeout: NAV_WAIT_EXTRA_MS })
