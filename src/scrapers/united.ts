@@ -32,6 +32,9 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   sc.page.getByRole("button", { name: "Find flights" }).click().catch(() => {})   // async
 
+  sc.log("waiting for results")
+  sc.page.setDefaultTimeout(60000)  // TODO: this isn't great
+
   const fetchFlights = await waitForJsonSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
     "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." })
   })
