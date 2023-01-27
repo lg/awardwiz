@@ -21,7 +21,7 @@ const pool = new ScraperPool(process.env["DEBUG"] ? {
   showProxyUrl: false,
   showFullResponse: [],
   showUncached: false,
-  tracingPath: undefined
+  tracingPath: "tmp",
 
 } : {
   showBrowserDebug: false,

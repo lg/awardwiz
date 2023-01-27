@@ -38,5 +38,8 @@ run-docker extra="": build-docker
 
 run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node dist/main-server.js")
 
-run-debug scraper="united" origin="SFO" destination="HNL" date="2023-10-01":
+run-debug scraper origin destination date:
   just run-docker "awardwiz:scrapers node dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+
+view-trace traceid:
+  npx playwright -- show-trace tmp/{{traceid}}.zip
