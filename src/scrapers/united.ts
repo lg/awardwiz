@@ -20,7 +20,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   await sc.page.locator("label").filter({ hasText: "Miles" }).click()
 
-  await sc.page.getByLabel("From").fill(query.origin)   // we block the as-you-type requests
+  // note that the as-you-type requests are blocked in `blockUrls` above
+  await sc.page.getByRole("combobox", { name: "Enter your departing city, airport name, or airport code." }).fill(query.origin)
   await sc.page.getByRole("combobox", { name: "Enter your destination city, airport name, or airport code." }).fill(query.destination)
 
   await sc.page.getByPlaceholder("Depart").fill(query.departureDate)
