@@ -1,4 +1,4 @@
-import { gotoPage, waitFor, waitForLocatorAndClick } from "../common.js"
+import { gotoPage, waitFor } from "../common.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
 import c from "ansi-colors"
@@ -7,47 +7,20 @@ import { Response } from "playwright"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
+  randomizeUserAgent: true,
   forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
-    "*/swa-resources/config/status.js"],
-  useAdblockLists: true,    // i think sometimes keeping this as false helps with not getting blocked, TBD
-  useBrowsers: ["firefox", "chromium"],  // webkit has issues re- using http/1.1 vs http/2 on docker vs macos (which southwest likely detects)
+    "*/swa-resources/config/status.js"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  // TODO: i think we can go to: https://www.southwest.com/air/booking/select.html?adultPassengersCount=1&adultsCount=1&departureDate=2023-02-05&departureTimeOfDay=ALL_DAY&destinationAirportCode=HNL&fareType=POINTS&originationAirportCode=OAK&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway
-  await gotoPage(sc, "https://www.southwest.com/air/booking/", "networkidle")
-
-  sc.log("start")
-  sc.page.setDefaultTimeout(15000)
-
-  await sc.page.getByLabel("One-way").check()
-  await sc.page.getByLabel("Points").check()
-
-  await sc.page.getByRole("combobox", { name: "Depart" }).fill(query.origin)
-  if (!await waitForLocatorAndClick(
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.origin}$`, "g") }),
-    sc.page.getByRole("option", { name: "No match found" })
-  )) {
-    sc.log(c.yellow("WARN: origin not found")) ; return []
-  }
-
-  await sc.page.getByRole("combobox", { name: "Arrive" }).fill(query.destination)
-  if (!await waitForLocatorAndClick(
-    sc.page.getByRole("button", { name: new RegExp(` - ${query.destination}$`, "g") }),
-    sc.page.getByRole("option", { name: "No match found" })
-  )) {
-    sc.log(c.yellow("WARN: destination not found")) ; return []
-  }
-
-  await sc.page.getByLabel(/^Depart Date {2}.*/u).fill(query.departureDate.substring(5).replace("-", "/")).then(() =>
-    sc.page.getByLabel(/^Depart Date {2}.*/u).press("Escape"))
+  await gotoPage(sc, `https://www.southwest.com/air/booking/select.html?adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`, "commit")
 
   sc.log("waiting for response")
-  void sc.page.getByRole("button", { name: /^Search button\./u }).click().catch(() => {})
-
   let xhrResponse: Response | undefined
   const searchResult = await waitFor(sc, {
-    "bad departure date": sc.page.getByText("Enter depart date."),
+    "bad departure date": sc.page.getByText("Date must be in the future."),
+    "bad origin": sc.page.getByText("Enter departure airport."),
+    "bad destination": sc.page.getByText("Enter arrival airport."),
     "xhr": sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((resp) => xhrResponse = resp),
     "html": sc.page.waitForSelector("#price-matrix-heading-0")
   })
@@ -56,6 +29,11 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   if (searchResult === "xhr") {
     sc.log("got xhr response")
     raw = await xhrResponse!.json() as SouthwestResponse
+
+    if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
+      sc.log(c.yellow("WARN: No flights available (likely bad date)"))
+      return []
+    }
     if (raw.code === 403050700)       // the code for "we know youre a bot"
       throw new Error("Failed with anti-botting error")
     if (!raw.success)
