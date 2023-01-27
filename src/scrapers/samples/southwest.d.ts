@@ -8,6 +8,7 @@ export interface SouthwestResponse {
 
 export interface Notifications {
   formErrors?: { code: string }[]
+  fieldErrors?: { code: string }[]
 }
 
 export interface Data {

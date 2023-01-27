@@ -13,7 +13,9 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  await gotoPage(sc, `https://www.southwest.com/air/booking/select.html?adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`, "commit")
+  const paramsText = `adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`
+  const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
+  await gotoPage(sc, `https://www.southwest.com/air/booking/select.html?${paramsTextRandomized}`, "commit")
 
   sc.log("waiting for response")
   let xhrResponse: Response | undefined
@@ -33,11 +35,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
       sc.log(c.yellow("WARN: No flights available (likely bad date)"))
       return []
+    } else if (raw.notifications?.fieldErrors?.some((formError) => formError.code === "ERROR__AIRPORT__INVALID")) {
+      sc.log(c.yellow("WARN: invalid origin/destination"))
+      return []
     }
     if (raw.code === 403050700)       // the code for "we know youre a bot"
       throw new Error("Failed with anti-botting error")
     if (!raw.success)
-      throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.code)}`)
+      throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.notifications?.fieldErrors ?? raw)}`)
 
   } else if (searchResult === "html") {
     sc.log("got html response")

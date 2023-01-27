@@ -42,4 +42,4 @@ run-debug scraper origin destination date:
   just run-docker "awardwiz:scrapers node dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
 view-trace traceid:
-  npx playwright -- show-trace tmp/{{traceid}}.zip
+  npx playwright -- show-trace tmp/traces/{{traceid}}.zip
