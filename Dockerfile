@@ -18,11 +18,8 @@ RUN if [ $DEBUG = 1 ]; then curl -fsSL https://packages.redis.io/gpg | gpg --dea
 COPY package.json package-lock.json ./
 RUN NODE_ENV=production npm install -g npm && npm i
 
-COPY run.sh ./
 COPY dist/ dist/
-
-# code for playwright tracing
 COPY src/ src/
+COPY entrypoint.sh ./
 
-ENV SCRIPT="server"
-CMD ["/root/run.sh"]
+ENTRYPOINT ["/root/entrypoint.sh"]

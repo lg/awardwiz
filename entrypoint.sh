@@ -27,4 +27,4 @@ if [ -z "${REDIS_URL}" ]; then
   fi
 fi
 
-node --enable-source-maps --unhandled-rejections=strict --trace-uncaught --trace-warnings "dist/main-${SCRIPT}.js"
+exec "$@"

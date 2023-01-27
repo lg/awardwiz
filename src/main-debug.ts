@@ -26,8 +26,8 @@ const debugOptions: DebugOptions = {
 const browser = new Scraper(chromium, debugOptions)
 await browser.create()
 
-const scraper: AwardWizScraperModule = await import("./scrapers/united.js")
-const query: AwardWizQuery = { origin: "SFO", destination: "EWR", departureDate: "2023-04-26" }
+const scraper: AwardWizScraperModule = await import(`./scrapers/${process.argv[2]}.js`)
+const query: AwardWizQuery = { origin: process.argv[3]!, destination: process.argv[4]!, departureDate: process.argv[5]! }
 
 const result = await browser.runAttempt(async (sc) => {
   sc.log("Using query:", query)
