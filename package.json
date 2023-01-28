@@ -1,27 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "check": "tsc && NODE_NO_WARNINGS=1 npm exec depcheck && echo 'linting' && TIMING=1 npm exec -- eslint --ext .ts --cache . && echo 'ok'",
-    "prepare": "husky install",
-    "lets-upgrade-packages": "npm-check -u",
-    "_": "",
-    "start": "npm run start-arm64-docker",
-    "start-amd64-docker": "npm run docker-build-amd64",
-    "start-arm64-docker": "npm run docker-build-arm64 && npm run docker-run",
-    "start-arm64-native-debug": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-debug.js",
-    "start-arm64-native-server": "npm exec tsc && ( echo 'dir ./tmp' | redis-server - & ) && node dist/main-server.js",
-    "start-gcp-job": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-job",
-    "start-gcp-server": "npm run docker-build-amd64 && npm run docker-push && npm run gcp-run-server && npm run gcp-quick-test",
-    "start-prod": "npm exec tsc && docker buildx build -t registry.kub.lg.io:31119/awardwiz:scrapers2 --platform linux/amd64 ./ && docker push registry.kub.lg.io:31119/awardwiz:scrapers2 && kubectl rollout restart -n lg deployment/awardwiz",
-    "__": "",
-    "gcp-quick-test": "source .env.local 2>/dev/null ; curl $TEST_URL | jq -r '.logLines| .[]'",
-    "docker-build-arm64": "tsc && docker buildx build -t awardwiz:scrapers --platform linux/arm64 --build-arg DEBUG=1 ./",
-    "docker-build-amd64": "tsc && docker buildx build -t awardwiz:scrapers --platform linux/amd64 ./",
-    "docker-run": "docker run -it --rm -p 8282:8282 -p 2222:2222 --volume $(pwd)/tmp:/root/tmp $([ -f .env.local ] && echo '--env-file .env.local') awardwiz:scrapers",
-    "docker-push": "docker push awardwiz:scrapers",
-    "gcp-run-job": "gcloud beta run jobs update awardwiz --execute-now --image awardwiz:scrapers --region us-central1 --max-retries=0 --memory=4Gi --cpu=4",
-    "gcp-run-server": "gcloud run deploy awardwiz --allow-unauthenticated --region us-central1 --image awardwiz:scrapers --memory=4Gi --cpu=4 --execution-environment=gen2 --set-env-vars=$(cat .env.local | egrep '^PROXY_ADDRESS=' | head -1)",
-    "k8s-logs": "while true; do kubectl logs -l app=awardwiz --follow --all-containers --max-log-requests=50 --tail=0 | grep --line-buffered -v 'health-check'; sleep 1; done"
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

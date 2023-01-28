@@ -14,6 +14,14 @@ lets-upgrade-packages:
 build:
   npm exec tsc
 
+[private]
+lint: build
+  TIMING=1 npm exec -- eslint --ext .ts --cache .
+
+check: lint
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check
+  @echo 'ok'
+
 # build docker image for running locally
 build-docker debug="1" tag=localtag platform=dockerarch: build
   docker buildx build -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
