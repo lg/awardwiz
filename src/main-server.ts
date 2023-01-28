@@ -4,7 +4,7 @@ import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
 import cors from "cors"
-import { logGlobal } from "./log.js"
+import { logger, logGlobal } from "./log.js"
 
 const app = express()
 app.use((req, res, next) => {
@@ -114,6 +114,7 @@ const server = app.listen(port, () => {
 
 process.on("SIGTERM", async () => {
   logGlobal("Received SIGTERM, shutting down")
+  logger.close()
   server.close()
   await pool.drainAll()
   process.exit(0)

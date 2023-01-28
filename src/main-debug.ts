@@ -1,5 +1,5 @@
 import c from "ansi-colors"
-import { logGlobal } from "./log.js"
+import { logger, logGlobal } from "./log.js"
 import { createClient } from "@redis/client"
 import { chromium } from "playwright-extra"
 import { DebugOptions, Scraper } from "./scraper.js"
@@ -51,3 +51,5 @@ await redis.connect()
 await redis.save()
 await redis.disconnect()
 logGlobal("Ended")
+
+logger.close()
