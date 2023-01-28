@@ -114,17 +114,15 @@ const server = app.listen(port, () => {
 
 process.on("SIGTERM", async () => {
   logGlobal("Received SIGTERM, shutting down")
-  logger.close()
   server.close()
   await pool.drainAll()
+  logger.close()
   process.exit(0)
 })
 
 process.on("uncaughtException", function(err) {
-  if (err.stack?.toString().includes("playwright-extra")) {
-    logGlobal(c.yellow("Playwright-extra race condition error, ignoring"))
-  } else {
-    logGlobal(c.red("Uncaught exception, quitting:"), err)
-    process.exit(1)
-  }
+  if (err.stack?.toString().includes("playwright-extra"))
+    return
+  logGlobal(c.red("Uncaught exception, quitting:"), err)
+  process.exit(1)
 })
