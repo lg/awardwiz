@@ -4,6 +4,7 @@ import { createClient } from "@redis/client"
 import { chromium } from "playwright-extra"
 import { DebugOptions, Scraper } from "./scraper.js"
 import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
+import dayjs from "dayjs"
 
 const debugOptions: DebugOptions = {
   showBrowserDebug: true,
@@ -21,6 +22,12 @@ const debugOptions: DebugOptions = {
   pauseAfterError: true,
 
   tracingPath: "./tmp/traces",
+}
+
+if (process.argv.length < 6) {
+  const defaultParams = ["united", "SFO", "LAX", dayjs().format("YYYY-MM-DD")]
+  logGlobal("Using default params for search", defaultParams)
+  process.argv.push(...defaultParams)
 }
 
 const browser = new Scraper(chromium, debugOptions)
