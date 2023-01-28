@@ -6,28 +6,26 @@ import util from "util"
 import os from "os"
 
 const options: winston.LoggerOptions = {
+  defaultMeta: { app: "awardwiz" },
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
+        winston.format((info) => info["noConsole"] ? false : info)(),
+        winston.format((info) => ({ ...info, message: prettifyArgs(info.message) }))(),
+        winston.format((info) => ({ ...info, message: highlightText(info.message) }))(),
         winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
-        winston.format.printf(info => {
-          info.message = prettifyArgs(info.message)
-          info.message = highlightText(info.message)
-          const id = info["labels"]?.id
-          return `[${info["timestamp"]} ${id ? colorFromId(id)!(id) : "-"}] ${info.message}`
-        })
+        winston.format.printf(info => `[${info["timestamp"]} ${info["id"] ? colorFromId(info["id"])!(info["id"]) : "-"}] ${info.message}`)
       )
     })
   ]
 }
 export const logger = winston.createLogger(options)
 if (process.env["LOKI_URL"] && process.env["LOKI_AUTH"]) {
-  console.log("Logging to Loki")
   logger.add(new LokiTransport({
     host: process.env["LOKI_URL"],
     basicAuth: process.env["LOKI_AUTH"],
     labels: { "app": "awardwiz", "hostname": os.hostname() },
-    format: winston.format.printf(info => prettifyArgs(info.message))
+    format: winston.format.json()
   }))
 }
 
@@ -35,11 +33,10 @@ const HIGHLIGHT_WORDS = ["timeout", "anti-bot"]
 
 const highlightText = (input: string) =>
   typeof input === "string" ? HIGHLIGHT_WORDS.reduce((acc, toRed) => acc.replace(new RegExp(toRed, "gi"), c.red(toRed.toUpperCase())), input) : input
-const prettifyArgs = (args: any[]) =>
-  args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+export const prettifyArgs = (args: any[]) =>
+  typeof args === "string" ? args : args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
 
 export const logGlobal = (...args: any[]) => logger.info({ message: args })
-export const logWithId = (id: string, ...args: any[]) => logger.info({ message: args, labels: { id } })
 
 const colorFromId = (id: string) => {
   const hash = id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)

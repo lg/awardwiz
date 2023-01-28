@@ -7,11 +7,13 @@ import { FiltersEngine, fromPlaywrightDetails, NetworkFilter } from "@cliqz/adbl
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
 import fetch from "cross-fetch"
-import { logWithId } from "./log.js"
+import { logger, prettifyArgs } from "./log.js"
 import globToRegexp from "glob-to-regexp"
 import { Cache } from "./cache.js"
 import { Stats } from "./stats.js"
 import * as dotenv from "dotenv"
+import util from "util"
+import dayjs from "dayjs"
 
 export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
 const IPTZ_MAX_WAIT_MS = 5000
@@ -128,6 +130,8 @@ export class Scraper {
   private proxy?: PlaywrightProxy
   private lastProxyGroup = "default"
   private ipInfo?: { ip: string, countryCode: string, tz: string }
+  private attemptStartTime!: number
+  private scraperMeta!: ScraperMetadata
 
   public browser?: Browser
   public context?: BrowserContext
@@ -167,10 +171,8 @@ export class Scraper {
     const sc = this
     const browser = await pRetry(() => this.createBrowserAttempt(), { retries: 5, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
       retries += 1
-      sc.failed = true
       await sc.destroy()
     }})
-    sc.failed = false
 
     if (this.debugOptions.showBrowserDebug)
       this.log(`created browser in ${Date.now() - startTime}ms${retries > 0 ? ` (after ${retries + 1} attempts)` : "" }`)
@@ -220,16 +222,48 @@ export class Scraper {
     ], undefined, adblockCache)
   }
 
+  private logAttemptResult() {
+    logger.log(this.failed ? "error" : "info", this.logLines.join("\n"), {
+      labels: {
+        type: "scraper-run",
+        scraper_name: this.scraperMeta.name,
+        start_unix: this.attemptStartTime,
+        id: this.id,
+        duration_ms: Date.now() - this.attemptStartTime,
+        status: this.failed ? "failure" : "success",
+      },
+      noConsole: true,
+    })
+  }
+
   public async runAttempt<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ReturnType> {
+    this.attemptStartTime = Date.now()
     this.failed = false
     this.id = id
+    this.scraperMeta = meta
+    this.logLines = []
 
+    return this.run(code).catch(e => {
+      this.failed = true
+      const fullError = prettifyArgs([c.red("Ending scraper due to error"), e])
+      const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
+      this.logLines.push(timestampedError)
+      throw e
+
+    }).finally(() => {
+      this.logAttemptResult()
+    })
+  }
+
+  // Note that the browser might be shared coming into here (i.e. we don't get a new proxy). We only destroy the browser
+  // if a scraper fails.
+  private async run<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>): Promise<ReturnType> {
     // if there's a proxy for this scraper name, use it. note that this will slow down the scraper creation process
     // we'll need to re-validate the proxy
-    const extraProxies = Scraper.proxies[meta.name]
+    const extraProxies = Scraper.proxies[this.scraperMeta.name]
     if (extraProxies && extraProxies.length > 0) {
-      if (this.lastProxyGroup !== meta.name)
-        await this.selectProxy(meta.name)
+      if (this.lastProxyGroup !== this.scraperMeta.name)
+        await this.selectProxy(this.scraperMeta.name)
 
     } else {
       if (this.lastProxyGroup !== "default")
@@ -237,7 +271,7 @@ export class Scraper {
     }
 
     // generate random user agent
-    const userAgent = meta.randomizeUserAgent ? new UserAgent({
+    const userAgent = this.scraperMeta.randomizeUserAgent ? new UserAgent({
       "webkit": { vendor: "Apple Computer, Inc.", deviceCategory: "desktop" },
       "chromium": { vendor: "Google Inc.", deviceCategory: "desktop" },
       "firefox": [/Firefox/u, { deviceCategory: "desktop" }]
@@ -256,7 +290,7 @@ export class Scraper {
       userAgent, proxy: this.proxy, ignoreHTTPSErrors: true, viewport, screen })
 
     if (this.debugOptions.tracingPath ?? undefined)
-      await this.context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: id })
+      await this.context.tracing.start({ screenshots: true, snapshots: true, sources: true, title: this.id })
     this.context.setDefaultNavigationTimeout(15000)
     this.context.setDefaultTimeout(15000)
 
@@ -293,10 +327,10 @@ export class Scraper {
     })
 
     // enable blocking urls (and add extra urls requested by scraper)
-    if (!(meta.useAdblockLists ?? true))
+    if (!(this.scraperMeta.useAdblockLists ?? true))
       this.filtersEngine = FiltersEngine.empty()    // wipe the precached adblock lists
-    if (meta.blockUrls)
-      this.filtersEngine?.update({ newNetworkFilters: meta.blockUrls.map((urlToAdd) => NetworkFilter.parse(urlToAdd)!) })
+    if (this.scraperMeta.blockUrls)
+      this.filtersEngine?.update({ newNetworkFilters: this.scraperMeta.blockUrls.map((urlToAdd) => NetworkFilter.parse(urlToAdd)!) })
 
     await this.context.route("**/*", route => {
       const adblockReq = fromPlaywrightDetails(route.request())
@@ -310,8 +344,8 @@ export class Scraper {
     })
 
     // enable caching
-    if (meta.useCache ?? true) {
-      this.cache = new Cache(this, `cache:${meta.name}`, meta.forceCacheUrls ?? [], this.debugOptions)
+    if (this.scraperMeta.useCache ?? true) {
+      this.cache = new Cache(this, `cache:${this.scraperMeta.name}`, this.scraperMeta.forceCacheUrls ?? [], this.debugOptions)
       await this.cache.start()
     }
 
@@ -372,7 +406,9 @@ export class Scraper {
   /////////////////////////////////////////
 
   public log(...args: any[]) {
-    logWithId(this.id, ...args)
+    const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+    this.logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
+    logger.info(prettyLine, { id: this.id })
   }
 
   public async pause() {
