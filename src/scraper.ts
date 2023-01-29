@@ -367,7 +367,7 @@ export class Scraper {
           if (this.debugOptions.cacheTracing ?? false) {
             const zip = await fs.readFile(`${this.debugOptions.tracingPath}/${this.id}.zip`)
             await this.cache?.insertIntoCache(`tracing:${this.id}`, zip, 60 * 60 * 24)  // 1 day
-            this.log(c.magenta(`Saved trace to cache: tracing:${this.id}`))
+            this.log(c.magenta(`Saved trace to cache: ${this.id}`))
             await fs.unlink(`${this.debugOptions.tracingPath}/${this.id}.zip`)
           } else {
             this.log(c.magenta(`Saved trace to: ${this.debugOptions.tracingPath}/${this.id}.zip`))
