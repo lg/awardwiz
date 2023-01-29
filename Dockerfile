@@ -1,5 +1,5 @@
 # tags here: https://mcr.microsoft.com/en-us/product/playwright/tags
-FROM mcr.microsoft.com/playwright:v1.29.2
+FROM mcr.microsoft.com/playwright:v1.30.0
 WORKDIR /root
 ARG DEBUG=0
 
@@ -16,7 +16,7 @@ RUN if [ $DEBUG = 1 ]; then curl -fsSL https://packages.redis.io/gpg | gpg --dea
 
 # code should already be available in dist/ as javascript
 COPY package.json package-lock.json ./
-RUN NODE_ENV=production npm install -g npm && npm i
+RUN NODE_ENV=production npm install -g npm && npm i --force
 
 COPY dist/ dist/
 COPY src/ src/

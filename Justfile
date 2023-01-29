@@ -44,10 +44,10 @@ tail-prod-logs:
 run-docker extra="": build-docker
   docker run -it --rm -p 8282:8282 --volume $(pwd)/.env.local:/root/.env:ro --volume $(pwd)/tmp:/root/tmp {{extra}}
 
-run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node dist/main-server.js")
+run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/main-server.js")
 
 run-debug scraper origin destination date:
-  just run-docker "awardwiz:scrapers node dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
 view-trace traceid:
   [ -e tmp/traces/{{traceid}}.zip ] \
