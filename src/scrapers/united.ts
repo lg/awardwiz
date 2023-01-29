@@ -16,29 +16,16 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  await gotoPage(sc, "https://www.united.com/en/us/book-flight/united-one-way", "networkidle")
-
-  await sc.page.locator("label").filter({ hasText: "Miles" }).click()
-
-  // note that the as-you-type requests are blocked in `blockUrls` above
-  await sc.page.getByRole("combobox", { name: "Enter your departing city, airport name, or airport code." }).fill(query.origin)
-  await sc.page.getByRole("combobox", { name: "Enter your destination city, airport name, or airport code." }).fill(query.destination)
-
-  await sc.page.getByPlaceholder("Depart").fill(query.departureDate)
-  const acceptedDate = await sc.page.getByPlaceholder("Depart").inputValue()
-  if (acceptedDate === query.departureDate) {
-    sc.log(c.yellow(`WARN: Departure date ${query.departureDate} not accepted`))
-    return []
-  }
-
-  sc.page.getByRole("button", { name: "Find flights" }).click().catch(() => {})   // async
+  await gotoPage(sc, `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A`, "commit")
 
   sc.log("waiting for results")
-  sc.page.setDefaultTimeout(60000)  // TODO: this isn't great
-
   const fetchFlights = await waitForJsonSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
-    "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." })
+    "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." }),
+    "invalid input": sc.page.getByText("We can't process this request. Please restart your search."),
+    "antibotting": sc.page.getByText("We're sorry, but united.com was unable to complete")
   })
+  if (fetchFlights === "antibotting")
+    throw new Error("anti-botting")
   if (typeof fetchFlights === "string") {
     sc.log(c.yellow(`WARN: ${fetchFlights}`))
     return []
