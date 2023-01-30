@@ -1,11 +1,11 @@
 import c from "ansi-colors"
 import pRetry from "p-retry"
-import { Browser, BrowserContext, Page } from "playwright"
+import { Browser, BrowserContext, Page, BrowserType } from "playwright"
 import UserAgent from "user-agents"
 import { promises as fs } from "fs" // used for caching
 import { FiltersEngine, fromPlaywrightDetails, NetworkFilter } from "@cliqz/adblocker-playwright"
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
-import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
+import { chromium, firefox, webkit } from "playwright-extra"
 import fetch from "cross-fetch"
 import { logger, prettifyArgs } from "./log.js"
 import globToRegexp from "glob-to-regexp"
@@ -141,7 +141,7 @@ export class Scraper {
   public stats?: Stats
   public failed: boolean = false
 
-  constructor(private browserType: AugmentedBrowserLauncher, private debugOptions: DebugOptions) {}
+  constructor(private browserType: BrowserType, private debugOptions: DebugOptions) {}
 
   static {
     dotenv.config()
@@ -294,12 +294,12 @@ export class Scraper {
     this.context.setDefaultNavigationTimeout(15000)
     this.context.setDefaultTimeout(15000)
 
-    // disable webrtc
-    if (this.browserType.name() === "webkit") {
-      await this.context.addInitScript("window.RTCPeerConnection = undefined;")
-    } else {
-      await this.context.addInitScript("navigator.mediaDevices.getUserMedia = navigator.webkitGetUserMedia = navigator.mozGetUserMedia = navigator.getUserMedia = webkitRTCPeerConnection = RTCPeerConnection = MediaStreamTrack = undefined;")
-    }
+    // disable webrtc TODO: need to find another way to do this
+    // if (this.browserType.name() === "webkit") {
+    //   await this.context.addInitScript("window.RTCPeerConnection = undefined;")
+    // } else {
+    //   await this.context.addInitScript("navigator.mediaDevices.getUserMedia = navigator.webkitGetUserMedia = navigator.mozGetUserMedia = navigator.getUserMedia = webkitRTCPeerConnection = RTCPeerConnection = MediaStreamTrack = undefined;")
+    // }
 
     // enable stats
     this.stats = new Stats(this)

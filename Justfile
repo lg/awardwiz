@@ -49,6 +49,9 @@ run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enab
 run-debug scraper origin destination date:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
+run-test-bot:
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/main-test-bot.js"
+
 view-trace traceid:
   [ -e tmp/traces/{{traceid}}.zip ] \
     && npx playwright -- show-trace tmp/traces/{{traceid}}.zip \

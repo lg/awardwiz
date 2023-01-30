@@ -16,7 +16,7 @@ RUN if [ $DEBUG = 1 ]; then curl -fsSL https://packages.redis.io/gpg | gpg --dea
 
 # code should already be available in dist/ as javascript
 COPY package.json package-lock.json ./
-RUN NODE_ENV=production npm install -g npm && npm i --force
+RUN NODE_ENV=production npm install -g npm && npm i
 
 COPY dist/ dist/
 COPY src/ src/
