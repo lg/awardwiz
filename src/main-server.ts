@@ -5,6 +5,7 @@ import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
 import cors from "cors"
 import { logger, logGlobal } from "./log.js"
+import process from "node:process"
 
 const app = express()
 app.use((req, res, next) => {
@@ -30,7 +31,8 @@ const pool = new ScraperPool(process.env["DEBUG"] ? {
   minBrowserPool: 3,
   maxBrowserPool: 4,
   tracingPath: "/tmp",
-  cacheTracing: true
+  cacheTracing: true,
+  useProxy: process.env["PROXY_ADDRESS_DEFAULT"] ? true : false,
 })
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
