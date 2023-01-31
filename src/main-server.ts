@@ -1,5 +1,4 @@
 import express from "express"
-import { throwIfBadResponse } from "./common.js"
 import { ScraperPool } from "./scraper-pool.js"
 import { AwardWizScraperModule } from "./types.js"
 import c from "ansi-colors"
@@ -64,22 +63,11 @@ app.get("/fr24/:from-:to", async (req, res) => {
       sc.log("Querying FlightRader24 for carriers between:", req.params)
       sc.log(`Going to ${fr24Url}`)
 
-      // on certain pairs fr24 times out after 10s even though it should have returned a 'no pairs' response
       const response = await sc.page.goto(fr24Url, { waitUntil: "domcontentloaded", timeout: 15000 })
-      const textResponse = await response?.text()
-      if (textResponse?.includes("Our engineers are working hard")) {
-        sc.log(c.yellow(`FR24 returned an internal error, adding ${from}-${to} to cache regardless`))
-
-        const newBody = {"result":{"request":{"query":"default","limit":50,"format":"json","origin":from,"destination":to,"fetchBy":"","callback":null,"token":null,"pk":null},"response":{"flight":{"item":{"current":0},"timestamp":Date.now(),"data":null}}}}
-        const bodyBuffer = Buffer.from(JSON.stringify(newBody), "utf8")
-        const headersBuffer = Buffer.from(JSON.stringify({ "Content-type": "application/json" }), "utf8")
-        await sc.cache?.insertURLIntoCache(fr24Url, bodyBuffer, headersBuffer, 3600 * 24 * 7)
-        return newBody
-      }
-
-      await throwIfBadResponse(sc, response)
-      return JSON.parse(await response!.text())
-    }, { name: "fr24" }, `fr24-${from}-${to}`)
+      if (!response?.ok())
+        throw new Error(`FR24 returned ${response?.status()} for ${fr24Url}`)
+      return response!.json()
+    }, { name: "fr24", useBrowsers: ["firefox"] }, `fr24-${from}-${to}`)
 
     res.contentType("application/json")
     res.status(result.result === undefined ? 500 : 200)
