@@ -14,10 +14,10 @@ export class Cache {
   constructor(
     private sc: Scraper,
     private namespace: string,
-    forceCache: string[],
+    forceCache: (string | RegExp)[],
     private debug: { showCached?: boolean, showUncached?: boolean }
   ) {
-    this.forceRegexps = forceCache.map((glob) => globToRegexp(glob, { extended: true }))
+    this.forceRegexps = forceCache.map((glob) => typeof glob === "string" ? globToRegexp(glob, { extended: true }) : glob)
 
     this.redis.on("error", (err) => {
       this.sc.log("Redis Client Error", err)

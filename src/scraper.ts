@@ -36,10 +36,10 @@ export type ScraperMetadata = {
    * @default true */
   useAdblockLists?: boolean
 
-  /** Some websites don't return proper cache headers, this forces matching globs to get cached. Use the `showUncached`
-   * debug option to iterate. Does not work if `useCache` is set to `false`.
+  /** Some websites don't return proper cache headers, this forces matching globs/RegExps to get cached. Use the
+   * `showUncached` debug option to iterate. Does not work if `useCache` is set to `false`.
    * @default [] */
-  forceCacheUrls?: string[]
+  forceCacheUrls?: (string | RegExp)[]
 
   /** Pick the browser(s) to randomize between. Can be any array containing ["webkit", "firefox", "chromium"].
    * @default ["webkit", "firefox", "chromium"] */

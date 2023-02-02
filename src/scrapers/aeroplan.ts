@@ -7,7 +7,7 @@ import { AeroplanResponse } from "./samples/aeroplan.js"
 export const meta: ScraperMetadata = {
   name: "aeroplan",
   blockUrls: [],
-  forceCacheUrls: ["*/aeroplan/redeem/font/*", "*/ac/applications/loyalty/*(?<!&t=.*)$"]
+  forceCacheUrls: ["*/aeroplan/redeem/font/*", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu, "*/en-CA.json", "*.svg"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
