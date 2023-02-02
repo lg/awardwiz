@@ -54,6 +54,10 @@ export type ScraperMetadata = {
    * detection of the botting if the anti-bot is checking for certain browser features.
    * @default false */
   randomizeUserAgent?: boolean
+
+  /** Set the default timeout for navigation and selector requests.
+   * @default 15000 */
+  defaultTimeout?: number
 }
 
 export type DebugOptions = {
@@ -350,6 +354,8 @@ export class Scraper {
     }
 
     // create page for scraping
+    this.page.setDefaultTimeout(this.scraperMeta.defaultTimeout ?? 15000)
+    this.page.setDefaultNavigationTimeout(this.scraperMeta.defaultTimeout ?? 15000)
     this.page = await this.context.newPage()
     const result = await code(this)
 

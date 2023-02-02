@@ -7,7 +7,9 @@ import { AeroplanResponse } from "./samples/aeroplan.js"
 export const meta: ScraperMetadata = {
   name: "aeroplan",
   blockUrls: [],
-  forceCacheUrls: ["*/aeroplan/redeem/font/*", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu, "*/en-CA.json", "*.svg"]
+  defaultTimeout: 25000,
+  forceCacheUrls: ["*.svg", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu]
+  // "*/aeroplan/redeem/font/*",      // air canada seems to be particularly sensitive about any forced caching of fonts
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
@@ -19,9 +21,9 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     "anti-botting2": sc.page.waitForResponse((resp) => /^.*\/loyalty\/dapidynamic\/.*\/v2\/reward\/market-token/iu.exec(resp.url()) !== null && resp.status() === 403),
     "anti-botting3": sc.page.getByText("Air Canada's website is not available right now.")
   })
-  if (fetchFlights === "anti-botting1" || fetchFlights === "anti-botting2")
-    throw new Error("anti-botting")
   if (typeof fetchFlights === "string") {
+    if (fetchFlights.startsWith("anti-botting"))
+      throw new Error(`anti-botting ${fetchFlights}`)
     sc.log(c.yellow(`WARN: ${fetchFlights}`))
     return []
   }

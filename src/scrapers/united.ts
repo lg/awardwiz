@@ -10,9 +10,11 @@ export const meta: ScraperMetadata = {
     "*.liveperson.net", "tags.tiqcdn.com",
     "https://www.united.com/api/airports/lookup/?airport=*" /* needed since we don't want dropdowns */ ],
   forceCacheUrls: [
-    "*.svg", "*/npm.*", "*/fonts/*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
+    "*.svg", "*/npm.*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
     "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
-    "*/api/User/IsEmployee", "*/api/flight/recentSearch"]
+    "*/api/User/IsEmployee", "*/api/flight/recentSearch"],
+    // "*/fonts/*",
+  useBrowsers: ["chromium", "firefox"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
@@ -24,9 +26,9 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     "invalid input": sc.page.getByText("We can't process this request. Please restart your search."),
     "antibotting": sc.page.getByText("We're sorry, but united.com was unable to complete")
   })
-  if (fetchFlights === "antibotting")
-    throw new Error("anti-botting")
   if (typeof fetchFlights === "string") {
+    if (fetchFlights.startsWith("antibotting"))
+      throw new Error("anti-botting")
     sc.log(c.yellow(`WARN: ${fetchFlights}`))
     return []
   }
