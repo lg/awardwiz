@@ -354,8 +354,6 @@ export class Scraper {
     }
 
     // create page for scraping
-    this.page.setDefaultTimeout(this.scraperMeta.defaultTimeout ?? 15000)
-    this.page.setDefaultNavigationTimeout(this.scraperMeta.defaultTimeout ?? 15000)
     this.page = await this.context.newPage()
     this.page.setDefaultTimeout(this.scraperMeta.defaultTimeout ?? 15000)
     this.page.setDefaultNavigationTimeout(this.scraperMeta.defaultTimeout ?? 15000)
