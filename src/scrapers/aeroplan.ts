@@ -15,8 +15,11 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   sc.log("waiting for results")
   const fetchFlights = await waitForJsonSuccess<AeroplanResponse>(sc, "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds", {
+    "anti-botting1": sc.page.waitForFunction(() => document.location.toString() === "https://www.aircanada.com/aeroplan/redeem/"),
+    "anti-botting2": sc.page.waitForResponse((resp) => /^.*\/loyalty\/dapidynamic\/.*\/v2\/reward\/market-token/iu.exec(resp.url()) !== null && resp.status() === 403),
+    "anti-botting3": sc.page.getByText("Air Canada's website is not available right now.")
   })
-  if (fetchFlights === "antibotting")
+  if (fetchFlights === "anti-botting1" || fetchFlights === "anti-botting2")
     throw new Error("anti-botting")
   if (typeof fetchFlights === "string") {
     sc.log(c.yellow(`WARN: ${fetchFlights}`))
