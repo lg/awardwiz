@@ -15,10 +15,10 @@ import * as dotenv from "dotenv"
 import util from "util"
 import dayjs from "dayjs"
 
-export const BROWSERS: BrowserName[] = ["firefox", "webkit", "chromium"]
+export const BROWSERS: BrowserName[] = ["firefox", "chromium"] // disabling webkit for now
 const IPTZ_MAX_WAIT_MS = 5000
 
-export type BrowserName = "chromium" | "webkit" | "firefox"
+export type BrowserName = "chromium" /*| "webkit"*/ | "firefox"
 
 export type ScraperMetadata = {
   /** Unique name for the scraper */
@@ -54,6 +54,10 @@ export type ScraperMetadata = {
    * detection of the botting if the anti-bot is checking for certain browser features.
    * @default false */
   randomizeUserAgent?: boolean
+
+  /** Set the default timeout for navigation and selector requests.
+   * @default 15000 */
+  defaultTimeout?: number
 }
 
 export type DebugOptions = {
@@ -351,6 +355,8 @@ export class Scraper {
 
     // create page for scraping
     this.page = await this.context.newPage()
+    this.page.setDefaultTimeout(this.scraperMeta.defaultTimeout ?? 15000)
+    this.page.setDefaultNavigationTimeout(this.scraperMeta.defaultTimeout ?? 15000)
     const result = await code(this)
 
     if (this.debugOptions.pauseAfterRun)

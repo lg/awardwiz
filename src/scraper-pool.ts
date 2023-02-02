@@ -1,4 +1,4 @@
-import { AugmentedBrowserLauncher, chromium, firefox, webkit } from "playwright-extra"
+import { AugmentedBrowserLauncher, chromium, firefox } from "playwright-extra"
 import GenericPool from "generic-pool"
 import { BrowserName, BROWSERS, DebugOptions, Scraper, ScraperMetadata } from "./scraper.js"
 import { logGlobal } from "./log.js"
@@ -36,7 +36,7 @@ export class ScraperPool {
       return pool
     }
 
-    this.browserPools = { chromium: genPool(chromium), webkit: genPool(webkit), firefox: genPool(firefox) }
+    this.browserPools = { chromium: genPool(chromium), /*webkit: genPool(webkit),*/ firefox: genPool(firefox) }
   }
 
   async runScraper<ReturnType>(scraper: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string): Promise<ScraperResult<ReturnType>> {

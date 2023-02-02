@@ -91,6 +91,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     throw new Error(result)
 
   // clicked the continue button on the interstitial page, now wait for search results
+  sc.log("waiting for search results")
   const searchResults = await waitForJsonSuccess<DeltaResponse>(sc, "https://www.delta.com/shop/ow/search", {
     "system unavailable anti-botting": sc.page.waitForResponse("https://www.delta.com/content/www/en_US/system-unavailable1.html"),
     "back to search anti-botting": sc.page.getByRole("heading", { name: "BOOK A FLIGHT" })

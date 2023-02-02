@@ -123,7 +123,7 @@ const runIncolumnitas = async (browserType: BrowserType) => {
 
 const problems = []
 
-for (const browserType of [firefox, chromium, webkit]) {
+for (const browserType of [firefox, chromium /*, webkit*/]) {
   logGlobal(`running Incolumnitas for ${browserType.name()}:`)
   const runProblems = (await runIncolumnitas(browserType)).map(p => `${browserType.name()}.${p}`)
   problems.push(...runProblems)
