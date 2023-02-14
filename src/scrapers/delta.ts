@@ -10,7 +10,8 @@ import c from "ansi-colors"
 export const meta: ScraperMetadata = {
   name: "delta",
   forceCacheUrls: ["*/predictivetext/getPredictiveCities?code=*", "*/flight-search/getdevicetype", "*/custlogin/getDashBrdData.action",
-    "*/databroker/bcdata.action"]
+    "*/databroker/bcdata.action"],
+  useBrowsers: ["chromium"]    // seems like anti-botting is more aggressive on firefox
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
@@ -82,10 +83,11 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   sc.log("waiting for interstitial page")
   const result = await waitFor(sc, {
     "no flights": sc.page.locator("td.selected .naText"),
+    "no flights2": sc.page.getByText("no results were found for your search"),
     "ok": sc.page.getByRole("button", { name: "Continue" }).click(),
     "pre-interstitial anti-botting": sc.page.waitForResponse("https://www.delta.com/content/www/en_US/system-unavailable1.html")
   })
-  if (result === "no flights")
+  if (result === "no flights" || result === "no flights2")
     return []
   if (result !== "ok")
     throw new Error(result)
