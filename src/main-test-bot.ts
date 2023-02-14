@@ -1,11 +1,11 @@
 import { logger, logGlobal } from "./log.js"
-import { firefox, chromium, webkit } from "playwright-extra"
+//import { firefox, chromium, webkit } from "playwright-extra"
 import { DebugOptions, Scraper } from "./scraper.js"
-import { BrowserType } from "playwright"
-import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint, TLSFingerprint } from "./types.js"
-import { fetch } from "cross-fetch"
+import { BrowserType, firefox, chromium, webkit } from "playwright"
+import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint, /*TLSFingerprint*/ } from "./types.js"
 import os from "node:os"
 import pako from "pako"
+import { fetchBuilder, FileSystemCache } from "node-fetch-cache"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
@@ -41,7 +41,7 @@ const ULIXEE_URL_BY_OS_AND_BROWSER: Record<string, Record<string, string>> = {
 const getDomDefaults = async (osType: string, browser: BrowserType) => {
   const osAndBrowser = ULIXEE_URL_BY_OS_AND_BROWSER[osType]![browser.name()]
   const url = `https://github.com/ulixee/browser-profile-data/raw/main/profiles/${osAndBrowser}/browser-dom-environment--https.json.gz`
-
+  const fetch = fetchBuilder.withCache(new FileSystemCache({ cacheDirectory: "./tmp" }))
   const gzippedResponse = await fetch(url)
   const buffer = await gzippedResponse.arrayBuffer()
   const text = new TextDecoder("utf-8").decode(pako.inflate(buffer))
@@ -86,7 +86,7 @@ const runIncolumnitas = async (browserType: BrowserType) => {
     const oldTestsFpscanner: OldTests["fpscanner"] = JSON.parse(await sc.page.locator("#detection-tests").textContent() ?? "{}").fpscanner
     const datacenter: DatacenterIpCheck = JSON.parse(await sc.page.locator("#datacenter-ip-api-data").textContent().catch(() => undefined) ?? "{}")
     const tcpipFingerprint: TcpIpFingerprint = JSON.parse(await sc.page.locator("#p0f").textContent().catch(() => undefined) ?? "{}")
-    const tlsFingerprint: TLSFingerprint = JSON.parse(await sc.page.locator("#tls-fingerprint").textContent().catch(() => undefined) ?? "{}")
+    //const tlsFingerprint: TLSFingerprint = JSON.parse(await sc.page.locator("#tls-fingerprint").textContent().catch(() => undefined) ?? "{}")
     const fp: FP = JSON.parse(await sc.page.locator("#fp").textContent().catch(() => undefined) ?? "{}")
 
     const problems = [
@@ -104,13 +104,14 @@ const runIncolumnitas = async (browserType: BrowserType) => {
       fp.debugTool ? `fp.debugTool = ${fp.debugTool}` : undefined,
       fp.timezone !== fp.getTimezoneOffset ? `fp.oscpu = ${fp.timezone} (was expecting same as fp.getTimezoneOffset: ${fp.getTimezoneOffset})` : undefined,
       datacenter.location.timezone !== dayjs().tz(fp.timezone2).format("Z") ? `datacenter.location.timezone = ${datacenter.location.timezone} (was expecting ${dayjs().tz(fp.timezone2).format("Z")} as per ip from fp)` : undefined,
-      fp.userAgent === tlsFingerprint["user-agent"] ? undefined : `fp.userAgent = ${fp.userAgent} (was expecting same as tlsFingerprint.user-agent]: ${tlsFingerprint["user-agent"]})`,
+      //fp.userAgent === tlsFingerprint["user-agent"] ? undefined : `fp.userAgent = ${fp.userAgent} (was expecting same as tlsFingerprint.user-agent]: ${tlsFingerprint["user-agent"]})`,
       fp.navigatorProperties.join(",") === domDefaults[browserType.name()].navigatorProperties.join(",") ? undefined : `fp.navigatorProperties = MISMATCH (vs the expected items in ${ULIXEE_URL_BY_OS_AND_BROWSER[os.type()]![browserType.name()]})`,
     ]
 
-    // logGlobal(problems.filter(p => p !== undefined))
-    // logGlobal("waiting")
-    // debugger
+    logGlobal(problems.filter(p => p !== undefined))
+    logGlobal("waiting")
+    await sc.pause()
+    debugger
 
     return problems.filter(p => p !== undefined)
   }, { name: "incolumitas", useAdblockLists: false, useCache: false }, `incolumitas-${browserType.name()}`)
@@ -123,7 +124,7 @@ const runIncolumnitas = async (browserType: BrowserType) => {
 
 const problems = []
 
-for (const browserType of [firefox, chromium /*, webkit*/]) {
+for (const browserType of [firefox]) { //, chromium, webkit]) {
   logGlobal(`running Incolumnitas for ${browserType.name()}:`)
   const runProblems = (await runIncolumnitas(browserType)).map(p => `${browserType.name()}.${p}`)
   problems.push(...runProblems)
