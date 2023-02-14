@@ -70,7 +70,7 @@ rules:
   "@typescript-eslint/consistent-type-definitions": off
   "@typescript-eslint/prefer-string-starts-ends-with": off
 
-  "@typescript-eslint/no-floating-promises": ["error", { "ignoreVoid": false }]   # need to handle these or it could bubble up
+  "@typescript-eslint/no-floating-promises": ["error", { "ignoreVoid": true }]   # need to handle these or it could bubble up
   "no-void": off
   "no-shadow": ["error", { "ignoreOnInitialization": true }]
   "newline-per-chained-call": off

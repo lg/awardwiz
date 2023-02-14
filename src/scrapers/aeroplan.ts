@@ -13,7 +13,9 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  await gotoPage(sc, `https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`, "commit")
+  const paramsText = `org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`
+  const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
+  await gotoPage(sc, `https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsTextRandomized}`, "commit")
 
   sc.log("waiting for results")
   const fetchFlights = await waitForJsonSuccess<AeroplanResponse>(sc, "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds", {
