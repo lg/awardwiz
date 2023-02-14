@@ -6,14 +6,13 @@
   "configurations": [
     {
       "name": "Launch Program",
-      "program": "${workspaceFolder}/dist/main-test-bot.js",
+      "program": "${workspaceFolder}/dist/main-cdp.js",
       "request": "launch",
       "skipFiles": [
         "<node_internals>/**", "**/node_modules/**"
       ],
       "type": "node",
       "preLaunchTask": "tsc",
-      "envFile": "${workspaceFolder}/.env.local",
       "console": "integratedTerminal",
     }
   ],
