@@ -38,6 +38,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     } else if (raw.notifications?.fieldErrors?.some((formError) => formError.code === "ERROR__AIRPORT__INVALID")) {
       sc.log(c.yellow("WARN: invalid origin/destination"))
       return []
+    } else if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FARE_FOUND")) {
+      throw new Error("Failed to find fares, retry plz")
     }
     if (raw.code === 403050700)       // the code for "we know youre a bot"
       throw new Error("Failed with anti-botting error")
