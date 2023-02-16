@@ -65,12 +65,19 @@ export class CDPBrowser {
     process.on("exit", () => this.firefox?.kill("SIGKILL"))
 
     logGlobal("connecting to cdp client")
-    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000 })
+    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 5000 })
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
 
     logGlobal("ready")
+
+    this.client.Network.requestWillBeSent((request) => {
+      logGlobal(request.requestId, request.request.method, request.request.url)
+    })
+    this.client.Network.loadingFinished((request) => {
+      logGlobal(request.requestId, "FINISHED")
+    })
   }
 
   async close() {
@@ -102,7 +109,7 @@ export class CDPBrowser {
 
           case "html":
             return new Promise<{name: string}>((resolve) => {
-              const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true }) : params.html
+              const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true, flags: "ugm" }) : params.html
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
                 const evalResult = await this.client.Runtime.evaluate({ expression: "document.documentElement.outerHTML", returnByValue: true })
