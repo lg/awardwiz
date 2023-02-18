@@ -1,86 +1,59 @@
-import CDP from "chrome-remote-interface"
+import tmp from "tmp-promise"
 import { logGlobal } from "./log.js"
-import pRetry from "p-retry"
-import path from "node:path"
-import { default as globToRegexp } from "glob-to-regexp"
-import fs from "node:fs/promises"
+import c from "ansi-colors"
 import { ChildProcess, exec } from "node:child_process"
-import { Protocol } from "devtools-protocol"
+import CDP from "chrome-remote-interface"
+import pRetry from "p-retry"
+import globToRegexp from "glob-to-regexp"
 
-export type WaitForType =
-  { type: "url", url: string | RegExp, statusCode?: number } |
-  { type: "html", html: string | RegExp }
-export type WaitForReturn =
-  { name: string, response: any } |
-  { name: string } |
-  { name: "timeout" }
+export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
+export type WaitForReturn = { name: string, response: any } | { name: string } | { name: "timeout" }
 
 export class CDPBrowser {
-  private firefox?: ChildProcess
+  private browserInstance?: ChildProcess
   public client!: CDP.Client
-  private context?: Protocol.Runtime.ExecutionContextDescription
 
-  async launch(pathToFirefox: string, profilePath: string, addPrefs: Record<string, any>) {
-    const defaultToAdd: Record<string, any> = {
-      "remote.prefs.recommended": false,          // start false and change the settings that you REALLY need
-      "remote.active-protocols": 2,               // no BiDi
-      "fission.bfcacheInParent": false,           // oddly necessary to get navigation to work
-      "fission.webContentIsolationStrategy": 0,   // oddly necessary to get navigation to work
+  async launch() {
+    const switches = [
+      "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
+      "disable-domain-reliability", "disable-background-networking", "disable-features=AutofillServerCommunication",
+      "disable-features=CertificateTransparencyComponentUpdater", "enable-crash-reporter-for-testing", "no-service-autorun",
+      "no-first-run", "no-default-browser-check", "disable-prompt-on-repost", "disable-client-side-phishing-detection",
+      "disable-features=InterestFeedContentSuggestions", "disable-features=Translate", "disable-hang-monitor",
+      "autoplay-policy=no-user-gesture-required", "use-mock-keychain", "disable-omnibox-autocomplete-off-method",
+      "disable-gaia-services", "disable-crash-reporter", "homepage 'about:blank'",
+      "disable-features=MediaRouter", "metrics-recording-only", "disable-features=OptimizationHints",
+      "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
+      "noerrdialogs", "disable-component-update",
 
-      "browser.startup.homepage": "about:blank",
-      "browser.startup.homepage_override.mstone": "ignore",
-      "browser.startup.page": 0,
+      "disable-blink-features=AutomationControlled", // not working
 
-      // double checked safe
-      "app.normandy.api_url": "", "app.update.checkInstallTime": false, "app.update.disabledForTesting": true,
-      "browser.pagethumbnails.capturing_disabled": true, "browser.search.update": false,
-      "browser.sessionstore.resume_from_crash": false, "browser.shell.checkDefaultBrowser": false,
-      "browser.urlbar.suggest.searches": false, "browser.usedOnWindows10.introURL": "",
-      "datareporting.healthreport.service.enabled": false, "datareporting.policy.dataSubmissionEnabled": false,
-      "media.gmp-manager.updateEnabled": false,
+      //"enable-logging=stderr --v=2",
+      // "disk-cache-dir=\"./tmp/chrome-cache\"",
+      `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
+      "window-position=0,0",
+      "window-size=1600,1024",
+      "remote-debugging-port=9222",
+      // "proxy-server='socks5://10.0.1.96:32005'",
+      // "host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE 10.0.1.96'",
+    ]
+    const cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ${switches.map(s => `--${s}`).join(" ")}`
 
-      // useful and probably safe
-      "browser.dom.window.dump.enabled": true, "browser.tabs.disableBackgroundZombification": false,
-      "browser.tabs.warnOnCloseOtherTabs": false, "browser.tabs.warnOnOpen": false, "browser.warnOnQuit": false,
-      "javascript.options.showInConsole": true, "network.manage-offline-status": false,
-      "security.notification_enable_delay": 0, "signon.autofillForms": false, "signon.rememberSignons": false,
-      "toolkit.startup.max_resumed_crashes": -1,
-
-      // risky for detection
-      // "focusmanager.testmode": true, "general.useragent.updates.enabled": false, "geo.provider.testing": true,
-      // "geo.wifi.scan": false, "privacy.trackingprotection.enabled": false,
-      // "toolkit.cosmeticAnimations.enabled": false,
-    }
-
-    // wipe profile
-    const useProfilePath = profilePath //`${profilePath}-${Math.random().toString(36).slice(2)}`
-    await fs.mkdir(useProfilePath, { recursive: true })
-    const userJsPath = path.join(useProfilePath, "user.js")
-    await fs.writeFile(userJsPath, Object.entries({...defaultToAdd, ...addPrefs}).map(([k, v]) => `user_pref("${k}", ${JSON.stringify(v)});`).join("\n"))
-
-    const cmd = `${pathToFirefox} --remote-debugging-port 9222 --new-instance --profile ${useProfilePath} 2>&1`
-    logGlobal(`launching: ${cmd}`)
-    this.firefox = exec(cmd)
-    this.firefox.stdout!.on("data", (data) => logGlobal("O", data.toString()))
-    process.on("exit", () => this.firefox?.kill("SIGKILL"))
+    logGlobal("launching", c.greenBright(cmd))
+    this.browserInstance = exec(cmd)
+    this.browserInstance.stdout!.on("data", (data) => logGlobal("O", data.toString()))
+    this.browserInstance.stderr!.on("data", (data) => logGlobal("E", data.toString()))
+    process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
     logGlobal("connecting to cdp client")
-    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 5000 })
+    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000 })
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
-
-    logGlobal("ready")
-
-    this.client.Network.requestWillBeSent((request) => {
-      logGlobal(request.requestId, request.request.method, request.request.url)
-    })
-    this.client.Network.loadingFinished((request) => {
-      logGlobal(request.requestId, "FINISHED")
-    })
   }
 
   async close() {
+    logGlobal("closing cdp client and browser")
     await this.client.Browser.close()
     await this.client.close()
   }
@@ -100,10 +73,24 @@ export class CDPBrowser {
         switch (params.type) {
           case "url":
             return new Promise<{name: string, response: object}>((resolve) => {
+              let resultResponse = {} as any
+              let lookingForRequestId: string | undefined = undefined
               const urlRegexp = typeof params.url === "string" ? globToRegexp(params.url, { extended: true }) : params.url
-              subscriptions.push(this.client.Network.responseReceived(({ response }) => {
-                if (urlRegexp.test(response.url) && (params.statusCode === undefined || response.status === params.statusCode))
-                  resolve({name, response})
+
+              // The request first comes in as headers only
+              subscriptions.push(this.client.Network.responseReceived(async (response) => {
+                if (urlRegexp.test(response.response.url) && response.type !== "Preflight" && (params.statusCode === undefined || response.response.status === params.statusCode)) {
+                  lookingForRequestId = response.requestId
+                  resultResponse = response.response
+                }
+              }))
+
+              // Then the body comes in via Network.dataReceived and finishes with Network.loadingFinished
+              subscriptions.push(this.client.Network.loadingFinished(async (response) => {
+                if (lookingForRequestId === response.requestId) {
+                  const responseResult = await this.client.Network.getResponseBody({ requestId: lookingForRequestId })
+                  resolve({name, response: {...resultResponse, body: responseResult.body}})
+                }
               }))
             })
 
