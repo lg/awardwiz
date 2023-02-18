@@ -43,6 +43,7 @@
     "playwright": "^1.30.0",
     "playwright-extra": "^4.3.5",
     "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "tiny-typed-emitter": "^2.1.0",
     "tmp-promise": "^3.0.3",
     "user-agents": "^1.0.1290",
     "winston": "^3.8.2",

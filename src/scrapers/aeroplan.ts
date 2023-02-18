@@ -20,7 +20,6 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   })
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
-  await sc.throwIfBadResponse(sc, waitForResult.response)
   const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
 
   sc.log("parsing results")

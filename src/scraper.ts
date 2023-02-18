@@ -146,6 +146,7 @@ export class Scraper {
   constructor(debugOptions: Partial<DebugOptions>) {
     this.debugOptions = {...defaultDebugOptions, ...debugOptions}
     this.browser = new CDPBrowser()
+    this.browser.on("message", this.log.bind(this))
   }
 
   static {
@@ -425,22 +426,6 @@ export class Scraper {
     this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
     // eslint-disable-next-line no-restricted-globals
     await new Promise((resolve) => setTimeout(resolve, 10000000))
-  }
-
-  public async throwIfBadResponse(sc: Scraper, waitForResponse: { status: number, body: string } | null | undefined) {
-    if (!waitForResponse)
-      throw new Error("Response was null!")
-
-    if (waitForResponse.status !== 200) {
-      const pageText = waitForResponse.body
-      if (pageText.includes("<H1>Access Denied</H1>"))
-        throw new Error(`Access Denied anti-botting while loading page (status: ${waitForResponse.status})`)
-      if (pageText.includes("div class=\"px-captcha-error-header\""))
-        throw new Error("Perimeter-X captcha anti-botting while loading page")
-      sc.log(pageText)
-
-      throw new Error(`Page loading failed with status ${waitForResponse.status}`)
-    }
   }
 }
 

@@ -1,15 +1,19 @@
 import tmp from "tmp-promise"
-import { logGlobal } from "./log.js"
-import c from "ansi-colors"
 import { ChildProcess, exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
+import { TypedEmitter } from "tiny-typed-emitter"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
 
-export class CDPBrowser {
+interface CDPBrowserEvents {
+  "browser_message": (message: string) => void,
+  "message": (message: string) => void,
+}
+
+export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
@@ -41,13 +45,13 @@ export class CDPBrowser {
     ]
     const cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ${switches.map(s => `--${s}`).join(" ")}`
 
-    logGlobal("launching", c.greenBright(cmd))
+    this.emit("browser_message", `launching ${cmd}`)
     this.browserInstance = exec(cmd)
-    // this.browserInstance.stdout!.on("data", (data) => logGlobal("O", data.toString()))
-    // this.browserInstance.stderr!.on("data", (data) => logGlobal("E", data.toString()))
+    ;[this.browserInstance.stdout!, this.browserInstance.stderr!].forEach((std) =>
+      std.on("data", (data) => this.emit("browser_message", data.toString().trim())))
     process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
-    logGlobal("connecting to cdp client")
+    this.emit("browser_message", "connecting to cdp client")
     this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
     await this.client.Network.enable()
     await this.client.Page.enable()
@@ -55,13 +59,13 @@ export class CDPBrowser {
   }
 
   async close() {
-    logGlobal("closing cdp client and browser")
+    this.emit("browser_message", "closing cdp client and browser")
     await this.client.Browser.close()
     await this.client.close()
   }
 
   async goto(url: string) {
-    logGlobal(`navigating to ${url}`)
+    this.emit("message", `navigating to ${url}`)
     return this.client.Page.navigate({ url })
   }
 
@@ -91,6 +95,8 @@ export class CDPBrowser {
               subscriptions.push(this.client.Network.loadingFinished(async (response) => {
                 if (lookingForRequestId === response.requestId) {
                   const responseResult = await this.client.Network.getResponseBody({ requestId: lookingForRequestId })
+                  if (params.statusCode === 200)    // do extra verifications if expecting a success
+                    this.throwIfBadResponse(resultResponse.status, responseResult.body)
                   resolve({name, response: {...resultResponse, body: responseResult.body}})
                 }
               }))
@@ -124,6 +130,18 @@ export class CDPBrowser {
       subscriptions.forEach((unsub) => unsub())
       pollingTimers.forEach((timer) => clearInterval(timer))
       if (timeout) clearTimeout(timeout)
+    }
+  }
+
+  private throwIfBadResponse(statusCode: number, bodyText: string) {
+    if (statusCode !== 200) {
+      if (bodyText.includes("<H1>Access Denied</H1>"))
+        throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
+      if (bodyText.includes("div class=\"px-captcha-error-header\""))
+        throw new Error("Perimeter-X captcha anti-botting while loading page")
+      this.emit("message", bodyText)
+
+      throw new Error(`Page loading failed with status ${statusCode}`)
     }
   }
 }
