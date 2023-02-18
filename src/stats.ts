@@ -11,13 +11,15 @@ export class Stats {
   bytesDownloaded = 0
 
   constructor(private sc: Scraper) {
-    this.sc.context!.on("requestfinished", this.onRequestFinished.bind(this))
-    this.sc.context!.on("requestfailed", this.onRequestFailed.bind(this))
+    // TODO: make make these work
+    // this.sc.context!.on("requestfinished", this.onRequestFinished.bind(this))
+    // this.sc.context!.on("requestfailed", this.onRequestFailed.bind(this))
   }
 
   public async stop() {
-    this.sc.context?.off("requestfinished", this.onRequestFinished.bind(this))
-    this.sc.context?.off("requestfailed", this.onRequestFailed.bind(this))
+    // TODO: make make these work
+    // this.sc.context?.off("requestfinished", this.onRequestFinished.bind(this))
+    // this.sc.context?.off("requestfailed", this.onRequestFailed.bind(this))
   }
 
   private async onRequestFinished(req: Request) {

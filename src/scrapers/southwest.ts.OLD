@@ -7,7 +7,7 @@ import { Response } from "playwright"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
-  randomizeUserAgent: true,
+  fakeUserAgent: true,
   forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
     "*/swa-resources/config/status.js"]
 }

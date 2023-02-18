@@ -1,34 +1,27 @@
-import { gotoPage, waitForJsonSuccess } from "../common.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
-import c from "ansi-colors"
 import { ScraperMetadata } from "../scraper.js"
 import { AeroplanResponse } from "./samples/aeroplan.js"
 
 export const meta: ScraperMetadata = {
   name: "aeroplan",
-  blockUrls: [],
   defaultTimeout: 25000,
-  forceCacheUrls: ["*.svg", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu]
-  // "*/aeroplan/redeem/font/*",      // air canada seems to be particularly sensitive about any forced caching of fonts
+  // TODO: implement this
+  // forceCacheUrls: ["*.svg", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   const paramsText = `org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`
-  const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
-  await gotoPage(sc, `https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsTextRandomized}`, "commit")
-
-  sc.log("waiting for results")
-  const fetchFlights = await waitForJsonSuccess<AeroplanResponse>(sc, "https://akamai-gw.dbaas.aircanada.com/loyalty/dapidynamic/1ASIUDALAC/v2/search/air-bounds", {
-    "anti-botting1": sc.page.waitForFunction(() => document.location.toString() === "https://www.aircanada.com/aeroplan/redeem/"),
-    "anti-botting2": sc.page.waitForResponse((resp) => /^.*\/loyalty\/dapidynamic\/.*\/v2\/reward\/market-token/iu.exec(resp.url()) !== null && resp.status() === 403),
-    "anti-botting3": sc.page.getByText("Air Canada's website is not available right now.")
+  await sc.browser.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
+  const waitForResult = await sc.browser.waitFor({
+    "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds", statusCode: 200 },
+    "anti-botting1": { type: "url", url: "*/aeroplan/redeem/" },
+    "anti-botting2": { type: "url", url: "*/loyalty/dapidynamic/*/v2/reward/market-token", statusCode: 403 },
+    "anti-botting3": { type: "html", html: "Air Canada's website is not available right now." }
   })
-  if (typeof fetchFlights === "string") {
-    if (fetchFlights.startsWith("anti-botting"))
-      throw new Error(`anti-botting ${fetchFlights}`)
-    sc.log(c.yellow(`WARN: ${fetchFlights}`))
-    return []
-  }
+  if (waitForResult.name !== "success")
+    throw new Error(waitForResult.name)
+  await sc.throwIfBadResponse(sc, waitForResult.response)
+  const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
 
   sc.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []

@@ -7,11 +7,12 @@ import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
-export type WaitForReturn = { name: string, response: any } | { name: string } | { name: "timeout" }
+export type WaitForReturn = { name: string, response?: any }
 
 export class CDPBrowser {
   private browserInstance?: ChildProcess
   public client!: CDP.Client
+  public defaultTimeoutMs = 30_000
 
   async launch() {
     const switches = [
@@ -26,7 +27,8 @@ export class CDPBrowser {
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
       "noerrdialogs", "disable-component-update",
 
-      "disable-blink-features=AutomationControlled", // not working
+      // "disable-blink-features=AutomationControlled", // not working
+      // "silent-launch",
 
       //"enable-logging=stderr --v=2",
       // "disk-cache-dir=\"./tmp/chrome-cache\"",
@@ -41,12 +43,12 @@ export class CDPBrowser {
 
     logGlobal("launching", c.greenBright(cmd))
     this.browserInstance = exec(cmd)
-    this.browserInstance.stdout!.on("data", (data) => logGlobal("O", data.toString()))
-    this.browserInstance.stderr!.on("data", (data) => logGlobal("E", data.toString()))
+    // this.browserInstance.stdout!.on("data", (data) => logGlobal("O", data.toString()))
+    // this.browserInstance.stderr!.on("data", (data) => logGlobal("E", data.toString()))
     process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
     logGlobal("connecting to cdp client")
-    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000 })
+    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
@@ -60,10 +62,10 @@ export class CDPBrowser {
 
   async goto(url: string) {
     logGlobal(`navigating to ${url}`)
-    void this.client.Page.navigate({ url })
+    return this.client.Page.navigate({ url })
   }
 
-  async waitFor(items: Record<string, WaitForType>, timeoutMs: number): Promise<WaitForReturn> {
+  async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
     const subscriptions: Function[] = []
     const pollingTimers: NodeJS.Timer[] = []
     let timeout: NodeJS.Timeout | undefined
@@ -109,7 +111,7 @@ export class CDPBrowser {
       })
       promises.push(new Promise((resolve) => {
         // eslint-disable-next-line no-restricted-globals
-        timeout = setTimeout(() => resolve({name: "timeout"}), timeoutMs)
+        timeout = setTimeout(() => resolve({name: "timeout"}), this.defaultTimeoutMs)
       }))
 
       const result = await Promise.race(promises) as {name: string, response: any}
