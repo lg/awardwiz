@@ -89,16 +89,16 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   }
 
   private completedLoading(requestId: string) {
-    const item = this.requests[requestId] as Required<Request>
-    if (!this.requests[requestId]?.response || !this.requests[requestId]?.request?.method)
+    const item = this.requests[requestId]!
+    if (!this.requests[requestId]?.request?.method)
       return
 
     const line =
-      `${item.response.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
-      `${item.response.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
-      `${item.request.method.padEnd(4, " ").slice(0, 4)} ` +
-      `${c.white(item.request.url)} ` +
-      `${c.yellowBright(item.response.headers["cache-control"] ?? "")}`
+      `${item.response?.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
+      `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
+      `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
+      `${c.white(item.request!.url)} ` +
+      `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
     this.emit("message", line)
   }
 
