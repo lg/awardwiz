@@ -5,6 +5,7 @@ import type { Protocol } from "chrome-remote-interface/node_modules/devtools-pro
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import { TypedEmitter } from "tiny-typed-emitter"
+import c from "ansi-colors"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -70,13 +71,23 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       this.requests[response.requestId]!.encodedDataLength = response.encodedDataLength
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = true
+      this.completedLoading(response.requestId)
     })
     this.client.Network.loadingFailed((response) => {
       if (!this.requests[response.requestId])
         this.requests[response.requestId] = { requestId: response.requestId }
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = false
+      this.completedLoading(response.requestId)
     })
+  }
+
+  private completedLoading(requestId: string) {
+    const request = this.requests[requestId]?.request
+    const response = this.requests[requestId]?.response
+    const line = `${response?.status} ${request?.method} ${request?.url}`
+    if (request?.method)
+      this.emit("message", this.requests[requestId]?.success ? c.whiteBright(line) : c.red(line))
   }
 
   async close() {
