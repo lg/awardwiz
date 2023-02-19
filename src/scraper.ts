@@ -7,7 +7,6 @@ import { FiltersEngine, fromPlaywrightDetails, NetworkFilter } from "@cliqz/adbl
 import { logger, prettifyArgs } from "./log.js"
 // import globToRegexp from "glob-to-regexp"
 // import { Cache } from "./cache.js"
-import { Stats } from "./stats.js"
 import * as dotenv from "dotenv"
 import util from "util"
 import dayjs from "dayjs"
@@ -140,7 +139,6 @@ export class Scraper {
   // public page!: Page
   // public cache?: Cache
   public logLines: string[] = []
-  public stats?: Stats
   public failed: boolean = false
 
   constructor(debugOptions: Partial<DebugOptions>) {
@@ -264,7 +262,7 @@ export class Scraper {
       this.logAttemptResult()
     })
 
-    this.log(`completed ${!attemptResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${this.stats?.toString()})`)
+    this.log(`completed ${!attemptResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${this.browser.stats().summary})`)
     return { result: attemptResult, logLines: this.logLines }
   }
 
@@ -306,9 +304,6 @@ export class Scraper {
     this.browser.defaultTimeoutMs = this.scraperMeta.defaultTimeout
 
     // TODO: disable webrtc or do it right
-
-    // enable stats
-    this.stats = new Stats(this)
 
     // TODO: debugging options to see requests and responses (and optionally the full bodies)
     // if (this.debugOptions.showRequests)

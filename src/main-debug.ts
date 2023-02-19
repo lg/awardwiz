@@ -32,12 +32,10 @@ const query: AwardWizQuery = { origin: process.argv[3]!, destination: process.ar
 
 const result = await browser.run(async (sc) => {
   sc.log("Using query:", query)
-  const scraperResults = await scraper.runScraper(sc, query)
-  sc.log(c.green(`Completed with ${scraperResults.length} results`), sc.stats?.toString())
-  return scraperResults
+  return scraper.runScraper(sc, query)
 }, scraper.meta, `debug-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)
 
-logGlobal(result)
+// logGlobal(result)
 
 logGlobal("Ending")
 await browser.destroy()

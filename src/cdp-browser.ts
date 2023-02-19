@@ -1,6 +1,7 @@
 import tmp from "tmp-promise"
 import { ChildProcess, exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
+import type { Protocol } from "chrome-remote-interface/node_modules/devtools-protocol/types/protocol.js"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import { TypedEmitter } from "tiny-typed-emitter"
@@ -15,6 +16,7 @@ interface CDPBrowserEvents {
 
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
+  private requests: Record<string, { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, encodedDataLength?: number, startTime?: number, endTime?: number, success?: boolean }> = {}
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
 
@@ -32,7 +34,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "noerrdialogs", "disable-component-update",
 
       // "disable-blink-features=AutomationControlled", // not working
-      // "silent-launch",
+      // "auto-open-devtools-for-tabs",
 
       //"enable-logging=stderr --v=2",
       // "disk-cache-dir=\"./tmp/chrome-cache\"",
@@ -56,6 +58,25 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
+
+    this.client.Network.requestWillBeSent((request) => {
+      if (!this.requests[request.requestId])
+        this.requests[request.requestId] = { requestId: request.requestId }
+      this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
+    })
+    this.client.Network.responseReceived((response) =>
+      this.requests[response.requestId]!.response = response.response)
+    this.client.Network.loadingFinished((response) => {
+      this.requests[response.requestId]!.encodedDataLength = response.encodedDataLength
+      this.requests[response.requestId]!.endTime = response.timestamp
+      this.requests[response.requestId]!.success = true
+    })
+    this.client.Network.loadingFailed((response) => {
+      if (!this.requests[response.requestId])
+        this.requests[response.requestId] = { requestId: response.requestId }
+      this.requests[response.requestId]!.endTime = response.timestamp
+      this.requests[response.requestId]!.success = false
+    })
   }
 
   async close() {
@@ -143,5 +164,16 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
       throw new Error(`Page loading failed with status ${statusCode}`)
     }
+  }
+
+  public stats() {
+    const totRequests = Object.values(this.requests).length
+    const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
+    const cacheMisses = totRequests - cacheHits
+    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.encodedDataLength ?? 0), 0)
+
+    const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
+
+    return { totRequests, cacheHits, cacheMisses, bytes, summary }
   }
 }
