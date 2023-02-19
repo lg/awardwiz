@@ -9,6 +9,7 @@ import c from "ansi-colors"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
+type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, encodedLength: number, startTime?: number, endTime?: number, success?: boolean }
 
 interface CDPBrowserEvents {
   "browser_message": (message: string) => void,
@@ -17,7 +18,7 @@ interface CDPBrowserEvents {
 
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
-  private requests: Record<string, { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, encodedDataLength?: number, startTime?: number, endTime?: number, success?: boolean }> = {}
+  private requests: Record<string, Request> = {}
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
 
@@ -35,10 +36,10 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "noerrdialogs", "disable-component-update",
 
       // "disable-blink-features=AutomationControlled", // not working
-      // "auto-open-devtools-for-tabs",
+      "auto-open-devtools-for-tabs",
 
       //"enable-logging=stderr --v=2",
-      // "disk-cache-dir=\"./tmp/chrome-cache\"",
+      "disk-cache-dir=\"./tmp/chrome-cache\"",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
       "window-position=0,0",
       "window-size=1600,1024",
@@ -63,20 +64,23 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
       if (!this.requests[request.requestId])
-        this.requests[request.requestId] = { requestId: request.requestId }
+        this.requests[request.requestId] = { requestId: request.requestId, encodedLength: 0 }
       this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
     })
-    this.client.Network.responseReceived((response) =>
-      this.requests[response.requestId]!.response = response.response)
+    this.client.Network.responseReceived((response) => {
+      if (!this.requests[response.requestId])
+        this.requests[response.requestId] = { requestId: response.requestId, encodedLength: 0 }
+      this.requests[response.requestId]!.response = response.response
+      this.requests[response.requestId]!.encodedLength = parseInt(response.response.headers["content-length"] ?? "0")
+    })
     this.client.Network.loadingFinished((response) => {
-      this.requests[response.requestId]!.encodedDataLength = response.encodedDataLength
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = true
       this.completedLoading(response.requestId)
     })
     this.client.Network.loadingFailed((response) => {
       if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId }
+        this.requests[response.requestId] = { requestId: response.requestId, encodedLength: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = false
       this.completedLoading(response.requestId)
@@ -84,13 +88,17 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   }
 
   private completedLoading(requestId: string) {
-    const request = this.requests[requestId]?.request
-    if (!request?.method)
+    const item = this.requests[requestId] as Required<Request>
+    if (!this.requests[requestId]?.response || !this.requests[requestId]?.request?.method)
       return
 
-    const response = this.requests[requestId]?.response
-    const line = `${response?.status ? c.green(response.status.toString()) : c.red("BLK")} ${request.method} ${request.url}`
-    this.emit("message", c.whiteBright(line))
+    const line =
+      `${item.response.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
+      `${item.response.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.encodedLength / 1024).toString() + "kB").padStart(5, " ")} ` +
+      `${item.request.method.padEnd(4, " ").slice(0, 4)} ` +
+      `${c.white(item.request.url)} ` +
+      `${c.yellowBright(item.response.headers["cache-control"] ?? "")}`
+    this.emit("message", line)
   }
 
   async close() {
@@ -184,7 +192,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     const totRequests = Object.values(this.requests).length
     const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
     const cacheMisses = totRequests - cacheHits
-    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.encodedDataLength ?? 0), 0)
+    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.encodedLength), 0)
 
     const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
 
