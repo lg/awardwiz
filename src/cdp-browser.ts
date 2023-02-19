@@ -60,6 +60,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.Page.enable()
     await this.client.Runtime.enable()
 
+    // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
       if (!this.requests[request.requestId])
         this.requests[request.requestId] = { requestId: request.requestId }
@@ -84,10 +85,12 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
   private completedLoading(requestId: string) {
     const request = this.requests[requestId]?.request
+    if (!request?.method)
+      return
+
     const response = this.requests[requestId]?.response
-    const line = `${response?.status} ${request?.method} ${request?.url}`
-    if (request?.method)
-      this.emit("message", this.requests[requestId]?.success ? c.whiteBright(line) : c.red(line))
+    const line = `${response?.status ? c.green(response.status.toString()) : c.red("BLK")} ${request.method} ${request.url}`
+    this.emit("message", c.whiteBright(line))
   }
 
   async close() {
@@ -186,5 +189,9 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
 
     return { totRequests, cacheHits, cacheMisses, bytes, summary }
+  }
+
+  public async blockUrls(urls: string[]) {
+    await this.client.Network.setBlockedURLs({ urls })
   }
 }

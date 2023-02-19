@@ -35,7 +35,7 @@ const result = await browser.run(async (sc) => {
   return scraper.runScraper(sc, query)
 }, scraper.meta, `debug-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)
 
-// logGlobal(result)
+logGlobal(`Results: ${c.greenBright(result.result?.length.toString() ?? c.redBright("0"))}`)
 
 logGlobal("Ending")
 await browser.destroy()

@@ -1,9 +1,8 @@
 import c from "ansi-colors"
 import pRetry from "p-retry"
 // import UserAgent from "user-agents"
-import { promises as fs } from "fs" // used for caching
-import { FiltersEngine, fromPlaywrightDetails, NetworkFilter } from "@cliqz/adblocker-playwright"
-// import fetch from "cross-fetch"
+// import { promises as fs } from "fs" // used for caching
+
 import { logger, prettifyArgs } from "./log.js"
 // import globToRegexp from "glob-to-regexp"
 // import { Cache } from "./cache.js"
@@ -18,17 +17,10 @@ export type ScraperMetadata = {
   /** Unique name for the scraper */
   name: string,
 
-  /** Blocks urls (as per [Adblock format](https://github.com/gorhill/uBlock/wiki/Static-filter-syntax)). use
-   * `showBlocked` debug option to iterate.
+  /** Blocks urls. Can contain *s to match.
+   * @example ["google-analytics.com"]
    * @default [] */
-  //blockUrls: string[]
-
-  /** By default will auto-block easylist and other similar lists (see `src/blocking.ts`), this disables that. These
-   * blockers can sometimes block telemetry used to assess if you're a not bot or not. Except for beacons or ads or
-   * similar, prefer to rely on default caching or use `forceCache` instead of this since blocking assets can break
-   * expected javascript execution or page layout.
-   * @default true */
-  //useAdblockLists: boolean
+  blockUrls: string[]
 
   /** Some websites don't return proper cache headers, this forces matching globs/RegExps to get cached. Use the
    * `showUncached` debug option to iterate. Does not work if `useCache` is set to `false`.
@@ -47,11 +39,10 @@ export type ScraperMetadata = {
 
   /** Set the default timeout for navigation and selector requests.
    * @default 15000 */
-  defaultTimeout: number
+  defaultTimeout?: number
 }
-const defaultScraperMetadata: Omit<ScraperMetadata, "name"> = {
-  defaultTimeout: 15000,
-  //blockUrls: [], useAdblockLists: true, forceCacheUrls: [], useCache: true, fakeUserAgent: false,
+const defaultScraperMetadata: Required<ScraperMetadata> = {
+  name: "default", defaultTimeout: 15000, blockUrls: []
 }
 
 export type DebugOptions = {
@@ -71,7 +62,7 @@ export type DebugOptions = {
    * @default [] */
   showFullResponse: string[],
 
-  /** Shows requests which were blocked due to adblock or `blockUrls`
+  /** Shows requests which were blocked due to `blockUrls`
    * @default false */
   showBlocked: boolean,
 
@@ -123,11 +114,10 @@ export class Scraper {
   public browser: CDPBrowser
 
   private debugOptions: DebugOptions
-  private scraperMeta!: ScraperMetadata
+  private scraperMeta!: Required<ScraperMetadata>
 
   private static proxies
   private id: string = ""
-  private filtersEngine?: FiltersEngine
   //private proxy?: PlaywrightProxy
   private lastProxyGroup = "default"
   private ipInfo?: { ip: string, countryCode: string, tz: string }
@@ -208,14 +198,6 @@ export class Scraper {
   //   // Start browser w/ default proxy
   //   await this.browser.launch()
   //   // await this.selectProxy("default")
-
-  //   // enable adblocking (assuming we're going to use them)
-  //   const adblockCache = { path: "tmp/adblocker.bin", read: fs.readFile, write: fs.writeFile }
-  //   this.filtersEngine = await FiltersEngine.fromLists(fetch, [
-  //     "https://easylist.to/easylist/easylist.txt", "https://easylist.to/easylist/easyprivacy.txt", "https://secure.fanboy.co.nz/fanboy-cookiemonster.txt",
-  //     "https://easylist.to/easylist/fanboy-social.txt", "https://secure.fanboy.co.nz/fanboy-annoyance.txt", "https://easylist.to/easylist/easylist.txt",
-  //     "https://cdn.jsdelivr.net/gh/badmojr/1Hosts@master/Xtra/adblock.txt"
-  //   ], undefined, adblockCache)
   // }
 
   private logAttemptResult() {
@@ -232,7 +214,7 @@ export class Scraper {
     })
   }
 
-  public async run<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: Partial<ScraperMetadata> & Pick<ScraperMetadata, "name">, id: string) {
+  public async run<ReturnType>(code: (sc: Scraper) => Promise<ReturnType>, meta: ScraperMetadata, id: string) {
     const startTime = Date.now()
 
     this.id = id
@@ -288,10 +270,10 @@ export class Scraper {
     //   : undefined
 
     // generate window and viewport sizes
-    const SCREEN_SIZES = [[1920, 1080], [1536, 864], [2560, 1440], [1680, 1050], [1792, 1120], [1600, 900]]
-    const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]!
-    const screen = { width: screenSize[0]!, height: screenSize[1]! }
-    const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.2 + 0.8)), height: Math.ceil(screen.height * (Math.random() * 0.2 + 0.8)) }
+    // const SCREEN_SIZES = [[1920, 1080], [1536, 864], [2560, 1440], [1680, 1050], [1792, 1120], [1600, 900]]
+    // const screenSize = SCREEN_SIZES[Math.floor(Math.random() * SCREEN_SIZES.length)]!
+    // const screen = { width: screenSize[0]!, height: screenSize[1]! }
+    // const viewport = { width: Math.ceil(screen.width * (Math.random() * 0.2 + 0.8)), height: Math.ceil(screen.height * (Math.random() * 0.2 + 0.8)) }
 
     // create the context
     if (this.debugOptions.showProxyUrl)
@@ -328,11 +310,8 @@ export class Scraper {
     //   }
     // })
 
-    // TODO: enable blocking urls (and add extra urls requested by scraper)
-    // if (!(this.scraperMeta.useAdblockLists ?? true))
-    //   this.filtersEngine = FiltersEngine.empty()    // wipe the precached adblock lists
-    // if (this.scraperMeta.blockUrls)
-    //   this.filtersEngine?.update({ newNetworkFilters: this.scraperMeta.blockUrls.map((urlToAdd) => NetworkFilter.parse(urlToAdd)!) })
+    if (this.scraperMeta.blockUrls.length > 0)
+      await this.browser.blockUrls(this.scraperMeta.blockUrls)
 
     // TODO: showblocked
     // await this.context.route("**/*", route => {
