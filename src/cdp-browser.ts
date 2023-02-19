@@ -9,7 +9,7 @@ import c from "ansi-colors"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
-type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, encodedLength: number, startTime?: number, endTime?: number, success?: boolean }
+type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success?: boolean }
 
 interface CDPBrowserEvents {
   "browser_message": (message: string) => void,
@@ -64,14 +64,15 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
       if (!this.requests[request.requestId])
-        this.requests[request.requestId] = { requestId: request.requestId, encodedLength: 0 }
+        this.requests[request.requestId] = { requestId: request.requestId, downloadedBytes: 0 }
       this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
     })
-    this.client.Network.responseReceived((response) => {
+    this.client.Network.responseReceived((response) => {    // headers only
       if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, encodedLength: 0 }
+        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.response = response.response
-      this.requests[response.requestId]!.encodedLength = parseInt(response.response.headers["content-length"] ?? "0")
+      if (!response.response.fromDiskCache)
+        this.requests[response.requestId]!.downloadedBytes = parseInt(response.response.headers["content-length"] ?? "0")
     })
     this.client.Network.loadingFinished((response) => {
       this.requests[response.requestId]!.endTime = response.timestamp
@@ -80,7 +81,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     })
     this.client.Network.loadingFailed((response) => {
       if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, encodedLength: 0 }
+        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = false
       this.completedLoading(response.requestId)
@@ -94,7 +95,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
     const line =
       `${item.response.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
-      `${item.response.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.encodedLength / 1024).toString() + "kB").padStart(5, " ")} ` +
+      `${item.response.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
       `${item.request.method.padEnd(4, " ").slice(0, 4)} ` +
       `${c.white(item.request.url)} ` +
       `${c.yellowBright(item.response.headers["cache-control"] ?? "")}`
@@ -192,7 +193,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     const totRequests = Object.values(this.requests).length
     const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
     const cacheMisses = totRequests - cacheHits
-    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.encodedLength), 0)
+    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.downloadedBytes), 0)
 
     const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
 
