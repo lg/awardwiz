@@ -39,7 +39,9 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "disable-gaia-services", "disable-crash-reporter", "homepage 'about:blank'",
       "disable-features=MediaRouter", "metrics-recording-only", "disable-features=OptimizationHints",
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
-      "noerrdialogs", "disable-component-update", "no-sandbox",
+      "noerrdialogs", "disable-component-update",
+
+      "no-sandbox", "disable-dev-shm-usage",  // for linux docker
 
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
