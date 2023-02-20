@@ -9,6 +9,7 @@ import c from "ansi-colors"
 import url from "node:url"
 import { promises as fs } from "node:fs"
 import os from "node:os"
+import net from "node:net"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -21,6 +22,10 @@ interface CDPBrowserEvents {
 
 export type CDPBrowserOptions = {
   proxy: string | undefined
+  useGlobalCache: boolean
+  globalCacheDir: string
+  windowSize: number[] | undefined
+  windowPos: number[] | undefined
 }
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
@@ -29,6 +34,14 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   public defaultTimeoutMs = 30_000
 
   async launch(options: CDPBrowserOptions) {
+    const freePort = await new Promise<number>(resolve => {
+      const srv = net.createServer()
+      srv.listen(0, () => {
+        const port = (srv.address() as net.AddressInfo).port
+        srv.close((err) => resolve(port))
+      })
+    })
+
     const switches = [
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
       "disable-domain-reliability", "disable-background-networking", "disable-features=AutofillServerCommunication",
@@ -47,11 +60,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       // "auto-open-devtools-for-tabs",
 
       //"enable-logging=stderr --v=2",
-      "disk-cache-dir=\"./tmp/chrome-cache\"",
+      options.useGlobalCache ? `disk-cache-dir="${options.globalCacheDir}"` : "",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
-      "window-position=0,0",
-      "window-size=1600,1024",
-      "remote-debugging-port=9222"
+      options.windowPos ? `window-position=${options.windowPos[0]},${options.windowPos[1]}` : "",
+      options.windowSize ? `window-size=${options.windowSize[0]},${options.windowSize[1]}` : "",
+      `remote-debugging-port=${freePort}`
     ]
 
     if (options.proxy) {
@@ -75,7 +88,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
     this.emit("browser_message", "connecting to cdp client")
-    this.client = await pRetry(async () => CDP(), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
+    this.client = await pRetry(async () => CDP({ port: freePort }), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()

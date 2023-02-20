@@ -10,6 +10,7 @@ import * as dotenv from "dotenv"
 import util from "util"
 import dayjs from "dayjs"
 import { CDPBrowser } from "./cdp-browser.js"
+import { exec } from "node:child_process"
 
 const IPTZ_MAX_WAIT_MS = 5000
 
@@ -25,9 +26,13 @@ export type ScraperMetadata = {
   /** Set the default timeout for navigation and selector requests.
    * @default 15000 */
   defaultTimeout?: number
+
+  /** Items will be cached globally (i.e. across all running instances) if this is true. Set to false to not store.
+   * @default true */
+  useGlobalCache?: boolean
 }
 const defaultScraperMetadata: Required<ScraperMetadata> = {
-  name: "default", defaultTimeout: 15000, blockUrls: []
+  name: "default", defaultTimeout: 15000, blockUrls: [], useGlobalCache: true
 }
 
 export type DebugOptions = {
@@ -53,18 +58,18 @@ export type DebugOptions = {
    * @default 3 */
   maxAttempts?: number
 
-  /** When debugging, it might be useful to show the proxy URL (with username/password)
-   * @default false */
-  //showProxyUrl: boolean
+  /** Use this directory for shared global cache. Mount this as a volume to share between instances.
+   * @default "./tmp/cache" */
+  globalCacheDir?: string
 }
 const defaultDebugOptions: Required<DebugOptions> = {
-  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true
+  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache"
 }
 
 export class Scraper {
   public browser: CDPBrowser
 
-  private debugOptions: DebugOptions
+  private debugOptions: Required<DebugOptions>
   private scraperMeta!: Required<ScraperMetadata>
 
   private static proxies: Record<string, string[]> = {}
@@ -155,7 +160,26 @@ export class Scraper {
       }
     }
 
-    await this.browser.launch({ proxy })
+    // Randomize a window size depending on the screen resolution
+    const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
+      exec("xdpyinfo | grep dimensions", (err, stdout) =>
+        resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
+    })
+    let windowSize: number[] | undefined
+    let windowPos: number[] | undefined
+    if (screenResolution) {
+      windowSize = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
+      windowPos = [Math.ceil((screenResolution[0]! - windowSize[0]!) * Math.random()), Math.ceil((screenResolution[1]! - windowSize[1]!) * Math.random())]
+    }
+
+    // Start the browser
+    await this.browser.launch({
+      proxy,
+      useGlobalCache: this.scraperMeta.useGlobalCache,
+      globalCacheDir: this.debugOptions.globalCacheDir,
+      windowSize,
+      windowPos
+    })
 
     // use timeouts
     this.browser.defaultTimeoutMs = this.scraperMeta.defaultTimeout
