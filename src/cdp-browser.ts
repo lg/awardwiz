@@ -7,6 +7,8 @@ import globToRegexp from "glob-to-regexp"
 import { TypedEmitter } from "tiny-typed-emitter"
 import c from "ansi-colors"
 import url from "node:url"
+import { promises as fs } from "node:fs"
+import os from "node:os"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -37,9 +39,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "disable-gaia-services", "disable-crash-reporter", "homepage 'about:blank'",
       "disable-features=MediaRouter", "metrics-recording-only", "disable-features=OptimizationHints",
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
-      "noerrdialogs", "disable-component-update",
-
-      "no-sandbox",
+      "noerrdialogs", "disable-component-update", "no-sandbox",
 
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
@@ -57,10 +57,13 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(options.proxy).hostname}'`)
     }
 
-    const binPath = process.env["CHROME_PATH"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    // if (await fs.stat(binPath).catch(() => false))
-    //   throw new Error(`Chrome binary not found at ${binPath}. Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
-
+    // detect chrome binary
+    const defaultPath =
+      os.type() === "Darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" :
+      os.type() === "Linux" ? "/usr/bin/chromium-browser" : ""
+    const binPath = process.env["CHROME_PATH"] ?? defaultPath
+    if (!await fs.access(binPath).then(() => true).catch(() => false))
+      throw new Error(`Chrome binary not found at "${binPath}". Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
     const cmd = `"${binPath}" ${switches.map(s => `--${s}`).join(" ")}`
 
     this.emit("browser_message", `launching ${cmd}`)
@@ -107,11 +110,12 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     if (!this.requests[requestId]?.request?.method)
       return
 
+    const urlToShow = item.request!.url.startsWith("data:") ? `${item.request!.url.slice(0, 80)}...` : item.request!.url
     const line =
       `${item.response?.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
       `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
       `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
-      `${c.white(item.request!.url)} ` +
+      `${c.white(urlToShow)} ` +
       `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
     this.emit("message", line)
   }
