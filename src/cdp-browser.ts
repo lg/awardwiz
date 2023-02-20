@@ -6,6 +6,7 @@ import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import { TypedEmitter } from "tiny-typed-emitter"
 import c from "ansi-colors"
+import url from "node:url"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -16,13 +17,16 @@ interface CDPBrowserEvents {
   "message": (message: string) => void,
 }
 
+export type CDPBrowserOptions = {
+  proxy: string | undefined
+}
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
 
-  async launch() {
+  async launch(options: CDPBrowserOptions) {
     const switches = [
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
       "disable-domain-reliability", "disable-background-networking", "disable-features=AutofillServerCommunication",
@@ -36,17 +40,21 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "noerrdialogs", "disable-component-update",
 
       // "disable-blink-features=AutomationControlled", // not working
-      "auto-open-devtools-for-tabs",
+      // "auto-open-devtools-for-tabs",
 
       //"enable-logging=stderr --v=2",
       "disk-cache-dir=\"./tmp/chrome-cache\"",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
       "window-position=0,0",
       "window-size=1600,1024",
-      "remote-debugging-port=9222",
-      // "proxy-server='socks5://10.0.1.96:32005'",
-      // "host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE 10.0.1.96'",
+      "remote-debugging-port=9222"
     ]
+
+    if (options.proxy) {
+      switches.push(`proxy-server='${options.proxy}'`)
+      switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(options.proxy).hostname}'`)
+    }
+
     const cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ${switches.map(s => `--${s}`).join(" ")}`
 
     this.emit("browser_message", `launching ${cmd}`)
@@ -108,9 +116,9 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.close()
   }
 
-  async goto(url: string) {
-    this.emit("message", `navigating to ${url}`)
-    return this.client.Page.navigate({ url })
+  async goto(gotoUrl: string) {
+    this.emit("message", `navigating to ${gotoUrl}`)
+    return this.client.Page.navigate({ url: gotoUrl })
   }
 
   async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
@@ -196,7 +204,6 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.downloadedBytes), 0)
 
     const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
-
     return { totRequests, cacheHits, cacheMisses, bytes, summary }
   }
 

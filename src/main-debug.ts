@@ -1,20 +1,12 @@
 import c from "ansi-colors"
 import { logger, logGlobal } from "./log.js"
-import { createClient } from "@redis/client"
 import { DebugOptions, Scraper } from "./scraper.js"
 import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
 import dayjs from "dayjs"
 
 const debugOptions: Partial<DebugOptions> = {
-  showBrowserDebug: true,
   maxAttempts: 5,
-
-  showBlocked: false,
-  showFullRequest: [],
-  showFullResponse: [],
   useProxy: true,
-
-  showUncached: true,
   pauseAfterRun: false,
   pauseAfterError: true,
 }
@@ -37,13 +29,10 @@ const result = await browser.run(async (sc) => {
 
 logGlobal(`Results: ${c.greenBright(result.result?.length.toString() ?? c.redBright("0"))}`)
 
+// debugger
+
 logGlobal("Ending")
 await browser.destroy()
-
-const redis = createClient({ url: process.env["REDIS_URL"] })
-await redis.connect()
-await redis.save()
-await redis.disconnect()
 logGlobal("Ended")
 
 logger.close()
