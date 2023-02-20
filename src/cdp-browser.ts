@@ -39,6 +39,8 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
       "noerrdialogs", "disable-component-update",
 
+      "no-sandbox",
+
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
 
@@ -55,7 +57,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(options.proxy).hostname}'`)
     }
 
-    const cmd = `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ${switches.map(s => `--${s}`).join(" ")}`
+    const binPath = process.env["CHROME_PATH"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+    // if (await fs.stat(binPath).catch(() => false))
+    //   throw new Error(`Chrome binary not found at ${binPath}. Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
+
+    const cmd = `"${binPath}" ${switches.map(s => `--${s}`).join(" ")}`
 
     this.emit("browser_message", `launching ${cmd}`)
     this.browserInstance = exec(cmd)

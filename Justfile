@@ -42,7 +42,7 @@ tail-prod-logs:
 
 [private]
 run-docker extra="": build-docker
-  docker run -it --rm -p 8282:8282 --volume $(pwd)/.env.local:/root/.env:ro --volume $(pwd)/tmp:/root/tmp {{extra}}
+  docker run -it --rm -p 8282:8282 --volume $(pwd)/.env:/root/.env:ro --volume $(pwd)/tmp:/root/tmp {{extra}}
 
 run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/main-server.js")
 
