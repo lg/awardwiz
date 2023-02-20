@@ -2,14 +2,6 @@
 set -eo pipefail
 shopt -s dotglob
 
-if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
-  if ! [ "$(ls -A "$MOVE_BROWSERS_TO_PATH")" ]; then
-    cp -r /ms-playwright/* "${MOVE_BROWSERS_TO_PATH}"
-    export PLAYWRIGHT_BROWSERS_PATH="${MOVE_BROWSERS_TO_PATH}"
-    rm -rf "/ms-playwright"
-  fi
-fi
-
 rm -rf /tmp/*
 Xvfb :0 -screen 0 2560x1440x16 -listen tcp -ac &
 
@@ -20,11 +12,6 @@ if which x11vnc > /dev/null; then
   fluxbox 2>/dev/null &
 fi
 
-mkdir -p ./tmp
-if [ -z "${REDIS_URL}" ]; then
-  if which redis-server > /dev/null; then
-    echo -e "maxmemory 128mb\\n daemonize yes\\n dir ./tmp\\nsave 5 1" | redis-server -
-  fi
-fi
+trap 'exit 0;' INT TERM;
 
-exec "$@"
+"$@"
