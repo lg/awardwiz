@@ -61,9 +61,14 @@ export type DebugOptions = {
   /** Use this directory for shared global cache. Mount this as a volume to share between instances.
    * @default "./tmp/cache" */
   globalCacheDir?: string
+
+  /** Display stdout/stderr from the browser process. Can be true/false or "verbose"
+   * @default false */
+  browserDebug?: boolean | "verbose"
 }
 const defaultDebugOptions: Required<DebugOptions> = {
-  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache"
+  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
+  browserDebug: false
 }
 
 export class Scraper {
@@ -83,7 +88,8 @@ export class Scraper {
     this.debugOptions = {...defaultDebugOptions, ...debugOptions}
     this.browser = new CDPBrowser()
     this.browser.on("message", this.log.bind(this))
-    this.browser.on("browser_message", this.log.bind(this))
+    if (debugOptions.browserDebug)
+      this.browser.on("browser_message", this.log.bind(this))
   }
 
   static {
@@ -137,8 +143,11 @@ export class Scraper {
       sc.log(c.red(`All retry attempts exhausted: ${e.message}`))
       return undefined
 
-    }).finally(() => {
+    }).finally(async () => {
       this.logAttemptResult()
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (this.browser)
+        await this.browser.close().catch(() => {})
     })
 
     this.log(`completed ${!attemptResult ? c.red("in failure ") : ""}in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${this.browser.stats().summary})`)
@@ -178,7 +187,8 @@ export class Scraper {
       useGlobalCache: this.scraperMeta.useGlobalCache,
       globalCacheDir: this.debugOptions.globalCacheDir,
       windowSize,
-      windowPos
+      windowPos,
+      browserDebug: this.debugOptions.browserDebug,
     })
 
     // use timeouts
@@ -194,11 +204,6 @@ export class Scraper {
       await this.pause()
 
     return result
-  }
-
-  public async destroy() {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (this.browser) await this.browser.close().catch(() => {})
   }
 
   /////////////////////////////////////////

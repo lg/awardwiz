@@ -26,6 +26,7 @@ export type CDPBrowserOptions = {
   globalCacheDir: string
   windowSize: number[] | undefined
   windowPos: number[] | undefined
+  browserDebug: boolean | "verbose"
 }
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
@@ -59,7 +60,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
 
-      //"enable-logging=stderr --v=2",
+      options.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
       options.useGlobalCache ? `disk-cache-dir="${options.globalCacheDir}"` : "",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
       options.windowPos ? `window-position=${options.windowPos[0]},${options.windowPos[1]}` : "",
@@ -83,8 +84,8 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
     this.emit("browser_message", `launching ${cmd}`)
     this.browserInstance = exec(cmd)
-    ;[this.browserInstance.stdout!, this.browserInstance.stderr!].forEach((std) =>
-      std.on("data", (data) => this.emit("browser_message", data.toString().trim())))
+    this.browserInstance.stdout!.on("data", (data) => this.emit("browser_message", data.toString().trim()))
+    this.browserInstance.stderr!.on("data", (data) => this.emit("browser_message", data.toString().trim()))
     process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
     this.emit("browser_message", "connecting to cdp client")
@@ -146,6 +147,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     return this.client.Page.navigate({ url: gotoUrl })
   }
 
+
+  /** Waits for a url to be loaded or specific html to be present
+   * @param items - a map of name to url/html to wait for. when waiting for a url, optionally passing a `statusCode`
+   * will wait only trigger on that http status code, unless the expected code is 200 in which case the request will be
+   * validated */
   async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
     const subscriptions: Function[] = []
     const pollingTimers: NodeJS.Timer[] = []
@@ -162,7 +168,8 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
               // The request first comes in as headers only
               subscriptions.push(this.client.Network.responseReceived(async (response) => {
-                if (urlRegexp.test(response.response.url) && response.type !== "Preflight" && (params.statusCode === undefined || response.response.status === params.statusCode)) {
+                if (urlRegexp.test(response.response.url) && response.type !== "Preflight" &&
+                    (params.statusCode === undefined || params.statusCode === 200 || params.statusCode === response.response.status)) {
                   lookingForRequestId = response.requestId
                   resultResponse = response.response
                 }

@@ -29,10 +29,4 @@ const result = await browser.run(async (sc) => {
 
 logGlobal(`Results: ${c.greenBright(result.result?.length.toString() ?? c.redBright("0"))}`)
 
-// debugger
-
-logGlobal("Ending")
-await browser.destroy()
-logGlobal("Ended")
-
 logger.close()
