@@ -2,6 +2,14 @@
 set -eo pipefail
 shopt -s dotglob
 
+if [ -n "${MOVE_BROWSERS_TO_PATH}" ]; then
+  if ! [ "$(ls -A "$MOVE_BROWSERS_TO_PATH")" ]; then
+    cp -r /ms-playwright/* "${MOVE_BROWSERS_TO_PATH}"
+    export PLAYWRIGHT_BROWSERS_PATH="${MOVE_BROWSERS_TO_PATH}"
+    rm -rf "/ms-playwright"
+  fi
+fi
+
 rm -rf /tmp/*
 Xvfb :0 -screen 0 2560x1440x16 -listen tcp -ac &
 

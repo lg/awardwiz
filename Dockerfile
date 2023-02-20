@@ -1,5 +1,6 @@
 # tags here: https://mcr.microsoft.com/en-us/product/playwright/tags
 FROM mcr.microsoft.com/playwright:v1.30.0
+ENV CHROME_PATH=/ms-playwright/chromium-1045/chrome-linux/chrome
 ARG DEBUG=0
 
 # tools to debug via vnc (connect to this instance on port 8282)

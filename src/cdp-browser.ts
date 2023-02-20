@@ -79,7 +79,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     const binPath = process.env["CHROME_PATH"] ?? defaultPath
     if (!await fs.access(binPath).then(() => true).catch(() => false))
       throw new Error(`Chrome binary not found at "${binPath}". Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
-    const cmd = `"${binPath}" ${switches.map(s => `--${s}`).join(" ")}`
+    const cmd = `"${binPath}" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")}`
 
     this.emit("browser_message", `launching ${cmd}`)
     this.browserInstance = exec(cmd)
