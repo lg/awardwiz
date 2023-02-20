@@ -1,4 +1,3 @@
-import { gotoPage, waitForJsonSuccess } from "../common.js"
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
 import type { Trip, UnitedResponse } from "./samples/united.js"
 import c from "ansi-colors"
@@ -6,32 +5,27 @@ import { ScraperMetadata } from "../scraper.js"
 
 export const meta: ScraperMetadata = {
   name: "united",
-  blockUrls: [
-    "*.liveperson.net", "tags.tiqcdn.com",
-    "https://www.united.com/api/airports/lookup/?airport=*" /* needed since we don't want dropdowns */ ],
-  forceCacheUrls: [
-    "*.svg", "*/npm.*", "*.chunk.js", "*/runtime.*.js", "*/manifest.json", "*/api/home/advisories",
-    "*/api/referenceData/messages/*", "*/api/referencedata/nearestAirport/*",
-    "*/api/User/IsEmployee", "*/api/flight/recentSearch"],
-    // "*/fonts/*",
-  useBrowsers: ["chromium", "firefox"]
+  blockUrls: ["liveperson.net", "tags.tiqcdn.com"],
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  await gotoPage(sc, `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A`, "commit")
+  const url = `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A`
+  await sc.browser.goto(url)
 
   sc.log("waiting for results")
-  const fetchFlights = await waitForJsonSuccess<UnitedResponse>(sc, "https://www.united.com/api/flight/FetchFlights", {
-    "invalid airport": sc.page.getByRole("link", { name: "Either the information you entered is not valid or the airport is not served by United or our partners. Please revise your entry." }),
-    "invalid input": sc.page.getByText("We can't process this request. Please restart your search."),
-    "antibotting": sc.page.getByText("We're sorry, but united.com was unable to complete")
+  const waitForResult = await sc.browser.waitFor({
+    "success": { type: "url", url: "https://www.united.com/api/flight/FetchFlights", statusCode: 200 },
+    "invalid airport": { type: "html", html: "you entered is not valid or the airport is not served" },
+    "invalid input": { type: "html", html: "We can't process this request. Please restart your search." },
+    "anti-botting": { type: "html", html: "united.com was unable to complete" },
   })
-  if (typeof fetchFlights === "string") {
-    if (fetchFlights.startsWith("antibotting"))
-      throw new Error("anti-botting")
-    sc.log(c.yellow(`WARN: ${fetchFlights}`))
+  if (waitForResult.name !== "success") {
+    if (waitForResult.name === "anti-botting")
+      throw new Error(waitForResult.name)
+    sc.log(c.yellow(`WARN: ${waitForResult.name}`))
     return []
   }
+  const fetchFlights = JSON.parse(waitForResult.response?.body) as UnitedResponse
 
   sc.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []

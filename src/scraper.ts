@@ -20,7 +20,7 @@ export type ScraperMetadata = {
   /** Blocks urls. Can contain *s to match.
    * @example ["google-analytics.com"]
    * @default [] */
-  blockUrls: string[]
+  blockUrls?: string[]
 
   /** Set the default timeout for navigation and selector requests.
    * @default 15000 */
@@ -78,6 +78,7 @@ export class Scraper {
     this.debugOptions = {...defaultDebugOptions, ...debugOptions}
     this.browser = new CDPBrowser()
     this.browser.on("message", this.log.bind(this))
+    this.browser.on("browser_message", this.log.bind(this))
   }
 
   static {
