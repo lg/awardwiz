@@ -6,7 +6,7 @@ export type ScraperResult<ReturnType> = {
 }
 
 export type AwardWizScraperModule = { meta: ScraperMetadata, runScraper: AwardWizScraper }
-export type AwardWizScraper = (req: Scraper, query: AwardWizQuery) => Promise<FlightWithFares[]>
+export type AwardWizScraper<ReturnType = FlightWithFares[]> = (req: Scraper, query: AwardWizQuery) => Promise<ReturnType>
 export type AwardWizQuery = { origin: string, destination: string, departureDate: string }
 
 export type DatedRoute = { origin: string, destination: string, departureDate: string }

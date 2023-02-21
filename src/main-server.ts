@@ -39,27 +39,6 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
   res.end(JSON.stringify(results))
 })
 
-app.get("/fr24/:from-:to", async (req, res) => {
-  const { from, to } = req.params
-  const fr24Url = `https://api.flightradar24.com/common/v1/search.json?query=default&origin=${from}&destination=${to}`
-
-  const browser = new Scraper(debugOptions)
-  const result = await browser.run(async (sc) => {
-    sc.log("Querying FlightRader24 for carriers between:", req.params)
-    sc.log(`Going to ${fr24Url}`)
-
-    void sc.browser.goto(fr24Url)
-    const response = await sc.browser.waitFor({
-      "success": { type: "url", url: fr24Url }
-    })
-    return JSON.parse(response.response?.body)
-  }, { name: "fr24" }, `fr24-${from}-${to}`)
-
-  res.contentType("application/json")
-  res.status(result.result === undefined ? 500 : 200)
-  res.end(JSON.stringify(result.result))
-})
-
 // app.get("/trace/:traceId", async (req, res) => {
 //   cors({ origin: true })(req, res, async () => {
 //     const { traceId } = req.params
@@ -95,8 +74,6 @@ process.on("SIGTERM", async () => {
 })
 
 process.on("uncaughtException", function(err) {
-  if (err.stack?.toString().includes("playwright-extra"))
-    return
   logGlobal(c.red("Uncaught exception, quitting:"), err)
   process.exit(1)
 })
