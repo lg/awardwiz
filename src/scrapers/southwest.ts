@@ -1,36 +1,33 @@
-import { gotoPage, waitFor } from "../common.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
 import c from "ansi-colors"
 import { ScraperMetadata } from "../scraper.js"
-import { Response } from "playwright"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
-  fakeUserAgent: true,
-  forceCacheUrls: ["*/swa-ui/*", "*/assets/app/scripts/swa-common.js", "*/swa-resources/{images,fonts,styles,scripts}/*",
-    "*/swa-resources/config/status.js"]
+  blockUrls: ["go-mpulse.net", "*.mpeasylink.com", "cdn.branch.io", "*.demdex.net", "www.uplift-platform.com",
+    "app.link", "smetrics.southwest.com", "soptimize.southwest.com"]
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   const paramsText = `adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`
   const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
-  await gotoPage(sc, `https://www.southwest.com/air/booking/select.html?${paramsTextRandomized}`, "commit")
+  const url = `https://www.southwest.com/air/booking/select.html?${paramsTextRandomized}`
+  void sc.browser.goto(url)
 
   sc.log("waiting for response")
-  let xhrResponse: Response | undefined
-  const searchResult = await waitFor(sc, {
-    "bad departure date": sc.page.getByText("Date must be in the future."),
-    "bad origin": sc.page.getByText("Enter departure airport."),
-    "bad destination": sc.page.getByText("Enter arrival airport."),
-    "xhr": sc.page.waitForResponse("https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping").then((resp) => xhrResponse = resp),
-    "html": sc.page.waitForSelector("#price-matrix-heading-0")
+  const waitForResult = await sc.browser.waitFor({
+    "bad departure date": { type: "html", html: "Date must be in the future." },
+    "bad origin": { type: "html", html: "Enter departure airport." },
+    "bad destination": { type: "html", html: "Enter arrival airport." },
+    "xhr": { type: "url", url: "https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", statusCode: 200 },
+    "html": { type: "html", html: "#price-matrix-heading-0" }
   })
 
   let raw: SouthwestResponse
-  if (searchResult === "xhr") {
+  if (waitForResult.name === "xhr") {
     sc.log("got xhr response")
-    raw = await xhrResponse!.json() as SouthwestResponse
+    raw = JSON.parse(waitForResult.response?.body) as SouthwestResponse
 
     if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
       sc.log(c.yellow("WARN: No flights available (likely bad date)"))
@@ -46,12 +43,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     if (!raw.success)
       throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.notifications?.fieldErrors ?? raw)}`)
 
-  } else if (searchResult === "html") {
+  } else if (waitForResult.name === "html") {
     sc.log("got html response")
-    raw = { success: true, uiMetadata: undefined!, data: { searchResults: await sc.page.evaluate(() => (window as any).data_a.stores.AirBookingSearchResultsSearchStore.searchResults) } }
+    raw = { success: true, uiMetadata: undefined!, data: {
+      searchResults: await sc.browser.evaluate("(window as any).data_a.stores.AirBookingSearchResultsSearchStore.searchResults")
+    }}
 
   } else {
-    sc.log(c.yellow(`WARN: ${searchResult}`))
+    sc.log(c.yellow(`WARN: ${waitForResult.name}`))
     return []
   }
 

@@ -222,6 +222,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     return result.result.value as string | undefined
   }
 
+  public async evaluate<ReturnType>(expression: string) {
+    const result = await this.client.Runtime.evaluate({ expression, returnByValue: true, awaitPromise: true })
+    return result.result.value as ReturnType
+  }
+
   private throwIfBadResponse(statusCode: number, bodyText: string) {
     if (statusCode !== 200) {
       if (bodyText.includes("<H1>Access Denied</H1>"))

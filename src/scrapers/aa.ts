@@ -1,20 +1,19 @@
-import pRetry from "p-retry"
-import { gotoPage, jsonParseLoggingError, xhrFetch } from "../common.js"
 import { ScraperMetadata } from "../scraper.js"
 import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
 
 export const meta: ScraperMetadata = {
   name: "aa",
-  blockUrls: ["customer.cludo.com", "*.entrust.net", "*.tiqcdn.com"],
-  forceCacheUrls: ["*_cookieBanner.jsp", "*/airport/countries*"]
+  blockUrls: ["cludo.com", "entrust.net", "tiqcdn.com", "cludo.com", "*.go-mpulse.net"],
 }
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
-  await gotoPage(sc, "https://www.aa.com/booking/find-flights", "commit")
+  const url = "https://www.aa.com/booking/find-flights"
+  void sc.browser.goto(url)
+  await sc.browser.waitFor({ "success": { type: "url", url, statusCode: 200 }})
 
   sc.log("fetching itinerary")
-  const raw = await pRetry(() => xhrFetch(sc.page, "https://www.aa.com/booking/api/search/itinerary", {
+  const fetchRequest = {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -40,10 +39,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
       "tripOptions": { "locale": "en_US", "searchType": "Award" },
       "loyaltyInfo": undefined
     })
-  }), { retries: 2 })
+  }
+
+  const cmd = `fetch("https://www.aa.com/booking/api/search/itinerary", ${JSON.stringify(fetchRequest)});`
+  void sc.browser.evaluate(cmd)
+  const xhrResponse = await sc.browser.waitFor({ "success": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary", statusCode: 200 }})
 
   sc.log("parsing")
-  const json = jsonParseLoggingError(sc, raw) as AAResponse
+  const json = JSON.parse(xhrResponse.response?.body) as AAResponse
   if (json.error && json.error !== "309")
     throw new Error(json.error)
 
