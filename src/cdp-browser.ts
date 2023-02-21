@@ -217,6 +217,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     }
   }
 
+  public async getSelectorContent(selector: string) {
+    const result = await this.client.Runtime.evaluate({ expression: `document.querySelector("${selector}")?.textContent`, returnByValue: true })
+    return result.result.value as string | undefined
+  }
+
   private throwIfBadResponse(statusCode: number, bodyText: string) {
     if (statusCode !== 200) {
       if (bodyText.includes("<H1>Access Denied</H1>"))

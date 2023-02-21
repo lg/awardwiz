@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Launch Program",
-      "program": "${workspaceFolder}/dist/main-server.js",
+      "program": "${workspaceFolder}/dist/main-test-bot.js",
       // "args": ["aeroplan", "YOW", "YYZ", "2023-03-01"],
       "request": "launch",
       "skipFiles": [

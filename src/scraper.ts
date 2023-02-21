@@ -48,12 +48,6 @@ export type DebugOptions = {
    * @default false */
   pauseAfterError: boolean,
 
-  /** When using a proxy service that has it's passwords in the format: `/\S{16}_country-\S+_session-)\S{8}$/`, we'll
-   * randomize text for those last 8 characters which should get a new proxy. This happens every time a new browser is
-   * opened (so not on retries).
-   * @default true */
-  //changeProxies: boolean
-
   /** If a scraper fails, we'll retry until this many attempts.
    * @default 3 */
   maxAttempts?: number
@@ -124,7 +118,7 @@ export class Scraper {
     this.scraperMeta = { ...defaultScraperMetadata, ...meta }
     this.logLines = []
 
-    const sc = this   // TODO: might be unnecessary
+    const sc = this
     const attemptResult = await pRetry(() => {
       return this.runAttempt(code)
 
@@ -174,8 +168,8 @@ export class Scraper {
       exec("xdpyinfo | grep dimensions", (err, stdout) =>
         resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
     })
-    let windowSize: number[] | undefined
-    let windowPos: number[] | undefined
+    let windowSize: number[] | undefined = undefined
+    let windowPos: number[] | undefined = undefined
     if (screenResolution) {
       windowSize = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
       windowPos = [Math.ceil((screenResolution[0]! - windowSize[0]!) * Math.random()), Math.ceil((screenResolution[1]! - windowSize[1]!) * Math.random())]
