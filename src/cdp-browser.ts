@@ -10,7 +10,7 @@ import url from "node:url"
 import { promises as fs } from "node:fs"
 import os from "node:os"
 import net from "node:net"
-import { MouseKeyboard } from "./mouse.js"
+import { Mouse } from "./mouse.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -28,13 +28,15 @@ export type CDPBrowserOptions = {
   windowSize: number[] | undefined
   windowPos: number[] | undefined
   browserDebug: boolean | "verbose"
+  drawMousePath: boolean
 }
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
+  private mouse!: Mouse
+
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
-  public mouseKeyboard!: MouseKeyboard
 
   async launch(options: CDPBrowserOptions) {
     const freePort = await new Promise<number>(resolve => {
@@ -100,7 +102,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.DOM.enable()
 
     // human-y mouse and keyboard control
-    this.mouseKeyboard = new MouseKeyboard(this.client, options.windowSize)
+    this.mouse = new Mouse(this.client, options.windowSize, options.drawMousePath)
 
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
@@ -261,5 +263,9 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
   public async blockUrls(urls: string[]) {
     await this.client.Network.setBlockedURLs({ urls })
+  }
+
+  public async clickSelector(selector: string) {
+    return this.mouse.clickSelector(selector)
   }
 }

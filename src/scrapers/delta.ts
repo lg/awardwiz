@@ -25,8 +25,8 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   await sc.browser.client["Page.loadEventFired"]()
   sc.log("loaded")
 
-  await sc.browser.mouseKeyboard.clickSelector("#btn")
-  await sc.browser.mouseKeyboard.clickSelector("#btn2")
+  await sc.browser.clickSelector("#btn")
+  await sc.browser.clickSelector("#btn2")
   // eslint-disable-next-line no-restricted-globals
   await new Promise(resolve => setTimeout(resolve, 100000))
 

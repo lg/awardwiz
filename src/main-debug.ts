@@ -9,6 +9,7 @@ const debugOptions: Partial<DebugOptions> = {
   useProxy: true,
   pauseAfterRun: false,
   pauseAfterError: true,
+  drawMousePath: true
 }
 
 if (process.argv.length < 6) {

@@ -59,10 +59,14 @@ export type DebugOptions = {
   /** Display stdout/stderr from the browser process. Can be true/false or "verbose"
    * @default false */
   browserDebug?: boolean | "verbose"
+
+  /** Draws the mouse path when clicking on things
+   * @default false */
+  drawMousePath?: boolean
 }
 const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
-  browserDebug: false
+  browserDebug: false, drawMousePath: false
 }
 
 export class Scraper {
@@ -183,6 +187,7 @@ export class Scraper {
       windowSize,
       windowPos,
       browserDebug: this.debugOptions.browserDebug,
+      drawMousePath: this.debugOptions.drawMousePath,
     })
 
     // use timeouts

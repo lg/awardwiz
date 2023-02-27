@@ -1,10 +1,10 @@
 import CDP from "chrome-remote-interface"
 import { Bezier, Point } from "bezier-js"
 
-export class MouseKeyboard {
+export class Mouse {
   private curMousePos
 
-  constructor(private client: CDP.Client, private viewportSize: number[]) {
+  constructor(private client: CDP.Client, private viewportSize: number[], private debug: boolean) {
     this.curMousePos = [Math.random() * viewportSize[0]!, 0]  // start at top of viewport since that's where the URL bar would be
   }
 
@@ -18,8 +18,12 @@ export class MouseKeyboard {
 
   private genPath(start: number[], end: number[]) {
     const EXTRA_BEZIER_POINTS = Math.floor(Math.random() * 2) + 1
-    const TOTAL_POINTS = 100
+    const TOTAL_POINTS = 80 + Math.floor(Math.random() * 20)
     const OVERSHOOT = 20 + (Math.random() * 10)
+
+    if (start[0]! > this.viewportSize[0]! || start[1]! > this.viewportSize[1]! ||
+        end[0]! > this.viewportSize[0]! || end[1]! > this.viewportSize[1]!)
+      throw new Error("start or end point of area to click is outside of viewport")
 
     // Get the curve (using general method from https://github.com/Xetera/ghost-cursor)
     const bezier = new Bezier([
@@ -55,9 +59,10 @@ export class MouseKeyboard {
     })()`})
   }
 
-  public async moveMouseTo(pos: number[]) {
+  private async moveMouseTo(pos: number[]) {
     const path = this.genPath(this.curMousePos, pos)
-    void this.plotPath(path)
+    if (this.debug)
+      void this.plotPath(path)
 
     const lastTime = 0
     for (const [i, point] of path.entries()) {
