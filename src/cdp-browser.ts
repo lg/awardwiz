@@ -10,6 +10,7 @@ import url from "node:url"
 import { promises as fs } from "node:fs"
 import os from "node:os"
 import net from "node:net"
+import { MouseKeyboard } from "./mouse.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -33,6 +34,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private requests: Record<string, Request> = {}
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
+  public mouseKeyboard!: MouseKeyboard
 
   async launch(options: CDPBrowserOptions) {
     const freePort = await new Promise<number>(resolve => {
@@ -42,6 +44,8 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
         srv.close((err) => resolve(port))
       })
     })
+
+    options.windowSize ||= [1920, 1080]
 
     const switches = [
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
@@ -64,7 +68,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       options.useGlobalCache ? `disk-cache-dir="${options.globalCacheDir}"` : "",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
       options.windowPos ? `window-position=${options.windowPos[0]},${options.windowPos[1]}` : "",
-      options.windowSize ? `window-size=${options.windowSize[0]},${options.windowSize[1]}` : "",
+      `window-size=${options.windowSize[0]},${options.windowSize[1]}`,
       `remote-debugging-port=${freePort}`
     ]
 
@@ -93,6 +97,10 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
+    await this.client.DOM.enable()
+
+    // human-y mouse and keyboard control
+    this.mouseKeyboard = new MouseKeyboard(this.client, options.windowSize)
 
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
@@ -108,6 +116,8 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
         this.requests[response.requestId]!.downloadedBytes = parseInt(response.response.headers["content-length"] ?? "0")
     })
     this.client.Network.loadingFinished((response) => {
+      if (!this.requests[response.requestId])
+        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = true
       this.completedLoading(response.requestId)
@@ -138,13 +148,13 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
   async close() {
     this.emit("browser_message", "closing cdp client and browser")
-    await this.client.Browser.close()
-    await this.client.close()
+    await this.client.Browser.close().catch(() => {})
+    await this.client.close().catch(() => {})
   }
 
-  async goto(gotoUrl: string) {
+  public goto(gotoUrl: string) {
     this.emit("message", `navigating to ${gotoUrl}`)
-    return this.client.Page.navigate({ url: gotoUrl })
+    void this.client.Page.navigate({ url: gotoUrl })
   }
 
 

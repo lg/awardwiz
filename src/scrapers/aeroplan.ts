@@ -5,8 +5,6 @@ import { AeroplanResponse } from "./samples/aeroplan.js"
 export const meta: ScraperMetadata = {
   name: "aeroplan",
   defaultTimeout: 25000,
-  // TODO: implement this
-  // forceCacheUrls: ["*.svg", /^.*\/ac\/applications\/loyalty\/(?!.*t=).*$/giu]
   blockUrls: ["go-mpulse.net", "adobedtm.com", "techlab-cdn.com"]
 }
 

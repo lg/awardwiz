@@ -7,7 +7,8 @@
     {
       "name": "Launch Program",
       "program": "${workspaceFolder}/dist/main-debug.js",
-      "args": ["southwest", "SFO", "LAX", "2023-03-01"],
+      "args": ["delta", "SFO", "LAS", "2023-04-01"],
+      "envFile": "${workspaceFolder}/.env",
       "request": "launch",
       "skipFiles": [
         "<node_internals>/**", "**/node_modules/**"

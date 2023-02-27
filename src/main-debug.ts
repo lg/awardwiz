@@ -12,7 +12,7 @@ const debugOptions: Partial<DebugOptions> = {
 }
 
 if (process.argv.length < 6) {
-  const defaultParams = ["united", "SFO", "LAX", dayjs().format("YYYY-MM-DD")]
+  const defaultParams = ["delta", "SFO", "LAX", dayjs().format("YYYY-MM-DD")]
   logGlobal("Using default params for search", defaultParams)
   process.argv.push(...defaultParams)
 }
