@@ -119,12 +119,33 @@ const runSannysoft = async () => {
   return problems
 }
 
+// eslint-disable-next-line no-unused-vars
+const runCreepJSWIP = async () => {
+  const browser = new Scraper(debugOptions)
+
+  const problems = await browser.run(async (sc) => {
+    sc.browser.goto("https://abrahamjuliot.github.io/creepjs/")
+
+    sc.log("waiting for tests to finish")
+    await sc.browser.waitFor({ "completed": { type: "html", html: /performance benchmark/gu } })
+    sc.log("checking results")
+
+    await sc.pause()
+
+    return []
+  }, { name: "creepjs", defaultTimeout: 60_000, useGlobalCache: false }, "creepjs")
+
+  return problems
+}
+
 //////////////////////////
 
 logGlobal("running Incolumnitas (https://bot.incolumitas.com/)...")
 logGlobal((await runIncolumnitas()).result)
 logGlobal("running Sannysoft (https://bot.sannysoft.com/)...")
 logGlobal((await runSannysoft()).result)
+// logGlobal("running CreepJS (https://abrahamjuliot.github.io/creepjs/)...")
+// logGlobal((await runCreepJSWIP()).result)
 logGlobal("done")
 
 logger.close()
