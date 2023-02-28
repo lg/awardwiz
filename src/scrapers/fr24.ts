@@ -11,7 +11,7 @@ export const runScraper: AwardWizScraper<FlightRadar24Response> = async (sc, que
   sc.log("Querying FlightRader24 for carriers between:", query)
   sc.log(`Going to ${fr24Url}`)
 
-  void sc.browser.goto(fr24Url)
+  sc.browser.goto(fr24Url)
   const response = await sc.browser.waitFor({
     "success": { type: "url", url: fr24Url }
   })

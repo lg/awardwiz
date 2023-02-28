@@ -8,7 +8,7 @@ export const meta: ScraperMetadata = {
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   const url = `https://skiplagged.com/api/search.php?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&return=&format=v3&counts%5Badults%5D=1&counts%5Bchildren%5D=0`
-  void sc.browser.goto(url)
+  sc.browser.goto(url)
   const response = await sc.browser.waitFor({
     "success": { type: "url", url }
   })

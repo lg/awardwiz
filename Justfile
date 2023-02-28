@@ -16,7 +16,7 @@ build:
 
 [private]
 lint: build
-  TIMING=1 npm exec -- eslint --ext .ts --cache .
+  TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 --cache .
 
 check: lint
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check

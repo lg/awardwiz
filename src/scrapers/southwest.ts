@@ -13,7 +13,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   const paramsText = `adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`
   const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
   const url = `https://www.southwest.com/air/booking/select.html?${paramsTextRandomized}`
-  void sc.browser.goto(url)
+  sc.browser.goto(url)
 
   sc.log("waiting for response")
   const waitForResult = await sc.browser.waitFor({

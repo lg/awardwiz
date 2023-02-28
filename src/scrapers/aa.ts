@@ -9,7 +9,7 @@ export const meta: ScraperMetadata = {
 
 export const runScraper: AwardWizScraper = async (sc, query) => {
   const url = "https://www.aa.com/booking/find-flights"
-  void sc.browser.goto(url)
+  sc.browser.goto(url)
   await sc.browser.waitFor({ "success": { type: "url", url, statusCode: 200 }})
 
   sc.log("fetching itinerary")
