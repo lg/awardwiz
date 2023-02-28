@@ -63,10 +63,18 @@ export type DebugOptions = {
   /** Draws the mouse path when clicking on things
    * @default false */
   drawMousePath?: boolean
+
+  /** Timezone in America/Los_Angeles format. If not set, will use the system timezone.
+   * @default undefined */
+  timezone?: string | undefined
+
+  /** Show requests and their cache status.
+   * @default true */
+  showRequests?: boolean
 }
 const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
-  browserDebug: false, drawMousePath: false
+  browserDebug: false, drawMousePath: false, timezone: undefined!, showRequests: true
 }
 
 export class Scraper {
@@ -188,6 +196,8 @@ export class Scraper {
       windowPos,
       browserDebug: this.debugOptions.browserDebug,
       drawMousePath: this.debugOptions.drawMousePath,
+      timezone: this.debugOptions.timezone,
+      showRequests: this.debugOptions.showRequests,
     })
 
     // use timeouts

@@ -29,16 +29,21 @@ export type CDPBrowserOptions = {
   windowPos: number[] | undefined
   browserDebug: boolean | "verbose"
   drawMousePath: boolean
+  timezone: string | undefined
+  showRequests: boolean
 }
 export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
+  private options!: CDPBrowserOptions
 
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
 
   async launch(options: CDPBrowserOptions) {
+    this.options = options
+
     const freePort = await new Promise<number>(resolve => {
       const srv = net.createServer()
       srv.listen(0, () => {
@@ -47,7 +52,7 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       })
     })
 
-    options.windowSize ||= [1920, 1080]
+    this.options.windowSize ||= [1920, 1080]
 
     const switches = [
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
@@ -66,17 +71,17 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
 
-      options.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
-      options.useGlobalCache ? `disk-cache-dir="${options.globalCacheDir}"` : "",
+      this.options.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
+      this.options.useGlobalCache ? `disk-cache-dir="${this.options.globalCacheDir}"` : "",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
-      options.windowPos ? `window-position=${options.windowPos[0]},${options.windowPos[1]}` : "",
-      `window-size=${options.windowSize[0]},${options.windowSize[1]}`,
+      this.options.windowPos ? `window-position=${this.options.windowPos[0]},${this.options.windowPos[1]}` : "",
+      `window-size=${this.options.windowSize[0]},${this.options.windowSize[1]}`,
       `remote-debugging-port=${freePort}`
     ]
 
-    if (options.proxy) {
-      switches.push(`proxy-server='${options.proxy}'`)
-      switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(options.proxy).hostname}'`)
+    if (this.options.proxy) {
+      switches.push(`proxy-server='${this.options.proxy}'`)
+      switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.options.proxy).hostname}'`)
     }
 
     // detect chrome binary
@@ -101,8 +106,12 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.Runtime.enable()
     await this.client.DOM.enable()
 
+    // timezone
+    if (this.options.timezone)
+      await this.client.Emulation.setTimezoneOverride({ timezoneId: this.options.timezone })
+
     // human-y mouse and keyboard control
-    this.mouse = new Mouse(this.client, options.windowSize, options.drawMousePath)
+    this.mouse = new Mouse(this.client, this.options.windowSize, this.options.drawMousePath)
 
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
@@ -145,7 +154,9 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
       `${c.white(urlToShow)} ` +
       `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
-    this.emit("message", line)
+
+    if (this.options.showRequests)
+      this.emit("message", line)
   }
 
   async close() {

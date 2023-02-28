@@ -15,6 +15,8 @@ const debugOptions: DebugOptions = {
   pauseAfterRun: false,
   pauseAfterError: true,
   useProxy: false,
+  timezone: "America/Los_Angeles",
+  showRequests: false
 }
 
 //////////////////////////
