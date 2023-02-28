@@ -83,12 +83,38 @@ const runIncolumnitas = async () => {
     ]
 
     // logGlobal(problems.filter(p => p !== undefined))
-    // logGlobal("waiting")
     // await sc.pause()
-    // debugger
 
     return problems.filter(p => p !== undefined)
   }, { name: "incolumitas", defaultTimeout: 60_000, useGlobalCache: false }, "incolumitas")
+
+  return problems
+}
+
+const runSannysoft = async () => {
+  const browser = new Scraper(debugOptions)
+
+  const problems = await browser.run(async (sc) => {
+    sc.browser.goto("https://bot.sannysoft.com/")
+
+    sc.log("waiting for tests to finish")
+    await sc.browser.waitFor({ "completed": { type: "html", html: /PHANTOM_WINDOW_HEIGHT/gu } })
+    sc.log("checking results")
+
+    const items = [
+      /* eslint-disable quotes */
+      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[id][class='failed']").forEach((el) => failed.push(el.id)); failed`),
+      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='failed']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`),
+      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='warn']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`)
+      /* eslint-enable quotes */
+    ].filter(item => item !== "null").map(item => `sannysoft.${item} = FAIL`)
+
+    // logGlobal(items)
+    // await sc.pause()
+
+    return items
+    //return items.filter(item => item !== undefined)
+  }, { name: "sannysoft", defaultTimeout: 60_000, useGlobalCache: false }, "sannysoft")
 
   return problems
 }
@@ -97,5 +123,8 @@ const runIncolumnitas = async () => {
 
 logGlobal("running Incolumnitas (https://bot.incolumitas.com/)...")
 logGlobal((await runIncolumnitas()).result)
+logGlobal("running Sannysoft (https://bot.sannysoft.com/)...")
+logGlobal((await runSannysoft()).result)
 logGlobal("done")
+
 logger.close()
