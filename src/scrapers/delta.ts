@@ -4,6 +4,7 @@ import { ScraperMetadata } from "../scraper.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { DeltaResponse } from "./samples/delta.js"
 import dayjs from "dayjs"
+import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "delta",
@@ -62,6 +63,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
   const searchResults = JSON.parse(waitForResult.response?.body) as DeltaResponse
+
+  if (searchResults.shoppingError?.error?.message) {
+    if (searchResults.shoppingError.error.message.message.includes("There are no scheduled Delta/Partner flights")) {
+      sc.log(c.yellow("WARN: No scheduled flights between cities"))
+      return []
+    }
+    throw new Error(searchResults.shoppingError.error.message.message)
+  }
 
   sc.log("finished getting results, parsing")
   const flightsWithFares: FlightWithFares[] = []

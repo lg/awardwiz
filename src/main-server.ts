@@ -9,7 +9,8 @@ import { DebugOptions, Scraper } from "./scraper.js"
 const debugOptions: Partial<DebugOptions> = {
   useProxy: true,
   globalCacheDir: "./tmp/cache",
-  browserDebug: true,
+  browserDebug: false,
+  showRequests: false,
 }
 
 const app = express()

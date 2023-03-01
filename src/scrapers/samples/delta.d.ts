@@ -34,6 +34,31 @@ export interface DeltaResponse {
   metaData: MetaData
   amexCompanionCert: boolean
   hasTravelPolicy: boolean
+
+  shoppingError?: {
+    error?: {
+      message: {
+        code: string
+        message: string
+        errorKey: string
+        reasonCode: string
+        reasonMsg: string
+        errorTags: object
+      }
+    }
+  }
+  secondaryShoppingError?: {
+    error?: {
+      message: {
+        code: string
+        message: string
+        errorKey: string
+        reasonCode: string
+        reasonMsg: string
+        errorTags: {}
+      }
+    }
+  }
 }
 
 export interface BadgesInfo {

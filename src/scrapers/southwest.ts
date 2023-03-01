@@ -20,7 +20,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     "bad departure date": { type: "html", html: "Date must be in the future." },
     "bad origin": { type: "html", html: "Enter departure airport." },
     "bad destination": { type: "html", html: "Enter arrival airport." },
-    "xhr": { type: "url", url: "https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping", statusCode: 200 },
+    "xhr": { type: "url", url: "https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping" },
     "html": { type: "html", html: "#price-matrix-heading-0" }
   })
 
