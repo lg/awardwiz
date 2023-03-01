@@ -2,21 +2,17 @@ import c from "ansi-colors"
 import { logger, logGlobal } from "./log.js"
 import { DebugOptions, Scraper } from "./scraper.js"
 import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
-import dayjs from "dayjs"
 
 const debugOptions: Partial<DebugOptions> = {
   maxAttempts: 5,
   useProxy: true,
   pauseAfterRun: false,
   pauseAfterError: true,
-  drawMousePath: true
+  drawMousePath: false
 }
 
-if (process.argv.length < 6) {
-  const defaultParams = ["delta", "SFO", "LAX", dayjs().format("YYYY-MM-DD")]
-  logGlobal("Using default params for search", defaultParams)
-  process.argv.push(...defaultParams)
-}
+if (process.argv.length < 6)
+  throw new Error("Not enough arguments. Example: <executable> delta SFO LAX 2023-05-01")
 
 const browser = new Scraper(debugOptions)
 

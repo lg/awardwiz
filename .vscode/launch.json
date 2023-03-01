@@ -7,7 +7,7 @@
     {
       "name": "Launch Program",
       "program": "${workspaceFolder}/dist/main-debug.js",
-      "args": ["delta", "SFO", "LAS", "2023-04-01"],
+      "args": ["delta", "SFO", "LAX", "2023-04-01"],
       "envFile": "${workspaceFolder}/.env",
       "request": "launch",
       "skipFiles": [

@@ -21,6 +21,13 @@ interface CDPBrowserEvents {
   "message": (message: string) => void,
 }
 
+export type InterceptAction = {
+  action: "fulfill" | "continue" | "fail"
+  dataObj?: object
+} & (
+  (Protocol.Fetch.FulfillRequestRequest | Protocol.Fetch.ContinueRequestRequest | Protocol.Fetch.FailRequestRequest) | Omit<Protocol.Fetch.FulfillRequestRequest, "requestId">
+)
+
 export type CDPBrowserOptions = {
   proxy: string | undefined
   useGlobalCache: boolean
@@ -278,5 +285,34 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
 
   public async clickSelector(selector: string) {
     return this.mouse.clickSelector(selector)
+  }
+
+  public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
+    /* eslint-disable deprecation/deprecation */
+    await this.client.Fetch.enable({ patterns: [{ urlPattern }] })
+    const lookForPattern = globToRegexp(urlPattern, { extended: true })
+    this.client.Fetch.requestPaused(async (params) => {
+      if (lookForPattern.test(params.request.url)) {
+        const action = callback(params)
+        if (action.action === "continue") {
+          if (action.dataObj)
+            await this.client.Fetch.continueRequest({ ...action, requestId: params.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
+          else
+            await this.client.Fetch.continueRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.ContinueRequestRequest)
+
+        } else if (action.action === "fulfill") {
+          if (action.dataObj)
+            await this.client.Fetch.fulfillRequest({ ...action, requestId: params.requestId, body: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.FulfillRequestRequest)
+          else
+            await this.client.Fetch.fulfillRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.FulfillRequestRequest)
+
+        } else {
+          await this.client.Fetch.failRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.FailRequestRequest)
+        }
+      } else {
+        await this.client.Fetch.continueRequest({ requestId: params.requestId } as Protocol.Fetch.FailRequestRequest)
+      }
+    })
+    /* eslint-enable deprecation/deprecation */
   }
 }
