@@ -14,7 +14,7 @@ dayjs.extend(LocalizedFormat)
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const BETA_USERS = ["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73", "MAEGu1eBUqT3E2J05oN1w5jz8rN2"]
+const BETA_USERS = ["wJPoPRSeNzgt0tfWfMvwmCfg7bw2", "GscyHmuPQ1ZuxT3LiQxy0CSyDP73", "MAEGu1eBUqT3E2J05oN1w5jz8rN2", "CbTBZBSXXPauP3H8pDhfdfcsP6v1"]
 
 for (const key of ["VITE_SCRAPERS_URL"])
   if (!Object.keys(import.meta.env).includes(key)) throw new Error(`Missing ${key} environment variable`)
