@@ -186,7 +186,8 @@ export class Scraper {
   private async selectProxy(group: string) {
     if (!(this.debugOptions.useProxy ?? true)) {
       // Even though we're not using a proxy, we need to know our perceived timezone
-      this.ipInfo = await getIPInfo(this.browser!, this.proxy)
+      //this.ipInfo = await getIPInfo(this.browser!, this.proxy)
+      this.ipInfo = { ip: "0.0.0.0", countryCode: "US", tz: "America/Los_Angeles" } //await getIPInfo(this.browser!, this.proxy)
       this.log(c.yellowBright(`Not using proxy server (useProxy option not enabled), tz is: ${this.ipInfo.tz}, country is: ${this.ipInfo.countryCode}`))
       return
     }
@@ -205,7 +206,8 @@ export class Scraper {
     this.proxy.password = psPasswordRegexp.groups!["start"] + Math.random().toString(36).slice(2).substring(0, 8)
 
     // Get current IP and timezone
-    this.ipInfo = await getIPInfo(this.browser!, this.proxy)
+    //this.ipInfo = await getIPInfo(this.browser!, this.proxy)
+    this.ipInfo = { ip: "0.0.0.0", countryCode: "US", tz: "America/Los_Angeles" }     //await getIPInfo(this.browser!, this.proxy)
     if (this.debugOptions.showBrowserDebug)
       this.log(c.magenta(`Using ${group} proxy group, resolving to timezone ${this.ipInfo.tz} and country ${this.ipInfo.countryCode}`))
 
@@ -423,22 +425,22 @@ export class Scraper {
   }
 }
 
-const getIPInfo = async (browser: Browser, proxy?: PlaywrightProxy) => {
-  const context = await browser.newContext({ proxy })
-  const page = await context.newPage()
+// const getIPInfo = async (browser: Browser, proxy?: PlaywrightProxy) => {
+//   const context = await browser.newContext({ proxy })
+//   const page = await context.newPage()
 
-  const PROVIDERS = [ "https://json.geoiplookup.io", "https://ipinfo.io/json", "http://ip-api.com/json/",
-    "https://ipapi.co/json", "http://ifconfig.co/json", "https://ifconfig.es/json" ]    // these three use maxmind and are possibly inaccurate (199.249.230.22 should be texas)
-  const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]!
+//   const PROVIDERS = [ "https://json.geoiplookup.io", "https://ipinfo.io/json", "http://ip-api.com/json/",
+//     "https://ipapi.co/json", "http://ifconfig.co/json", "https://ifconfig.es/json" ]    // these three use maxmind and are possibly inaccurate (199.249.230.22 should be texas)
+//   const provider = PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)]!
 
-  const ret = await page.goto(provider, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
-    .then(async response => ({ ok: !!response, status: response?.status() ?? 0, out: await response?.text() ?? "" }))
-    .finally(() => context.close())
+//   const ret = await page.goto(provider, { waitUntil: "domcontentloaded", timeout: IPTZ_MAX_WAIT_MS })
+//     .then(async response => ({ ok: !!response, status: response?.status() ?? 0, out: await response?.text() ?? "" }))
+//     .finally(() => context.close())
 
-  const json = JSON.parse(ret.out)
-  const [ip, tz, countryCode] = [json.ip ?? json.query, json.timezone ?? json.timezone_name ?? json.time_zone, json.country_code ?? json.country] as [string | undefined, string | undefined, string | undefined]
-  if (!ret.ok || !ip || !tz || !countryCode)
-    throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
+//   const json = JSON.parse(ret.out)
+//   const [ip, tz, countryCode] = [json.ip ?? json.query, json.timezone ?? json.timezone_name ?? json.time_zone, json.country_code ?? json.country] as [string | undefined, string | undefined, string | undefined]
+//   if (!ret.ok || !ip || !tz || !countryCode)
+//     throw new Error(`Failed to get ip/timezone (status ${ret.status}): ${ret.out}`)
 
-  return { ip, tz, countryCode }
-}
+//   return { ip, tz, countryCode }
+// }
