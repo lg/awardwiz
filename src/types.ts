@@ -1,4 +1,4 @@
-import { Scraper, ScraperMetadata } from "./scraper.js"
+import { Arkalis, ScraperMetadata } from "./arkalis.js"
 
 export type ScraperResult<ReturnType> = {
   result: ReturnType | undefined
@@ -6,7 +6,7 @@ export type ScraperResult<ReturnType> = {
 }
 
 export type AwardWizScraperModule = { meta: ScraperMetadata, runScraper: AwardWizScraper }
-export type AwardWizScraper<ReturnType = FlightWithFares[]> = (req: Scraper, query: AwardWizQuery) => Promise<ReturnType>
+export type AwardWizScraper<ReturnType = FlightWithFares[]> = (req: Arkalis, query: AwardWizQuery) => Promise<ReturnType>
 export type AwardWizQuery = { origin: string, destination: string, departureDate: string }
 
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
@@ -167,44 +167,18 @@ export type TLSFingerprint = {
 
 //////////////////
 
-export type TcpIpFingerprint = {
-  avg_score_os_class: Record<string, { avg: number; n: number }>;
-  best_n_guesses: { os: string; score: string }[];
-  details: {
-    client_ip: string;
-    highest_os_avg: number;
-    lookup_ip: string;
-    num_fingerprints: number;
-    os_highest_class: string;
-    os_mismatch: boolean;
-    perfect_score: number;
-  };
-  fp: {
-    dst_ip: string;
-    dst_port: string;
-    ip_df: number;
-    ip_frag_off: number;
-    ip_hdr_length: number;
-    ip_mf: number;
-    ip_opts: any[];
-    ip_ttl: number;
-    packet_received: number;
-    src_ip: string;
-    src_port: string;
-    tcp_ack: number;
-    tcp_flags: number;
-    tcp_header_length: number;
-    tcp_mss: number;
-    tcp_options: string;
-    tcp_seq: number;
-    tcp_timestamp: number;
-    tcp_timestamp_echo_reply: number;
-    tcp_urp: number;
-    tcp_window_scaling: number;
-    tcp_window_size: number;
-    ts: number;
-  };
-};
+export interface TcpIpFingerprint {
+  avg_score_os_class: {
+    Android: number
+    Linux: number
+    "Mac OS": number
+    Windows: number
+    iOS: number
+  }
+  lookup_ip: string
+  os_mismatch: boolean
+  perfect_score: number
+}
 
 //////////////////
 

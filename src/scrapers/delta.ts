@@ -1,6 +1,6 @@
 // This scraper currently gets detected after the 3rd attempt unless a proxy is used.
 
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { DeltaResponse } from "./samples/delta.js"
 import dayjs from "dayjs"
@@ -18,9 +18,9 @@ export const meta: ScraperMetadata = {
   ]
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   // Auto fill in the origin/destination when it comes up
-  await sc.browser.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
+  await arkalis.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
     return {
       action: "fulfill",
       responseCode: 200,
@@ -43,20 +43,20 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     }
   })
 
-  sc.browser.goto("https://www.delta.com/flight-search/book-a-flight")
-  await sc.browser.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", statusCode: 200 }})
-  await sc.browser.clickSelector("#chkFlexDate")
-  void sc.browser.clickSelector("#btnSubmit")   // async
+  arkalis.goto("https://www.delta.com/flight-search/book-a-flight")
+  await arkalis.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", statusCode: 200 }})
+  await arkalis.clickSelector("#chkFlexDate")
+  void arkalis.clickSelector("#btnSubmit")   // async
 
-  let waitForResult = await sc.browser.waitFor({
+  let waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "https://www.delta.com/shop/ow/search", statusCode: 200 },
     "system unavailable anti-botting": { type: "url", url: "https://www.delta.com/content/www/en_US/system-unavailable1.html" },
     "continue button": { type: "url", url: "https://www.delta.com/shop/ow/flexdatesearch" },
   })
   if (waitForResult.name === "continue button") {
-    sc.log("interstitial page with continue button appeared, clicking it")
-    await sc.browser.clickSelector("#btnContinue")
-    waitForResult = await sc.browser.waitFor({
+    arkalis.log("interstitial page with continue button appeared, clicking it")
+    await arkalis.clickSelector("#btnContinue")
+    waitForResult = await arkalis.waitFor({
       "success": { type: "url", url: "https://www.delta.com/shop/ow/search", statusCode: 200 },
     })
   }
@@ -66,13 +66,13 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   if (searchResults.shoppingError?.error?.message) {
     if (searchResults.shoppingError.error.message.message.includes("There are no scheduled Delta/Partner flights")) {
-      sc.log(c.yellow("WARN: No scheduled flights between cities"))
+      arkalis.log(c.yellow("WARN: No scheduled flights between cities"))
       return []
     }
     throw new Error(searchResults.shoppingError.error.message.message)
   }
 
-  sc.log("finished getting results, parsing")
+  arkalis.log("finished getting results, parsing")
   const flightsWithFares: FlightWithFares[] = []
   if (searchResults.itinerary.length > 0) {
     const flights = standardizeResults(searchResults)

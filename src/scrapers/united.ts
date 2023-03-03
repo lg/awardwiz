@@ -1,19 +1,19 @@
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
 import type { Trip, UnitedResponse } from "./samples/united.js"
 import c from "ansi-colors"
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 
 export const meta: ScraperMetadata = {
   name: "united",
   blockUrls: ["liveperson.net", "tags.tiqcdn.com"],
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A`
-  await sc.browser.goto(url)
+  await arkalis.goto(url)
 
-  sc.log("waiting for results")
-  const waitForResult = await sc.browser.waitFor({
+  arkalis.log("waiting for results")
+  const waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "https://www.united.com/api/flight/FetchFlights", statusCode: 200 },
     "invalid airport": { type: "html", html: "you entered is not valid or the airport is not served" },
     "invalid input": { type: "html", html: "We can't process this request. Please restart your search." },
@@ -22,12 +22,12 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   if (waitForResult.name !== "success") {
     if (waitForResult.name === "anti-botting")
       throw new Error(waitForResult.name)
-    sc.log(c.yellow(`WARN: ${waitForResult.name}`))
+    arkalis.log(c.yellow(`WARN: ${waitForResult.name}`))
     return []
   }
   const fetchFlights = JSON.parse(waitForResult.response?.body) as UnitedResponse
 
-  sc.log("parsing results")
+  arkalis.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
   if ((fetchFlights.data?.Trips || []).length) {
     const flights = standardizeResults(query, fetchFlights.data!.Trips[0]!)

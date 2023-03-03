@@ -1,4 +1,4 @@
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { Segment, SkipLaggedResponse } from "./samples/skiplagged.js"
 
@@ -6,10 +6,10 @@ export const meta: ScraperMetadata = {
   name: "skiplagged"
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = `https://skiplagged.com/api/search.php?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}&return=&format=v3&counts%5Badults%5D=1&counts%5Bchildren%5D=0`
-  sc.browser.goto(url)
-  const response = await sc.browser.waitFor({
+  arkalis.goto(url)
+  const response = await arkalis.waitFor({
     "success": { type: "url", url }
   })
 

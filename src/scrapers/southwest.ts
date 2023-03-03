@@ -1,7 +1,7 @@
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { SouthwestResponse } from "./samples/southwest.js"
 import c from "ansi-colors"
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 
 export const meta: ScraperMetadata = {
   name: "southwest",
@@ -9,14 +9,14 @@ export const meta: ScraperMetadata = {
     "app.link", "smetrics.southwest.com", "soptimize.southwest.com"]
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const paramsText = `adultPassengersCount=1&adultsCount=1&departureDate=${query.departureDate}&departureTimeOfDay=ALL_DAY&destinationAirportCode=${query.destination}&fareType=POINTS&originationAirportCode=${query.origin}&passengerType=ADULT&returnDate=&returnTimeOfDay=ALL_DAY&tripType=oneway`
   const paramsTextRandomized = paramsText.split("&").sort((a, b) => Math.random() - 0.5).join("&")
   const url = `https://www.southwest.com/air/booking/select.html?${paramsTextRandomized}`
-  sc.browser.goto(url)
+  arkalis.goto(url)
 
-  sc.log("waiting for response")
-  const waitForResult = await sc.browser.waitFor({
+  arkalis.log("waiting for response")
+  const waitForResult = await arkalis.waitFor({
     "bad departure date": { type: "html", html: "Date must be in the future." },
     "bad origin": { type: "html", html: "Enter departure airport." },
     "bad destination": { type: "html", html: "Enter arrival airport." },
@@ -26,14 +26,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 
   let raw: SouthwestResponse
   if (waitForResult.name === "xhr") {
-    sc.log("got xhr response")
+    arkalis.log("got xhr response")
     raw = JSON.parse(waitForResult.response?.body) as SouthwestResponse
 
     if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
-      sc.log(c.yellow("WARN: No flights available (likely bad date)"))
+      arkalis.log(c.yellow("WARN: No flights available (likely bad date)"))
       return []
     } else if (raw.notifications?.fieldErrors?.some((formError) => formError.code === "ERROR__AIRPORT__INVALID")) {
-      sc.log(c.yellow("WARN: invalid origin/destination"))
+      arkalis.log(c.yellow("WARN: invalid origin/destination"))
       return []
     } else if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FARE_FOUND")) {
       throw new Error("Failed to find fares, retry plz")
@@ -44,20 +44,20 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
       throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.notifications?.fieldErrors ?? raw)}`)
 
   } else if (waitForResult.name === "html") {
-    sc.log("got html response")
+    arkalis.log("got html response")
     raw = { success: true, uiMetadata: undefined!, data: {
-      searchResults: await sc.browser.evaluate("(window as any).data_a.stores.AirBookingSearchResultsSearchStore.searchResults")
+      searchResults: await arkalis.evaluate("(window as any).data_a.stores.AirBookingSearchResultsSearchStore.searchResults")
     }}
 
   } else {
-    sc.log(c.yellow(`WARN: ${waitForResult.name}`))
+    arkalis.log(c.yellow(`WARN: ${waitForResult.name}`))
     return []
   }
 
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok
   const results = raw.data?.searchResults?.airProducts[0]?.details ?? []
   if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
-    sc.log("No routes exist between the origin and destination")
+    arkalis.log("No routes exist between the origin and destination")
 
   const flights: FlightWithFares[] = results.map((result) => {
     if (result.flightNumbers.length > 1)

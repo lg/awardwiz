@@ -4,13 +4,15 @@ import c from "ansi-colors"
 import cors from "cors"
 import { logger, logGlobal } from "./log.js"
 import process from "node:process"
-import { DebugOptions, Scraper } from "./scraper.js"
+import { DebugOptions, Arkalis } from "./arkalis.js"
 
-const debugOptions: Partial<DebugOptions> = {
+const debugOptions: DebugOptions = {
   useProxy: true,
   globalCacheDir: "./tmp/cache",
   browserDebug: false,
   showRequests: false,
+  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
+  winston: logger,
 }
 
 const app = express()
@@ -27,13 +29,12 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
   const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
   const query = { origin: origin!, destination: destination!, departureDate: departureDate! }
 
-  const browser = new Scraper(debugOptions)
-  const results = await browser.run(async (sc) => {
+  const results = await Arkalis.run(async (sc) => {
     sc.log("Running scraper for", query)
     const scraperResults = await scraper.runScraper(sc, query)
     sc.log(c.green(`Completed with ${scraperResults.length} results`))
     return scraperResults
-  }, { ...scraper.meta }, `${Math.random().toString(36).substring(2, 6)}-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)    // [2013-01-01 05:32:00.123 U7fw-united-SFOLAX-0220]
+  }, debugOptions, scraper.meta, `${Math.random().toString(36).substring(2, 6)}-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)    // [2013-01-01 05:32:00.123 U7fw-united-SFOLAX-0220]
 
   res.contentType("application/json")
   res.status(results.result === undefined ? 500 : 200)

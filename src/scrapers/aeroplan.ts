@@ -1,5 +1,5 @@
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 import { AeroplanResponse } from "./samples/aeroplan.js"
 
 export const meta: ScraperMetadata = {
@@ -8,10 +8,10 @@ export const meta: ScraperMetadata = {
   blockUrls: ["go-mpulse.net", "adobedtm.com", "techlab-cdn.com"]
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const paramsText = `org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`
-  await sc.browser.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
-  const waitForResult = await sc.browser.waitFor({
+  await arkalis.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
+  const waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds", statusCode: 200 },
     "anti-botting1": { type: "url", url: "*/aeroplan/redeem/" },
     "anti-botting2": { type: "url", url: "*/loyalty/dapidynamic/*/v2/reward/market-token", statusCode: 403 },
@@ -21,7 +21,7 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
     throw new Error(waitForResult.name)
   const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
 
-  sc.log("parsing results")
+  arkalis.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
   if (fetchFlights.data?.airBoundGroups && fetchFlights.data.airBoundGroups.length > 0) {
     const flights = standardizeResults(fetchFlights, query.origin, query.destination)

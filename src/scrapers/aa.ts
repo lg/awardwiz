@@ -1,4 +1,4 @@
-import { ScraperMetadata } from "../scraper.js"
+import { ScraperMetadata } from "../arkalis.js"
 import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
 import { AAResponse, Slice } from "./samples/aa.js"
 
@@ -7,12 +7,12 @@ export const meta: ScraperMetadata = {
   blockUrls: ["cludo.com", "entrust.net", "tiqcdn.com", "cludo.com", "*.go-mpulse.net"],
 }
 
-export const runScraper: AwardWizScraper = async (sc, query) => {
+export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = "https://www.aa.com/booking/find-flights"
-  sc.browser.goto(url)
-  await sc.browser.waitFor({ "success": { type: "url", url, statusCode: 200 }})
+  arkalis.goto(url)
+  await arkalis.waitFor({ "success": { type: "url", url, statusCode: 200 }})
 
-  sc.log("fetching itinerary")
+  arkalis.log("fetching itinerary")
   const fetchRequest = {
     method: "POST",
     headers: {
@@ -42,10 +42,10 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
   }
 
   const cmd = `fetch("https://www.aa.com/booking/api/search/itinerary", ${JSON.stringify(fetchRequest)});`
-  void sc.browser.evaluate(cmd)
-  const xhrResponse = await sc.browser.waitFor({ "success": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary", statusCode: 200 }})
+  void arkalis.evaluate(cmd)
+  const xhrResponse = await arkalis.waitFor({ "success": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary", statusCode: 200 }})
 
-  sc.log("parsing")
+  arkalis.log("parsing")
   const json = JSON.parse(xhrResponse.response?.body) as AAResponse
   if (json.error && json.error !== "309")
     throw new Error(json.error)

@@ -1,5 +1,5 @@
 import { logger, logGlobal } from "./log.js"
-import { DebugOptions, Scraper } from "./scraper.js"
+import { DebugOptions, Arkalis } from "./arkalis.js"
 import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./types.js"
 import os from "node:os"
 import pako from "pako"
@@ -16,7 +16,9 @@ const debugOptions: DebugOptions = {
   pauseAfterError: true,
   useProxy: false,
   timezone: "America/Los_Angeles",
-  showRequests: false
+  showRequests: false,
+  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
+  winston: logger,
 }
 
 //////////////////////////
@@ -49,20 +51,18 @@ logGlobal(`downloading dom defaults for ${os.type()}`)
 const domDefaults = await getDomDefaults(os.type())
 
 const runIncolumnitas = async () => {
-  const browser = new Scraper(debugOptions)
+  const problems = await Arkalis.run(async (arkalis) => {
+    arkalis.goto("https://bot.incolumitas.com/")
 
-  const problems = await browser.run(async (sc) => {
-    await sc.browser.goto("https://bot.incolumitas.com/")
+    arkalis.log("waiting for tests to finish")
+    await arkalis.waitFor({ "fingerprint": { type: "html", html: /"fpscanner": \{\n/gu } })
 
-    sc.log("waiting for tests to finish")
-    await sc.browser.waitFor({ "fingerprint": { type: "html", html: /"fpscanner": \{\n/gu } })
-
-    const newTests: NewDetectionTests = JSON.parse(await sc.browser.getSelectorContent("#new-tests") ?? "{}")
-    const oldTestsIntoli: OldTests["intoli"] = JSON.parse(await sc.browser.getSelectorContent("#detection-tests") ?? "{}").intoli
-    const oldTestsFpscanner: OldTests["fpscanner"] = JSON.parse(await sc.browser.getSelectorContent("#detection-tests") ?? "{}").fpscanner
-    const datacenter: DatacenterIpCheck = JSON.parse(await sc.browser.getSelectorContent("#datacenter-ip-api-data").catch(() => undefined) ?? "{}")
-    const tcpipFingerprint: TcpIpFingerprint = JSON.parse(await sc.browser.getSelectorContent("#p0f").catch(() => undefined) ?? "{}")
-    const fp: FP = JSON.parse(await sc.browser.getSelectorContent("#fp").catch(() => undefined) ?? "{}")
+    const newTests: NewDetectionTests = JSON.parse(await arkalis.getSelectorContent("#new-tests") ?? "{}")
+    const oldTestsIntoli: OldTests["intoli"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").intoli
+    const oldTestsFpscanner: OldTests["fpscanner"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").fpscanner
+    const datacenter: DatacenterIpCheck = JSON.parse(await arkalis.getSelectorContent("#datacenter-ip-api-data").catch(() => undefined) ?? "{}")
+    const tcpipFingerprint: TcpIpFingerprint = JSON.parse(await arkalis.getSelectorContent("#p0f").catch(() => undefined) ?? "{}")
+    const fp: FP = JSON.parse(await arkalis.getSelectorContent("#fp").catch(() => undefined) ?? "{}")
 
     const problems = [
       ...Object.entries(newTests).filter(([k, v]) => v === "FAIL").map(([k, v]) => `new-tests.${k} = ${v}`),
@@ -70,7 +70,7 @@ const runIncolumnitas = async () => {
       ...Object.entries(oldTestsFpscanner).filter(([k, v]) => v === "FAIL").map(([k, v]) => `fpscanner.${k} = ${v}`),
       ...["is_bogon", "is_datacenter", "is_tor", "is_proxy", "is_vpn", "is_abuser"].map(k => datacenter[k as keyof DatacenterIpCheck] === false ? undefined : `datacenter.${k} = ${datacenter[k as keyof DatacenterIpCheck] as string}`),
       datacenter.asn.type !== "isp" ? `datacenter.asn.type = ${datacenter.asn.type} (not "isp")` : undefined,
-      tcpipFingerprint.details.os_mismatch ? `tcpip-fingerprint.os_mismatch = ${tcpipFingerprint.details.os_mismatch} (wasn't expecting ${tcpipFingerprint.details.os_highest_class})` : undefined,
+      tcpipFingerprint.os_mismatch ? `tcpip-fingerprint.os_mismatch = ${tcpipFingerprint.os_mismatch}` : undefined,
       fp.webDriver ? `fp.webDriver = ${fp.webDriver}` : undefined,
       fp.selenium.some((item) => item) ? `fp.selenium = ${fp.selenium}` : undefined,
       fp.phantomJS.some((item) => item) ? `fp.phantomJS = ${fp.phantomJS}` : undefined,
@@ -86,26 +86,24 @@ const runIncolumnitas = async () => {
     // await sc.pause()
 
     return problems.filter(p => p !== undefined)
-  }, { name: "incolumitas", defaultTimeout: 60_000, useGlobalCache: false }, "incolumitas")
+  }, debugOptions, { name: "incolumitas", defaultTimeout: 60_000, useGlobalCache: false }, "incolumitas")
 
   return problems
 }
 
 const runSannysoft = async () => {
-  const browser = new Scraper(debugOptions)
+  const problems = await Arkalis.run(async (arkalis) => {
+    arkalis.goto("https://bot.sannysoft.com/")
 
-  const problems = await browser.run(async (sc) => {
-    sc.browser.goto("https://bot.sannysoft.com/")
-
-    sc.log("waiting for tests to finish")
-    await sc.browser.waitFor({ "completed": { type: "html", html: /PHANTOM_WINDOW_HEIGHT/gu } })
-    sc.log("checking results")
+    arkalis.log("waiting for tests to finish")
+    await arkalis.waitFor({ "completed": { type: "html", html: /PHANTOM_WINDOW_HEIGHT/gu } })
+    arkalis.log("checking results")
 
     const items = [
       /* eslint-disable quotes */
-      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[id][class='failed']").forEach((el) => failed.push(el.id)); failed`),
-      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='failed']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`),
-      ...await sc.browser.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='warn']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`)
+      ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[id][class='failed']").forEach((el) => failed.push(el.id)); failed`),
+      ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='failed']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`),
+      ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='warn']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`)
       /* eslint-enable quotes */
     ].filter(item => item !== "null").map(item => `sannysoft.${item} = FAIL`)
 
@@ -114,26 +112,24 @@ const runSannysoft = async () => {
 
     return items
     //return items.filter(item => item !== undefined)
-  }, { name: "sannysoft", defaultTimeout: 60_000, useGlobalCache: false }, "sannysoft")
+  }, debugOptions, { name: "sannysoft", defaultTimeout: 60_000, useGlobalCache: false }, "sannysoft")
 
   return problems
 }
 
 // eslint-disable-next-line no-unused-vars
 const runCreepJSWIP = async () => {
-  const browser = new Scraper(debugOptions)
+  const problems = await Arkalis.run(async (arkalis) => {
+    arkalis.goto("https://abrahamjuliot.github.io/creepjs/")
 
-  const problems = await browser.run(async (sc) => {
-    sc.browser.goto("https://abrahamjuliot.github.io/creepjs/")
+    arkalis.log("waiting for tests to finish")
+    await arkalis.waitFor({ "completed": { type: "html", html: /performance benchmark/gu } })
+    arkalis.log("checking results")
 
-    sc.log("waiting for tests to finish")
-    await sc.browser.waitFor({ "completed": { type: "html", html: /performance benchmark/gu } })
-    sc.log("checking results")
-
-    await sc.pause()
+    await arkalis.pause()
 
     return []
-  }, { name: "creepjs", defaultTimeout: 60_000, useGlobalCache: false }, "creepjs")
+  }, debugOptions, { name: "creepjs", defaultTimeout: 60_000, useGlobalCache: false }, "creepjs")
 
   return problems
 }

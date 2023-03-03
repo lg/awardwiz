@@ -4,22 +4,20 @@ import CDP from "chrome-remote-interface"
 import type { Protocol } from "chrome-remote-interface/node_modules/devtools-protocol/types/protocol.js"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
-import { TypedEmitter } from "tiny-typed-emitter"
 import c from "ansi-colors"
 import url from "node:url"
 import { promises as fs } from "node:fs"
 import os from "node:os"
 import net from "node:net"
 import { Mouse } from "./mouse.js"
+import * as dotenv from "dotenv"
+import dayjs from "dayjs"
+import util from "util"
+import winston from "winston"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
 type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success?: boolean }
-
-interface CDPBrowserEvents {
-  "browser_message": (message: string) => void,
-  "message": (message: string) => void,
-}
 
 export type InterceptAction = {
   action: "fulfill" | "continue" | "fail"
@@ -28,29 +26,112 @@ export type InterceptAction = {
   (Protocol.Fetch.FulfillRequestRequest | Protocol.Fetch.ContinueRequestRequest | Protocol.Fetch.FailRequestRequest) | Omit<Protocol.Fetch.FulfillRequestRequest, "requestId">
 )
 
-export type CDPBrowserOptions = {
-  proxy: string | undefined
-  useGlobalCache: boolean
-  globalCacheDir: string
-  windowSize: number[] | undefined
-  windowPos: number[] | undefined
-  browserDebug: boolean | "verbose"
-  drawMousePath: boolean
-  timezone: string | undefined
-  showRequests: boolean
+export type ScraperMetadata = {
+  /** Unique name for the scraper */
+  name: string,
+
+  /** Blocks urls. Can contain *s to match.
+   * @example ["google-analytics.com"]
+   * @default [] */
+  blockUrls?: string[]
+
+  /** Set the default timeout for navigation and selector requests.
+   * @default 15000 */
+  defaultTimeout?: number
+
+  /** Items will be cached globally (i.e. across all running instances) if this is true. Set to false to not store.
+   * @default true */
+  useGlobalCache?: boolean
 }
-export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
+export const defaultScraperMetadata: Required<ScraperMetadata> = {
+  name: "default", defaultTimeout: 15000, blockUrls: [], useGlobalCache: true
+}
+
+export type DebugOptions = {
+  /** Will use a proxy server for all requests. Note that only HTTP/HTTPS proxies are supported for now.
+   * @default true */
+  useProxy?: boolean,
+
+  /** Will pause after each run, useful for debugging. Server only.
+   * @default false */
+  pauseAfterRun?: boolean,
+
+  /** Will pause after each error, useful for debugging. Server only.
+   * @default false */
+  pauseAfterError?: boolean,
+
+  /** If a scraper fails, we'll retry until this many attempts.
+   * @default 3 */
+  maxAttempts?: number
+
+  /** Use this directory for shared global cache. Mount this as a volume to share between instances.
+   * @default "./tmp/cache" */
+  globalCacheDir?: string
+
+  /** Display stdout/stderr from the browser process. Can be true/false or "verbose"
+   * @default false */
+  browserDebug?: boolean | "verbose"
+
+  /** Draws the mouse path when clicking on things
+   * @default false */
+  drawMousePath?: boolean
+
+  /** Timezone in America/Los_Angeles format. If not set, will use the system timezone.
+   * @default undefined */
+  timezone?: string | undefined
+
+  /** Show requests and their cache status.
+   * @default true */
+  showRequests?: boolean
+
+  /** Custom logger. If not set, will use the general console logger.
+   * @default console.log */
+  log?: (prettyLine: string, id: string) => void
+
+  /** Custom logger for the final result with metadata of the run.
+   * @default undefined */
+  winston: winston.Logger | undefined
+}
+export const defaultDebugOptions: Required<DebugOptions> = {
+  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
+  browserDebug: false, drawMousePath: false, timezone: undefined!, showRequests: true, winston: undefined,
+  log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
+}
+
+export class Arkalis {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
-  private options!: CDPBrowserOptions
+
+  private static proxies: Record<string, string[]> = {}
+  private debugOptions: Required<DebugOptions>
+  private scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
   public defaultTimeoutMs = 30_000
 
-  async launch(options: CDPBrowserOptions) {
-    this.options = options
+  private logLines: string[] = []
+  private identifier: string = ""
+  private attemptStartTime: number = Date.now()
 
+  static {
+    dotenv.config()
+    this.proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
+      if (!k.startsWith("PROXY_ADDRESS_"))
+        return acc
+      const groupName = k.replace("PROXY_ADDRESS_", "").toLowerCase()
+      acc[groupName] = (process.env[k] ?? "").split(",")
+      return acc
+    }, {})
+  }
+
+  private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
+    this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
+    this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
+  }
+
+  private async launchBrowser() {
+    // find port for CDP
     const freePort = await new Promise<number>(resolve => {
       const srv = net.createServer()
       srv.listen(0, () => {
@@ -59,9 +140,20 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       })
     })
 
-    this.options.windowSize ||= [1920, 1080]
+    // pick a random window size
+    const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
+      exec("xdpyinfo | grep dimensions", (err, stdout) =>
+        resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
+    })
+    let windowSize = [1920, 1080]
+    let windowPos: number[] | undefined = undefined
+    if (screenResolution) {
+      windowSize = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
+      windowPos = [Math.ceil((screenResolution[0]! - windowSize[0]!) * Math.random()), Math.ceil((screenResolution[1]! - windowSize[1]!) * Math.random())]
+    }
 
     const switches = [
+      // these should all be undetectable, but speed things up
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
       "disable-domain-reliability", "disable-background-networking", "disable-features=AutofillServerCommunication",
       "disable-features=CertificateTransparencyComponentUpdater", "enable-crash-reporter-for-testing", "no-service-autorun",
@@ -78,17 +170,25 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
 
-      this.options.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
-      this.options.useGlobalCache ? `disk-cache-dir="${this.options.globalCacheDir}"` : "",
+      this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
+      this.scraperMeta.useGlobalCache ? `disk-cache-dir="${this.debugOptions.globalCacheDir}"` : "",
       `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
-      this.options.windowPos ? `window-position=${this.options.windowPos[0]},${this.options.windowPos[1]}` : "",
-      `window-size=${this.options.windowSize[0]},${this.options.windowSize[1]}`,
+      windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
+      `window-size=${windowSize[0]},${windowSize[1]}`,
       `remote-debugging-port=${freePort}`
     ]
 
-    if (this.options.proxy) {
-      switches.push(`proxy-server='${this.options.proxy}'`)
-      switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.options.proxy).hostname}'`)
+    // proxy
+    if (this.debugOptions.useProxy) {
+      const proxies = Arkalis.proxies[this.scraperMeta.name] ?? Arkalis.proxies["default"]
+      if ((proxies ?? []).length > 0) {
+        const proxy = proxies![Math.floor(Math.random() * proxies!.length)]!
+        switches.push(`proxy-server='${proxy}'`)
+        switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname}'`)
+        this.log(c.magentaBright(`Using proxy server: ${proxy}`))
+      } else {
+        this.log(c.yellowBright("Not using proxy server!"))
+      }
     }
 
     // detect chrome binary
@@ -100,13 +200,15 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       throw new Error(`Chrome binary not found at "${binPath}". Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
     const cmd = `"${binPath}" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")}`
 
-    this.emit("browser_message", `launching ${cmd}`)
+    // launch browser
+    this.debugOptions.browserDebug && this.log(`Launching browser: ${cmd}`)
     this.browserInstance = exec(cmd)
-    this.browserInstance.stdout!.on("data", (data) => this.emit("browser_message", data.toString().trim()))
-    this.browserInstance.stderr!.on("data", (data) => this.emit("browser_message", data.toString().trim()))
+    this.browserInstance.stdout!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
+    this.browserInstance.stderr!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
     process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
 
-    this.emit("browser_message", "connecting to cdp client")
+    // connect to cdp client
+    this.debugOptions.browserDebug && this.log("connecting to cdp client")
     this.client = await pRetry(async () => CDP({ port: freePort }), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
     await this.client.Network.enable()
     await this.client.Page.enable()
@@ -114,11 +216,11 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     await this.client.DOM.enable()
 
     // timezone
-    if (this.options.timezone)
-      await this.client.Emulation.setTimezoneOverride({ timezoneId: this.options.timezone })
+    if (this.debugOptions.timezone)
+      await this.client.Emulation.setTimezoneOverride({ timezoneId: this.debugOptions.timezone })
 
     // human-y mouse and keyboard control
-    this.mouse = new Mouse(this.client, this.options.windowSize, this.options.drawMousePath)
+    this.mouse = new Mouse(this.client, windowSize, this.debugOptions.drawMousePath)
 
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
@@ -147,6 +249,35 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       this.requests[response.requestId]!.success = false
       this.completedLoading(response.requestId)
     })
+
+    // timeouts
+    this.scraperMeta.defaultTimeout && (this.defaultTimeoutMs = this.scraperMeta.defaultTimeout)
+
+    // block requested URLs
+    if (this.scraperMeta.blockUrls.length > 0)
+      await this.blockUrls(this.scraperMeta.blockUrls)
+  }
+
+  private prettifyArgs = (args: any[]) => {
+    if (typeof args === "string")
+      return args
+    return args.map((item: any) => typeof item === "string"
+      ? item
+      : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+  }
+
+  private logAttemptResult(failed: boolean) {
+    this.debugOptions.winston?.log(failed ? "error" : "info", this.logLines.join("\n"), {
+      labels: {
+        type: "scraper-run",
+        scraper_name: this.scraperMeta.name,
+        start_unix: this.attemptStartTime,
+        id: this.identifier,
+        duration_ms: Date.now() - this.attemptStartTime,
+        status: failed ? "failure" : "success",
+      },
+      noConsole: true,
+    })
   }
 
   private completedLoading(requestId: string) {
@@ -162,27 +293,84 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       `${c.white(urlToShow)} ` +
       `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
 
-    if (this.options.showRequests)
-      this.emit("message", line)
+    this.debugOptions.showRequests && this.log(line)
   }
 
-  async close() {
-    this.emit("browser_message", "closing cdp client and browser")
+  private throwIfBadResponse(statusCode: number, bodyText: string) {
+    if (statusCode !== 200) {
+      if (bodyText.includes("<H1>Access Denied</H1>"))
+        throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
+      if (bodyText.includes("div class=\"px-captcha-error-header\""))
+        throw new Error("Perimeter-X captcha anti-botting while loading page")
+      this.log(bodyText)
+
+      throw new Error(`Page loading failed with status ${statusCode}`)
+    }
+  }
+
+  ///////////////////////////
+  // PUBLIC API
+  ///////////////////////////
+
+  public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, id: string) {
+    const arkalis = new Arkalis(debugOptions, meta)
+    arkalis.identifier = id
+    let attemptError = false
+
+    const attemptResult = await pRetry(async() => {
+      await arkalis.launchBrowser()
+
+      const result = await code(arkalis)
+      if (arkalis.debugOptions.pauseAfterRun)
+        await arkalis.pause()
+
+      attemptError = false
+      return result
+
+    }, { retries: arkalis.debugOptions.maxAttempts! - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
+      attemptError = true
+      const fullError = arkalis.prettifyArgs([c.red("Ending scraper due to error"), error])
+      const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
+      arkalis.logLines.push(timestampedError)
+
+      if (arkalis.debugOptions.pauseAfterError) {
+        arkalis.log(error)
+        await arkalis.pause()
+      }
+      arkalis.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+
+    }}).catch(async e => {    // failed all retries
+      arkalis.log(c.red(`All retry attempts exhausted: ${e.message}`))
+      return undefined
+
+    }).finally(async () => {
+      arkalis.logAttemptResult(attemptError)
+      await arkalis.close().catch(() => {})
+
+      arkalis.log(`completed ${attemptError ? c.red("in failure ") : ""}in ${(Date.now() - arkalis.attemptStartTime).toLocaleString("en-US")}ms (${arkalis.stats().summary})`)
+    })
+
+    return { result: attemptResult, logLines: arkalis.logLines }
+  }
+
+  public async close() {
+    this.debugOptions.browserDebug && this.log("closing cdp client and browser")
     await this.client.Browser.close().catch(() => {})
     await this.client.close().catch(() => {})
   }
 
+  /** Navigates to the specified URL and returns immediately
+   * @param gotoUrl - the url to navigate to */
   public goto(gotoUrl: string) {
-    this.emit("message", `navigating to ${gotoUrl}`)
+    this.log(`navigating to ${gotoUrl}`)
     void this.client.Page.navigate({ url: gotoUrl })
   }
-
 
   /** Waits for a url to be loaded or specific html to be present
    * @param items - a map of name to url/html to wait for. when waiting for a url, optionally passing a `statusCode`
    * will wait only trigger on that http status code, unless the expected code is 200 in which case the request will be
    * validated */
-  async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
+  public async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
     const subscriptions: Function[] = []
     const pollingTimers: NodeJS.Timer[] = []
     let timeout: NodeJS.Timeout | undefined
@@ -257,18 +445,6 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
     return result.result.value as ReturnType
   }
 
-  private throwIfBadResponse(statusCode: number, bodyText: string) {
-    if (statusCode !== 200) {
-      if (bodyText.includes("<H1>Access Denied</H1>"))
-        throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
-      if (bodyText.includes("div class=\"px-captcha-error-header\""))
-        throw new Error("Perimeter-X captcha anti-botting while loading page")
-      this.emit("message", bodyText)
-
-      throw new Error(`Page loading failed with status ${statusCode}`)
-    }
-  }
-
   public stats() {
     const totRequests = Object.values(this.requests).length
     const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
@@ -314,5 +490,17 @@ export class CDPBrowser extends TypedEmitter<CDPBrowserEvents> {
       }
     })
     /* eslint-enable deprecation/deprecation */
+  }
+
+  public log(...args: any[]) {
+    const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+    this.logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
+    this.debugOptions.log(prettyLine, this.identifier)
+  }
+
+  public async pause() {
+    this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
+    // eslint-disable-next-line no-restricted-globals
+    await new Promise((resolve) => setTimeout(resolve, 10000000))
   }
 }
