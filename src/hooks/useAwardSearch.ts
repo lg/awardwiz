@@ -1,5 +1,5 @@
 import * as ReactQuery from "@tanstack/react-query"
-import axios, { AxiosError } from "axios"
+import { AxiosError } from "axios"
 import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers"
 import scrapersRaw from "../config.json"
 import { Scraper, ScrapersConfig } from "../types/config.schema"
@@ -134,7 +134,7 @@ const reduceFaresToBestPerCabin = (flight: FlightWithFares): FlightWithFares => 
 const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
   const datedRoute = meta as DatedRoute
 
-  const request = await axios.get<FR24Response>(`${import.meta.env.VITE_SCRAPERS_URL}/fr24/${datedRoute.origin}-${datedRoute.destination}`, { signal })
+  const request = await runScraper<FR24Response>("fr24", datedRoute, signal)
   if (request.data.result === undefined)
     throw new Error("Couldn't retrieve airlines serving route")
 
@@ -165,7 +165,7 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
   const meta = metaRaw as UseQueryMeta
   const scraperToRun = meta.scraperToRun
 
-  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, queryKey, signal).catch((error: AxiosError<ScraperResponse>) => {
+  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, signal).catch((error: AxiosError<ScraperResponse>) => {
     if (error.response?.data)
       throw { logLines: error.response.data.logLines, message: "Internal scraper error", name: "ScraperError" } as ScraperError
     throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
