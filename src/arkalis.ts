@@ -104,6 +104,7 @@ export class Arkalis {
   private mouse!: Mouse
 
   private static proxies: Record<string, string[]> = {}
+  private proxy: string | undefined = undefined
   private debugOptions: Required<DebugOptions>
   private scraperMeta: Required<ScraperMetadata>
 
@@ -113,6 +114,9 @@ export class Arkalis {
   private logLines: string[] = []
   private identifier: string = ""
   private attemptStartTime: number = Date.now()
+
+  private intercepts: { pattern: RegExp, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
+  private onExitHandler: any
 
   static {
     dotenv.config()
@@ -182,10 +186,18 @@ export class Arkalis {
     if (this.debugOptions.useProxy) {
       const proxies = Arkalis.proxies[this.scraperMeta.name] ?? Arkalis.proxies["default"]
       if ((proxies ?? []).length > 0) {
-        const proxy = proxies![Math.floor(Math.random() * proxies!.length)]!
-        switches.push(`proxy-server='${proxy}'`)
-        switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname}'`)
-        this.log(c.magentaBright(`Using proxy server: ${proxy}`))
+        this.proxy = proxies![Math.floor(Math.random() * proxies!.length)]!
+
+        // if the format is `http://user:pass_country-UnitedStates_session-AAABBBCC@proxy.abcdef.io:31112`, roll the
+        // proxy session id to get a new ip address
+        const dynamicProxy = /http.*:\/\/.+:(?<start>\S{16}_country-\S+_session-)(?<sess>\S{8})@/u.exec(this.proxy)
+        if (dynamicProxy)
+          this.proxy = this.proxy.replace(dynamicProxy.groups!["sess"]!, Math.random().toString(36).slice(2).substring(0, 8))
+
+        switches.push(`proxy-server='${url.parse(this.proxy).protocol}//${url.parse(this.proxy).host}'`)
+        switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.proxy).hostname}'`)
+
+        this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host}`))
       } else {
         this.log(c.yellowBright("Not using proxy server!"))
       }
@@ -205,7 +217,8 @@ export class Arkalis {
     this.browserInstance = exec(cmd)
     this.browserInstance.stdout!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
     this.browserInstance.stderr!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
-    process.on("exit", () => this.browserInstance?.kill("SIGKILL"))
+    this.onExitHandler = () => this.browserInstance?.kill("SIGKILL")
+    process.on("exit", this.onExitHandler)
 
     // connect to cdp client
     this.debugOptions.browserDebug && this.log("connecting to cdp client")
@@ -214,6 +227,12 @@ export class Arkalis {
     await this.client.Page.enable()
     await this.client.Runtime.enable()
     await this.client.DOM.enable()
+
+    /* eslint-disable deprecation/deprecation */
+    await this.client.Fetch.enable({ handleAuthRequests: true, patterns: [{ urlPattern: "*" }] })
+    this.client.Fetch.requestPaused(this.onRequestPaused.bind(this))
+    this.client.Fetch.authRequired(this.onAuthRequired.bind(this))
+    /* eslint-enable deprecation/deprecation */
 
     // timezone
     if (this.debugOptions.timezone)
@@ -256,6 +275,54 @@ export class Arkalis {
     // block requested URLs
     if (this.scraperMeta.blockUrls.length > 0)
       await this.blockUrls(this.scraperMeta.blockUrls)
+  }
+
+  // Called whenever a request/response is processed
+  private onRequestPaused = (req: Protocol.Fetch.RequestPausedEvent) => {
+    /* eslint-disable deprecation/deprecation */
+    for (const intercept of this.intercepts) {
+      if (intercept.pattern.test(req.request.url)) {
+        const action = intercept.callback(req)
+        if (action.action === "continue") {
+          if (action.dataObj)
+            return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
+          else
+            return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueRequestRequest)
+
+        } else if (action.action === "fulfill") {
+          if (action.dataObj)
+            return this.client.Fetch.fulfillRequest({ ...action, requestId: req.requestId, body: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.FulfillRequestRequest)
+          else
+            return this.client.Fetch.fulfillRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.FulfillRequestRequest)
+
+        } else {
+          return this.client.Fetch.failRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.FailRequestRequest)
+        }
+      }
+    }
+
+    // No intercepts matched, continue as normal
+    return this.client.Fetch.continueRequest({ requestId: req.requestId }).catch(() => {})
+    /* eslint-enable deprecation/deprecation */
+  }
+
+  // Called when HTTP proxy auth is required
+  private onAuthRequired = (authReq: Protocol.Fetch.AuthRequiredEvent) => {
+    if (authReq.authChallenge.source !== "Proxy")
+      return
+    if (!this.proxy)
+      return
+    const auth = url.parse(this.proxy).auth
+
+    // eslint-disable-next-line deprecation/deprecation
+    void this.client.Fetch.continueWithAuth({
+      requestId: authReq.requestId,
+      authChallengeResponse: {
+        response: "ProvideCredentials",
+        username: auth!.split(":")[0],
+        password: auth!.split(":")[1]
+      }
+    })
   }
 
   private prettifyArgs = (args: any[]) => {
@@ -338,6 +405,7 @@ export class Arkalis {
         await arkalis.pause()
       }
       arkalis.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+      await arkalis.close()
 
     }}).catch(async e => {    // failed all retries
       arkalis.log(c.red(`All retry attempts exhausted: ${e.message}`))
@@ -355,8 +423,22 @@ export class Arkalis {
 
   public async close() {
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
+    this.intercepts = []
+
+    process.removeListener("exit", this.onExitHandler)
+
+    await this.client.Network.disable().catch(() => {})
+    await this.client.Page.disable().catch(() => {})
+    await this.client.Runtime.disable().catch(() => {})
+    await this.client.DOM.disable().catch(() => {})
+
+    // eslint-disable-next-line deprecation/deprecation
+    await this.client.Fetch.disable().catch(() => {})
+
     await this.client.Browser.close().catch(() => {})
     await this.client.close().catch(() => {})
+
+    this.onExitHandler()
   }
 
   /** Navigates to the specified URL and returns immediately
@@ -464,32 +546,7 @@ export class Arkalis {
   }
 
   public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    /* eslint-disable deprecation/deprecation */
-    await this.client.Fetch.enable({ patterns: [{ urlPattern }] })
-    const lookForPattern = globToRegexp(urlPattern, { extended: true })
-    this.client.Fetch.requestPaused(async (params) => {
-      if (lookForPattern.test(params.request.url)) {
-        const action = callback(params)
-        if (action.action === "continue") {
-          if (action.dataObj)
-            await this.client.Fetch.continueRequest({ ...action, requestId: params.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
-          else
-            await this.client.Fetch.continueRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.ContinueRequestRequest)
-
-        } else if (action.action === "fulfill") {
-          if (action.dataObj)
-            await this.client.Fetch.fulfillRequest({ ...action, requestId: params.requestId, body: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.FulfillRequestRequest)
-          else
-            await this.client.Fetch.fulfillRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.FulfillRequestRequest)
-
-        } else {
-          await this.client.Fetch.failRequest({ ...action, requestId: params.requestId } as Protocol.Fetch.FailRequestRequest)
-        }
-      } else {
-        await this.client.Fetch.continueRequest({ requestId: params.requestId } as Protocol.Fetch.FailRequestRequest)
-      }
-    })
-    /* eslint-enable deprecation/deprecation */
+    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), callback })
   }
 
   public log(...args: any[]) {
