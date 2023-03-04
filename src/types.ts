@@ -26,7 +26,7 @@ export type FlightWithFares = {
 export type FlightFare = {
   cabin: string                           // "economy" | "business" | "first"
   miles: number
-  cash: number
+  cash: number                            // in dollars optionally with a decimal
   currencyOfCash: string
   scraper: string
   bookingClass: string | undefined        // (ex "I")
