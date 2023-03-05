@@ -1,6 +1,6 @@
-import { logger, logGlobal } from "./log.js"
+/* eslint-disable no-console */
 import { DebugOptions, Arkalis } from "./arkalis.js"
-import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./types.js"
+import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./test-bot-types.js"
 import os from "node:os"
 import pako from "pako"
 import { fetchBuilder, FileSystemCache } from "node-fetch-cache"
@@ -17,8 +17,6 @@ const debugOptions: DebugOptions = {
   useProxy: false,
   timezone: "America/Los_Angeles",
   showRequests: false,
-  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
-  winston: logger,
 }
 
 //////////////////////////
@@ -47,7 +45,7 @@ const getDomDefaults = async (osType: string) => {
   return { navigatorProperties, raw }
 }
 
-logGlobal(`downloading dom defaults for ${os.type()}`)
+console.log(`downloading dom defaults for ${os.type()}`)
 const domDefaults = await getDomDefaults(os.type())
 
 const runIncolumnitas = async () => {
@@ -136,12 +134,10 @@ const runCreepJSWIP = async () => {
 
 //////////////////////////
 
-logGlobal("running Incolumnitas (https://bot.incolumitas.com/)...")
-logGlobal((await runIncolumnitas()).result)
-logGlobal("running Sannysoft (https://bot.sannysoft.com/)...")
-logGlobal((await runSannysoft()).result)
-// logGlobal("running CreepJS (https://abrahamjuliot.github.io/creepjs/)...")
-// logGlobal((await runCreepJSWIP()).result)
-logGlobal("done")
-
-logger.close()
+console.log("running Incolumnitas (https://bot.incolumitas.com/)...")
+console.log((await runIncolumnitas()).result)
+console.log("running Sannysoft (https://bot.sannysoft.com/)...")
+console.log((await runSannysoft()).result)
+// console.log("running CreepJS (https://abrahamjuliot.github.io/creepjs/)...")
+// console.log((await runCreepJSWIP()).result)
+console.log("done")

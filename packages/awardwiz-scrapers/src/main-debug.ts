@@ -1,7 +1,7 @@
 import c from "ansi-colors"
 import { logger, logGlobal } from "./log.js"
-import { AwardWizQuery, AwardWizScraperModule } from "./types.js"
-import { Arkalis, DebugOptions } from "./arkalis.js"
+import { AwardWizQuery, AwardWizScraperModule } from "./awardwiz-types.js"
+import { Arkalis, DebugOptions } from "arkalis"
 
 const options: DebugOptions = {
   maxAttempts: 5,

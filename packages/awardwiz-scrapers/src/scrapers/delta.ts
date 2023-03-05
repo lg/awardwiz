@@ -1,8 +1,8 @@
 // This scraper currently gets detected after the 3rd attempt unless a proxy is used.
 
-import { ScraperMetadata } from "../arkalis.js"
-import { AwardWizQuery, AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
-import { DeltaResponse } from "./samples/delta.js"
+import { ScraperMetadata } from "arkalis"
+import { AwardWizQuery, AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
+import { DeltaResponse } from "../scraper-types/delta.js"
 import dayjs from "dayjs"
 import c from "ansi-colors"
 

@@ -1,0 +1,18 @@
+hello
+<script>
+  const x = setInterval(() => {
+    appendText("abc")
+  }, 1000)
+
+  const appendText = (text) => {
+    const span = document.createElement("span")
+    span.innerText = text
+    document.body.appendChild(span)
+  }
+</script>
+<button style="position: fixed; top: 100px; left: 100px;" id="btn" onclick="javascript:appendText('1234567890');">
+  button1
+</button>
+<button style="position: fixed; top: 200px; left: 200px;" id="btn2" onclick="javascript:appendText('ABCDEFGHIJKL');">
+  button2
+</button>

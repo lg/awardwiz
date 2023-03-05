@@ -1,6 +1,6 @@
-import { ScraperMetadata } from "../arkalis.js"
-import { AwardWizScraper } from "../types.js"
-import { FlightRadar24Response } from "./samples/fr24.js"
+import { ScraperMetadata } from "arkalis"
+import { AwardWizScraper } from "../awardwiz-types.js"
+import { FlightRadar24Response } from "../scraper-types/fr24.js"
 
 export const meta: ScraperMetadata = {
   name: "fr24",

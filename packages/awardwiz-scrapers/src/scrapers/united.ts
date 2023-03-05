@@ -1,7 +1,7 @@
-import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../types.js"
-import type { Trip, UnitedResponse } from "./samples/united.js"
+import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../awardwiz-types.js"
+import type { Trip, UnitedResponse } from "../scraper-types/united.js"
 import c from "ansi-colors"
-import { ScraperMetadata } from "../arkalis.js"
+import { ScraperMetadata } from "arkalis"
 
 export const meta: ScraperMetadata = {
   name: "united",

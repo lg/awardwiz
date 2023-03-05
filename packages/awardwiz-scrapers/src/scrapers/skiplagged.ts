@@ -1,6 +1,6 @@
-import { ScraperMetadata } from "../arkalis.js"
-import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
-import { Segment, SkipLaggedResponse } from "./samples/skiplagged.js"
+import { ScraperMetadata } from "arkalis"
+import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
+import { Segment, SkipLaggedResponse } from "../scraper-types/skiplagged.js"
 import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {

@@ -1,0 +1,58 @@
+<center>
+<img src="arkalis.png" width="50%" />
+
+# Arkalis
+
+</center>
+
+Minimal library to scrape websites using Chromium and NodeJS. Tries diligently to bypass fingerprinting attempts to avoid anti-botting systems like Akamai.
+
+### Some noteable anti-botting evasions:
+
+- 🤖 Human-like mouse control (accelerating/decelerating cursor)
+- 💎 Uses an undetectably cleaned-up Chromium browser
+- 🐞 Use HTTP/SOCKS5 proxies on a per-scraper basis
+- 📺 Randomizes screen size, browser size, and browser position
+- 🌎 Timezone simulation
+- 🎭 It's not Puppeteer, Playwright or Selenium, uses CDP directly
+- 🚔 Automated testing against Sannysoft, Incolumitas and CreepJS
+
+### Conveniences for you:
+
+- ☁️ Debug live via a NoVNC connection
+- 💯 Simple API to block/intercept/wait-for URLs and HTML
+- 🦠 Regexp block URLs from loading
+- 📝 Easy results logging to Winston
+- 🙌 Supports a globally shared cache that persists post-scrape
+- ⚡️ Runs the browser and all components from memory
+- 🔢 Measures all bandwidth used so you can optimize requests
+- 🤡 Extensive retry support all throughout so crappy proxies work
+
+### Coming soon:
+
+- ☑️ Ability to select browser and platform and it should pull up: DOM, JA3 Fingerprint, etc
+- ☑️ Timezone simulation based on proxy IP address
+
+## Installing
+
+```sh
+npm i arkalis
+```
+
+## Example of how to use (TODO: TEST THIS)
+
+```typescript
+import { Arkalis } from "arkalis"
+
+const query = { origin: "SFO", destination: "HNL", departureDate: "2023-09-09" }
+const results = await Arkalis.run(async (arkalis) => {
+  arkalis.goto(`https://www.jetblue.com/booking/flights?from=${query.origin}&to=${query.destination}&depart=${query.departureDate}`)
+  const waitForResult = await arkalis.waitFor({
+    "success": { type: "url", url: "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" }
+  })
+
+  return JSON.parse(waitForResult.response?.body)
+}
+
+console.log(`there are ${results.results.length} flights between ${query.origin} and ${query.destination}`)
+```
