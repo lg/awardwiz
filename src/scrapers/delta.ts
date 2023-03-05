@@ -1,7 +1,7 @@
 // This scraper currently gets detected after the 3rd attempt unless a proxy is used.
 
 import { ScraperMetadata } from "../arkalis.js"
-import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
+import { AwardWizQuery, AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { DeltaResponse } from "./samples/delta.js"
 import dayjs from "dayjs"
 import c from "ansi-colors"
@@ -75,7 +75,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   arkalis.log("finished getting results, parsing")
   const flightsWithFares: FlightWithFares[] = []
   if (searchResults.itinerary.length > 0) {
-    const flights = standardizeResults(searchResults)
+    const flights = standardizeResults(searchResults, query)
     flightsWithFares.push(...flights)
   }
 
@@ -83,11 +83,14 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 }
 
 // eslint-disable-next-line no-unused-vars
-const standardizeResults = (raw: DeltaResponse) => {
+const standardizeResults = (raw: DeltaResponse, query: AwardWizQuery) => {
   const results: FlightWithFares[] = []
   for (const itinerary of raw.itinerary) {
     const trip = itinerary.trip[0]!
     const segment = trip.flightSegment[0]!
+
+    if (!dayjs(trip.schedDepartLocalTs.replace("T", " ")).isSame(dayjs(query.departureDate), "day"))
+      continue
 
     const result: FlightWithFares = {
       departureDateTime: trip.schedDepartLocalTs.replace("T", " "),

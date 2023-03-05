@@ -363,7 +363,7 @@ export class Arkalis {
     this.debugOptions.showRequests && this.log(line)
   }
 
-  private throwIfBadResponse(statusCode: number, bodyText: string) {
+  private async throwIfBadResponse(statusCode: number, bodyText: string) {
     if (statusCode !== 200) {
       if (bodyText.includes("<H1>Access Denied</H1>"))
         throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
@@ -461,7 +461,7 @@ export class Arkalis {
       const promises = Object.entries(items).map(([name, params]) => {
         switch (params.type) {
           case "url":
-            return new Promise<{name: string, response: object}>((resolve) => {
+            return new Promise<{name: string, response: object}>((resolve, reject) => {
               let resultResponse = {} as any
               let lookingForRequestId: string | undefined = undefined
               const urlRegexp = typeof params.url === "string" ? globToRegexp(params.url, { extended: true }) : params.url
@@ -480,7 +480,7 @@ export class Arkalis {
                 if (lookingForRequestId === response.requestId) {
                   const responseResult = await this.client.Network.getResponseBody({ requestId: lookingForRequestId })
                   if (params.statusCode === 200)    // do extra verifications if expecting a success
-                    this.throwIfBadResponse(resultResponse.status, responseResult.body)
+                    this.throwIfBadResponse(resultResponse.status, responseResult.body).catch((e) => reject(e))
                   resolve({name, response: {...resultResponse, body: responseResult.body}})
                 }
               }))

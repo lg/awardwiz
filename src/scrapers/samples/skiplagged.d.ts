@@ -3,9 +3,13 @@ export interface SkipLaggedResponse {
   cities: Cities
   airports: Airports
   flights: Flights
-  itineraries: Itineraries
+  itineraries?: Itineraries
   info: Info
   duration: number
+
+  success?: boolean
+  message?: string
+  message_localized?: string
 }
 
 export type Airlines = Record<string, { name: string }>

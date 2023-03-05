@@ -1,6 +1,7 @@
 import { ScraperMetadata } from "../arkalis.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../types.js"
 import { Segment, SkipLaggedResponse } from "./samples/skiplagged.js"
+import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "skiplagged"
@@ -12,8 +13,13 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const response = await arkalis.waitFor({
     "success": { type: "url", url }
   })
-
   const json = JSON.parse(response.response?.body) as SkipLaggedResponse
+  if (json.success === false && json.message?.includes("Invalid range for depart")) {
+    arkalis.log(c.yellowBright("WARN: invalid date range"))
+    return []
+  } else if (json.success === false) {
+    throw new Error(`Error: ${json.message}`)
+  }
 
   const flightsWithFares: FlightWithFares[] = Object.entries(json.flights).map(([id, flight]) => {
     if (flight.count !== 1 || flight.segments.length !== 1)
@@ -32,7 +38,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
         hasPods: undefined,
         hasWiFi: undefined
       },
-      fares: json.itineraries.outbound
+      fares: json.itineraries!.outbound
         .filter((itinerary) => itinerary.flight === id)
         .map((itinerary): FlightFare => ({
           cash: itinerary.one_way_price / 100,
