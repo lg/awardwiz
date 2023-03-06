@@ -3,7 +3,7 @@ import { DebugOptions, Arkalis } from "./arkalis.js"
 import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./test-bot-types.js"
 import os from "node:os"
 import pako from "pako"
-import { fetchBuilder, FileSystemCache } from "node-fetch-cache"
+import fetch from "cross-fetch"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
@@ -30,7 +30,6 @@ const ULIXEE_URL_BY_OS_AND_BROWSER: Record<string, string> = {
 const getDomDefaults = async (osType: string) => {
   const osAndBrowser = ULIXEE_URL_BY_OS_AND_BROWSER[osType]
   const url = `https://github.com/ulixee/browser-profile-data/raw/main/profiles/${osAndBrowser}/browser-dom-environment--https.json.gz`
-  const fetch = fetchBuilder.withCache(new FileSystemCache({ cacheDirectory: "./tmp" }))
   const gzippedResponse = await fetch(url)
   const buffer = await gzippedResponse.arrayBuffer()
   const text = new TextDecoder("utf-8").decode(pako.inflate(buffer))

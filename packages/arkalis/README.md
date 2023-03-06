@@ -5,7 +5,7 @@
 
 </center>
 
-Minimal library to scrape websites using Chromium and NodeJS. Tries diligently to bypass fingerprinting attempts to avoid anti-botting systems like Akamai.
+Minimal NodeJS library to scrape websites using Chromium. Tries diligently to avoid anti-botting systems and other fingerprinting techniques used by systems like Akamai.
 
 ### Some noteable anti-botting evasions:
 
@@ -30,6 +30,7 @@ Minimal library to scrape websites using Chromium and NodeJS. Tries diligently t
 
 ### Coming soon:
 
+- ☑️ Human-like keyboard control too
 - ☑️ Ability to select browser and platform and it should pull up: DOM, JA3 Fingerprint, etc
 - ☑️ Timezone simulation based on proxy IP address
 
