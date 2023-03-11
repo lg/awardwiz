@@ -115,8 +115,9 @@ export class Arkalis {
   private identifier: string = ""
   private attemptStartTime: number = Date.now()
 
-  private intercepts: { pattern: RegExp, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
+  private intercepts: { pattern: RegExp, type: "Request" | "Response", callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
   private onExitHandler: any
+  private tmpDir?: tmp.DirectoryResult
 
   static {
     dotenv.config()
@@ -135,6 +136,9 @@ export class Arkalis {
   }
 
   private async launchBrowser() {
+    // tmp dir for the browser profile (without cache)
+    this.tmpDir = await tmp.dir({ unsafeCleanup: true })
+
     // find port for CDP
     const freePort = await new Promise<number>(resolve => {
       const srv = net.createServer()
@@ -176,7 +180,7 @@ export class Arkalis {
 
       this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
       this.scraperMeta.useGlobalCache ? `disk-cache-dir="${this.debugOptions.globalCacheDir}"` : "",
-      `user-data-dir="${(await tmp.dir({ unsafeCleanup: true })).path}"`,
+      `user-data-dir="${this.tmpDir.path}"`,
       windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
       `window-size=${windowSize[0]},${windowSize[1]}`,
       `remote-debugging-port=${freePort}`
@@ -229,7 +233,8 @@ export class Arkalis {
     await this.client.DOM.enable()
 
     /* eslint-disable deprecation/deprecation */
-    await this.client.Fetch.enable({ handleAuthRequests: true, patterns: [{ urlPattern: "*" }] })
+    await this.client.Fetch.enable({ handleAuthRequests: true, patterns:
+      [{ urlPattern: "*", requestStage: "Request" }, { urlPattern: "*", requestStage: "Response" }] })
     this.client.Fetch.requestPaused(this.onRequestPaused.bind(this))
     this.client.Fetch.authRequired(this.onAuthRequired.bind(this))
     /* eslint-enable deprecation/deprecation */
@@ -274,20 +279,25 @@ export class Arkalis {
 
     // block requested URLs
     if (this.scraperMeta.blockUrls.length > 0)
-      await this.blockUrls(this.scraperMeta.blockUrls)
+      await this.client.Network.setBlockedURLs({ urls: this.scraperMeta.blockUrls })
   }
 
   // Called whenever a request/response is processed
   private onRequestPaused = (req: Protocol.Fetch.RequestPausedEvent) => {
     /* eslint-disable deprecation/deprecation */
-    for (const intercept of this.intercepts) {
+    for (const intercept of this.intercepts.filter(i => (req.responseStatusCode && i.type === "Response")
+        || (!req.responseStatusCode && i.type === "Request"))) {
       if (intercept.pattern.test(req.request.url)) {
         const action = intercept.callback(req)
         if (action.action === "continue") {
-          if (action.dataObj)
-            return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
-          else
-            return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueRequestRequest)
+          if (req.responseStatusCode) {
+            return this.client.Fetch.continueResponse({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueResponseRequest)
+          } else {
+            if (action.dataObj)
+              return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
+            else
+              return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueRequestRequest)
+          }
 
         } else if (action.action === "fulfill") {
           if (action.dataObj)
@@ -302,7 +312,10 @@ export class Arkalis {
     }
 
     // No intercepts matched, continue as normal
-    return this.client.Fetch.continueRequest({ requestId: req.requestId }).catch(() => {})
+    if (req.responseStatusCode)
+      return this.client.Fetch.continueResponse({ requestId: req.requestId }).catch(() => {})
+    else
+      return this.client.Fetch.continueRequest({ requestId: req.requestId }).catch(() => {})
     /* eslint-enable deprecation/deprecation */
   }
 
@@ -439,6 +452,7 @@ export class Arkalis {
     await this.client.close().catch(() => {})
 
     this.onExitHandler()
+    await this.tmpDir?.cleanup().catch(() => {})
   }
 
   /** Navigates to the specified URL and returns immediately
@@ -537,16 +551,16 @@ export class Arkalis {
     return { totRequests, cacheHits, cacheMisses, bytes, summary }
   }
 
-  public async blockUrls(urls: string[]) {
-    await this.client.Network.setBlockedURLs({ urls })
-  }
-
   public async clickSelector(selector: string) {
     return this.mouse.clickSelector(selector)
   }
 
   public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), callback })
+    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), type: "Request", callback })
+  }
+
+  public async interceptResponse(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
+    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), type: "Response", callback })
   }
 
   public log(...args: any[]) {
