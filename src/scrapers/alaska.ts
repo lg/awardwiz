@@ -64,17 +64,17 @@ const standardizeResults = (raw: AlaskaResponse, query: AwardWizQuery): FlightWi
         throw new Error(`multiple booking codes\n${JSON.stringify(fare, null, 2)}}`)
       if (fare.cabins.length !== 1)
         throw new Error(`multiple cabins\n${JSON.stringify(fare, null, 2)}}`)
-      if (fare.cabins[0] !== "MAIN" && fare.cabins[0] !== "FIRST")
+      if (fare.cabins[0] !== "MAIN" && fare.cabins[0] !== "FIRST" && fare.cabins[0] !== "SAVER")
         throw new Error(`unknown cabin: ${fare.cabins[0]}\n${JSON.stringify(fare, null, 2)}}`)
 
       const fareToAdd: FlightFare = {
         bookingClass: fare.bookingCodes[0],
-        cabin: {"FIRST": "business", "MAIN": "economy"}[fare.cabins[0]!]!,
+        cabin: {"FIRST": "business", "MAIN": "economy", "SAVER": "economy"}[fare.cabins[0]!]!,
         cash: fare.grandTotal,
         currencyOfCash: "USD",
         miles: fare.milesPoints,
         scraper: "alaska",
-        isSaverFare: fare.discount,
+        isSaverFare: fare.cabins[0] === "SAVER",
       }
 
       // Only keep the lowest fare for each cabin
