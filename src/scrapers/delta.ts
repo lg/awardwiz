@@ -69,6 +69,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
       arkalis.log(c.yellow("WARN: No scheduled flights between cities"))
       return []
     }
+    if (searchResults.shoppingError.error.message.errorKey === "ITA404Error3Award")    // No results were found
+      return []
     throw new Error(searchResults.shoppingError.error.message.message)
   }
 
