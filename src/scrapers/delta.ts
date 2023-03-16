@@ -71,6 +71,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     }
     if (searchResults.shoppingError.error.message.errorKey === "ITA404Error3Award")    // No results were found
       return []
+    if (searchResults.shoppingError.error.message.reasonCode === "406")   // All flights already departed
+      return []
     throw new Error(searchResults.shoppingError.error.message.message)
   }
 
