@@ -4,7 +4,6 @@ env:
 plugins:
   - "@typescript-eslint"
   - promise
-  - deprecation
   - regexp
 extends:
   - eslint:recommended
@@ -76,8 +75,6 @@ rules:
   "newline-per-chained-call": off
   "import/named": off
   "@typescript-eslint/no-throw-literal": off
-
-  "deprecation/deprecation": "warn"
 
   "regexp/no-unused-capturing-group": off
   promise/no-nesting: off

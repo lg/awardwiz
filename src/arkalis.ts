@@ -1,7 +1,7 @@
 import tmp from "tmp-promise"
 import { ChildProcess, exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
-import type { Protocol } from "chrome-remote-interface/node_modules/devtools-protocol/types/protocol.js"
+import type { Protocol } from "chrome-remote-interface/node_modules/devtools-protocol"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import c from "ansi-colors"
@@ -232,12 +232,10 @@ export class Arkalis {
     await this.client.Runtime.enable()
     await this.client.DOM.enable()
 
-    /* eslint-disable deprecation/deprecation */
     await this.client.Fetch.enable({ handleAuthRequests: true, patterns:
       [{ urlPattern: "*", requestStage: "Request" }, { urlPattern: "*", requestStage: "Response" }] })
     this.client.Fetch.requestPaused(this.onRequestPaused.bind(this))
     this.client.Fetch.authRequired(this.onAuthRequired.bind(this))
-    /* eslint-enable deprecation/deprecation */
 
     // timezone
     if (this.debugOptions.timezone)
@@ -284,7 +282,6 @@ export class Arkalis {
 
   // Called whenever a request/response is processed
   private onRequestPaused = (req: Protocol.Fetch.RequestPausedEvent) => {
-    /* eslint-disable deprecation/deprecation */
     for (const intercept of this.intercepts.filter(i => (req.responseStatusCode && i.type === "Response")
         || (!req.responseStatusCode && i.type === "Request"))) {
       if (intercept.pattern.test(req.request.url)) {
@@ -316,7 +313,6 @@ export class Arkalis {
       return this.client.Fetch.continueResponse({ requestId: req.requestId }).catch(() => {})
     else
       return this.client.Fetch.continueRequest({ requestId: req.requestId }).catch(() => {})
-    /* eslint-enable deprecation/deprecation */
   }
 
   // Called when HTTP proxy auth is required
@@ -327,7 +323,6 @@ export class Arkalis {
       return
     const auth = url.parse(this.proxy).auth
 
-    // eslint-disable-next-line deprecation/deprecation
     void this.client.Fetch.continueWithAuth({
       requestId: authReq.requestId,
       authChallengeResponse: {
@@ -444,8 +439,6 @@ export class Arkalis {
     await this.client.Page.disable().catch(() => {})
     await this.client.Runtime.disable().catch(() => {})
     await this.client.DOM.disable().catch(() => {})
-
-    // eslint-disable-next-line deprecation/deprecation
     await this.client.Fetch.disable().catch(() => {})
 
     await this.client.Browser.close().catch(() => {})
