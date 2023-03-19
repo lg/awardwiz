@@ -70,7 +70,8 @@ const runIncolumnitas = async () => {
       ...["is_bogon", "is_datacenter", "is_tor", "is_proxy", "is_vpn", "is_abuser"].map(k => datacenter[k as keyof DatacenterIpCheck] === false ? undefined : `datacenter.${k} = ${datacenter[k as keyof DatacenterIpCheck] as string}`),
       datacenter.asn.type !== "isp" ? `datacenter.asn.type = ${datacenter.asn.type} (not "isp")` : undefined,
       tcpipFingerprint.os_mismatch ? `tcpip-fingerprint.os_mismatch = ${tcpipFingerprint.os_mismatch}` : undefined,
-      fp.webDriver ? `fp.webDriver = ${fp.webDriver}` : undefined,
+      fp.webDriver ? undefined : `fp.webDriver = ${fp.webDriver} (was expecting true)`,
+      fp.webDriverValue ? `fp.webDriverValue = ${fp.webDriverValue} (was expecting false/undefined)` : undefined,
       fp.selenium.some((item) => item) ? `fp.selenium = ${fp.selenium}` : undefined,
       fp.phantomJS.some((item) => item) ? `fp.phantomJS = ${fp.phantomJS}` : undefined,
       fp.nightmareJS ? `fp.nightmareJS = ${fp.nightmareJS}` : undefined,
@@ -81,8 +82,11 @@ const runIncolumnitas = async () => {
       fp.navigatorProperties.join(",") === domDefaults.navigatorProperties.join(",") ? undefined : `fp.navigatorProperties = MISMATCH (vs the expected items in ${ULIXEE_URL_BY_OS_AND_BROWSER[os.type()]!})`,
     ]
 
-    // logGlobal(problems.filter(p => p !== undefined))
-    // await sc.pause()
+    // These tests are being done innacurately on incolumitas
+    problems[problems.indexOf("fpscanner.WEBDRIVER = FAIL")] = undefined    // fails on real Chrome too
+
+    // arkalis.log(problems.filter(p => p !== undefined))
+    // await arkalis.pause()
 
     return problems.filter(p => p !== undefined)
   }, debugOptions, { name: "incolumitas", defaultTimeout: 60_000, useGlobalCache: false }, "incolumitas")
@@ -98,19 +102,21 @@ const runSannysoft = async () => {
     await arkalis.waitFor({ "completed": { type: "html", html: /PHANTOM_WINDOW_HEIGHT/gu } })
     arkalis.log("checking results")
 
-    const items = [
+    const problems: (string | undefined)[] = [
       /* eslint-disable quotes */
       ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[id][class='failed']").forEach((el) => failed.push(el.id)); failed`),
       ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='failed']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`),
       ...await arkalis.evaluate<string[]>(`failed = []; document.querySelectorAll("td[class='warn']:not([id])").forEach((el) => failed.push(el.previousSibling.innerText)); failed`)
       /* eslint-enable quotes */
-    ].filter(item => item !== "null").map(item => `sannysoft.${item} = FAIL`)
+    ].filter(problem => problem !== "null").map(item => `sannysoft.${item} = FAIL`)
 
-    // logGlobal(items)
-    // await sc.pause()
+    // These tests are being done innacurately on sannysoft
+    problems[problems.indexOf("sannysoft.WEBDRIVER = FAIL")] = undefined    // fails on real Chrome too
 
-    return items
-    //return items.filter(item => item !== undefined)
+    // arkalis.log(problems.filter(p => p !== undefined))
+    // await arkalis.pause()
+
+    return problems.filter(p => p !== undefined)
   }, debugOptions, { name: "sannysoft", defaultTimeout: 60_000, useGlobalCache: false }, "sannysoft")
 
   return problems
