@@ -1,7 +1,7 @@
 import tmp from "tmp-promise"
 import { ChildProcess, exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
-import type { Protocol } from "chrome-remote-interface/node_modules/devtools-protocol"
+import type { Protocol } from "devtools-protocol" // "chrome-remote-interface" // "chrome-remote-interface/node_modules/devtools-protocol"
 import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import c from "ansi-colors"
@@ -90,11 +90,11 @@ export type DebugOptions = {
 
   /** Custom logger for the final result with metadata of the run.
    * @default undefined */
-  winston: winston.Logger | undefined
+  winston?: winston.Logger
 }
-export const defaultDebugOptions: Required<DebugOptions> = {
+export const defaultDebugOptions: DebugOptions = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
-  browserDebug: false, drawMousePath: false, timezone: undefined!, showRequests: true, winston: undefined,
+  browserDebug: false, drawMousePath: false, timezone: undefined, showRequests: true, winston: undefined,
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
 
@@ -105,7 +105,7 @@ export class Arkalis {
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
-  private debugOptions: Required<DebugOptions>
+  private debugOptions: DebugOptions
   private scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
@@ -242,7 +242,7 @@ export class Arkalis {
       await this.client.Emulation.setTimezoneOverride({ timezoneId: this.debugOptions.timezone })
 
     // human-y mouse and keyboard control
-    this.mouse = new Mouse(this.client, windowSize, this.debugOptions.drawMousePath)
+    this.mouse = new Mouse(this.client, windowSize, this.debugOptions.drawMousePath!)
 
     // used for stats and request logging
     this.client.Network.requestWillBeSent((request) => {
@@ -559,7 +559,7 @@ export class Arkalis {
   public log(...args: any[]) {
     const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
     this.logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
-    this.debugOptions.log(prettyLine, this.identifier)
+    this.debugOptions.log!(prettyLine, this.identifier)
   }
 
   public async pause() {

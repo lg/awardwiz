@@ -1,9 +1,9 @@
-import { logger, logGlobal } from "./log.js"
+/* eslint-disable no-console */
 import { DebugOptions, Arkalis } from "./arkalis.js"
-import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./types.js"
+import { DatacenterIpCheck, FP, NewDetectionTests, OldTests, TcpIpFingerprint } from "./test-bot-types.js"
 import os from "node:os"
 import pako from "pako"
-import { fetchBuilder, FileSystemCache } from "node-fetch-cache"
+import fetch from "cross-fetch"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
@@ -17,8 +17,6 @@ const debugOptions: DebugOptions = {
   useProxy: false,
   timezone: "America/Los_Angeles",
   showRequests: false,
-  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
-  winston: logger,
 }
 
 //////////////////////////
@@ -32,7 +30,6 @@ const ULIXEE_URL_BY_OS_AND_BROWSER: Record<string, string> = {
 const getDomDefaults = async (osType: string) => {
   const osAndBrowser = ULIXEE_URL_BY_OS_AND_BROWSER[osType]
   const url = `https://github.com/ulixee/browser-profile-data/raw/main/profiles/${osAndBrowser}/browser-dom-environment--https.json.gz`
-  const fetch = fetchBuilder.withCache(new FileSystemCache({ cacheDirectory: "./tmp" }))
   const gzippedResponse = await fetch(url)
   const buffer = await gzippedResponse.arrayBuffer()
   const text = new TextDecoder("utf-8").decode(pako.inflate(buffer))
@@ -47,7 +44,7 @@ const getDomDefaults = async (osType: string) => {
   return { navigatorProperties, raw }
 }
 
-logGlobal(`downloading dom defaults for ${os.type()}`)
+console.log(`downloading dom defaults for ${os.type()}`)
 const domDefaults = await getDomDefaults(os.type())
 
 const runIncolumnitas = async () => {
@@ -136,12 +133,10 @@ const runCreepJSWIP = async () => {
 
 //////////////////////////
 
-logGlobal("running Incolumnitas (https://bot.incolumitas.com/)...")
-logGlobal((await runIncolumnitas()).result)
-logGlobal("running Sannysoft (https://bot.sannysoft.com/)...")
-logGlobal((await runSannysoft()).result)
-// logGlobal("running CreepJS (https://abrahamjuliot.github.io/creepjs/)...")
-// logGlobal((await runCreepJSWIP()).result)
-logGlobal("done")
-
-logger.close()
+console.log("running Incolumnitas (https://bot.incolumitas.com/)...")
+console.log((await runIncolumnitas()).result)
+console.log("running Sannysoft (https://bot.sannysoft.com/)...")
+console.log((await runSannysoft()).result)
+// console.log("running CreepJS (https://abrahamjuliot.github.io/creepjs/)...")
+// console.log((await runCreepJSWIP()).result)
+console.log("done")

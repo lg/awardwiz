@@ -25,6 +25,6 @@
     "sourceMap": true,
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["arkalis", "awardwiz-scrapers"],
   "exclude": ["node_modules", "dist"],
 }

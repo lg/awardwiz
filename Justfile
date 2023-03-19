@@ -18,8 +18,11 @@ build:
 lint: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 --cache .
 
-check: lint
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check
+check:
+  rm -rf node_modules/ dist/ .eslintcache
+  npm i
+  just lint
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,arkalis,devtools-protocol
   @echo 'ok'
 
 # build docker image for running locally
@@ -44,15 +47,11 @@ tail-prod-logs:
 run-docker extra="": build-docker
   docker run -it --rm -p 8282:8282 --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro --volume $(pwd)/tmp:/usr/src/awardwiz/tmp {{extra}}
 
-run-server: (run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/main-server.js")
+run-server:
+  just run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-server.js"
 
 run-debug scraper origin destination date:
-  just run-docker "awardwiz:scrapers node --enable-source-maps dist/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
 run-test-bot:
-  just run-docker "awardwiz:scrapers node --enable-source-maps dist/main-test-bot.js"
-
-view-trace traceid:
-  [ -e tmp/traces/{{traceid}}.zip ] \
-    && npx playwright -- show-trace tmp/traces/{{traceid}}.zip \
-    || npx playwright show-trace https://run.awardwiz.com:30115/trace/{{traceid}}
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/main-test-bot.js"

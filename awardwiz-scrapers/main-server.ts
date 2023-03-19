@@ -1,10 +1,10 @@
 import express from "express"
-import { AwardWizScraperModule } from "./types.js"
+import { AwardWizScraperModule } from "./awardwiz-types.js"
 import c from "ansi-colors"
 import cors from "cors"
 import { logger, logGlobal } from "./log.js"
 import process from "node:process"
-import { DebugOptions, Arkalis } from "./arkalis.js"
+import { DebugOptions, Arkalis } from "../arkalis/arkalis.js"
 
 const debugOptions: DebugOptions = {
   useProxy: true,

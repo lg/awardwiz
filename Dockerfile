@@ -14,7 +14,6 @@ COPY package.json package-lock.json ./
 RUN NODE_ENV=production npm install -g npm && npm i
 
 COPY dist/ dist/
-COPY src/ src/
 COPY entrypoint.sh ./
 
 ENTRYPOINT ["./entrypoint.sh"]

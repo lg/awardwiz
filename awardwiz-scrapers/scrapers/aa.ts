@@ -1,6 +1,6 @@
-import { ScraperMetadata } from "../arkalis.js"
-import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../types.js"
-import { AAResponse, Slice } from "./samples/aa.js"
+import { ScraperMetadata } from "../../arkalis/arkalis.js"
+import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../awardwiz-types.js"
+import { AAResponse, Slice } from "../scraper-types/aa.js"
 
 export const meta: ScraperMetadata = {
   name: "aa",

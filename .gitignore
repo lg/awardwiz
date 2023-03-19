@@ -4,3 +4,4 @@ tmp/
 .env*
 .eslintcache
 .DS_Store
+TODO.md
