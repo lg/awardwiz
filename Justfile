@@ -53,5 +53,5 @@ run-server:
 run-debug scraper origin destination date:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
-run-test-bot:
-  just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/main-test-bot.js"
+test-anti-botting:
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"

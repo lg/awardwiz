@@ -73,5 +73,5 @@ docker run -it --rm \
 docker run -it --rm \
   --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro \
   --volume $(pwd)/tmp:/usr/src/awardwiz/tmp awardwiz:scrapers \
-  node --enable-source-maps dist/arkalis/main-test-bot.js
+  node --enable-source-maps dist/arkalis/test-anti-botting.js
 ```
