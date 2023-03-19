@@ -11,11 +11,11 @@ Minimal NodeJS library to scrape websites using Chromium. Tries diligently to av
 
 - 🤖 Human-like mouse control (accelerating/decelerating cursor)
 - 💎 Uses an undetectably cleaned-up Chromium browser
-- 🐞 Use HTTP/SOCKS5 proxies on a per-scraper basis
+- 🐞 Can use different HTTP/SOCKS5 proxies per scraper
 - 📺 Randomizes screen size, browser size, and browser position
 - 🌎 Timezone simulation
-- 🎭 It's not Puppeteer, Playwright or Selenium, uses CDP directly
 - 🚔 Automated testing against Sannysoft, Incolumitas and CreepJS
+- 🎭 It's not Puppeteer, Playwright or Selenium, uses CDP directly
 
 ### Conveniences for you:
 
@@ -62,8 +62,8 @@ console.log(`there are ${results.results.length} flights between ${query.origin}
 
 ```sh
 docker run -it --rm \
-  --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro \
-  --volume $(pwd)/tmp:/usr/src/awardwiz/tmp awardwiz:scrapers \
+  --volume $(pwd)/tmp:/usr/src/awardwiz/tmp \
+  awardwiz:scrapers \
   node --enable-source-maps dist/YOUR_SCRIPT.js
 ```
 
@@ -71,7 +71,6 @@ docker run -it --rm \
 
 ```sh
 docker run -it --rm \
-  --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro \
-  --volume $(pwd)/tmp:/usr/src/awardwiz/tmp awardwiz:scrapers \
+  awardwiz:scrapers \
   node --enable-source-maps dist/arkalis/test-anti-botting.js
 ```
