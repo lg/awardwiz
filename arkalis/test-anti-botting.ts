@@ -60,6 +60,7 @@ const runIncolumnitas = async () => {
     const oldTestsIntoli: OldTests["intoli"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").intoli
     const oldTestsFpscanner: OldTests["fpscanner"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").fpscanner
     const datacenter: DatacenterIpCheck = JSON.parse(await arkalis.getSelectorContent("#datacenter-ip-api-data").catch(() => undefined) ?? "{}")
+    const datacenterOffset = -dayjs().utcOffset(datacenter.location.timezone).utcOffset() // ex 480
     const tcpipFingerprint: TcpIpFingerprint = JSON.parse(await arkalis.getSelectorContent("#p0f").catch(() => undefined) ?? "{}")
     const fp: FP = JSON.parse(await arkalis.getSelectorContent("#fp").catch(() => undefined) ?? "{}")
 
@@ -77,8 +78,7 @@ const runIncolumnitas = async () => {
       fp.nightmareJS ? `fp.nightmareJS = ${fp.nightmareJS}` : undefined,
       fp.domAutomation ? `fp.domAutomation = ${fp.domAutomation}` : undefined,
       fp.debugTool ? `fp.debugTool = ${fp.debugTool}` : undefined,
-      fp.timezone !== fp.getTimezoneOffset ? `fp.oscpu = ${fp.timezone} (was expecting same as fp.getTimezoneOffset: ${fp.getTimezoneOffset})` : undefined,
-      datacenter.location.timezone !== dayjs().tz(fp.timezone2).format("Z") ? `datacenter.location.timezone = ${datacenter.location.timezone} (was expecting ${dayjs().tz(fp.timezone2).format("Z")} as per ip from fp)` : undefined,
+      fp.getTimezoneOffset !== datacenterOffset ? `fp.getTimezoneOffset = ${fp.getTimezoneOffset} (was expecting ${datacenterOffset} as per ip from fp)` : undefined,
       fp.navigatorProperties.join(",") === domDefaults.navigatorProperties.join(",") ? undefined : `fp.navigatorProperties = MISMATCH (vs the expected items in ${ULIXEE_URL_BY_OS_AND_BROWSER[os.type()]!})`,
     ]
 

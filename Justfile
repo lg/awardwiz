@@ -19,9 +19,9 @@ lint: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 --cache .
 
 check:
-  rm -rf node_modules/ dist/ .eslintcache
-  npm i
-  just lint
+  npm clean-install
+  rm -rf dist/ .eslintcache
+  @just lint
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,arkalis,devtools-protocol
   @echo 'ok'
 
@@ -55,3 +55,11 @@ run-debug scraper origin destination date:
 
 test-anti-botting:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"
+
+test-anti-botting-prod:
+  @just build-docker "1" "registry.kub.lg.io:31119/awardwiz:test" "amd64"
+  docker push "registry.kub.lg.io:31119/awardwiz:test"
+  kubectl run arkalis-test-anti-botting \
+    --rm --restart=Never --pod-running-timeout=30s --attach --stdin \
+    --image=registry.kub.lg.io:31119/awardwiz:test --image-pull-policy=Always \
+    -- node --enable-source-maps dist/arkalis/test-anti-botting.js
