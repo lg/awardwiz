@@ -14,6 +14,7 @@ import * as dotenv from "dotenv"
 import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
+import Db from "./db.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -39,12 +40,18 @@ export type ScraperMetadata = {
    * @default 15000 */
   defaultTimeout?: number
 
-  /** Items will be cached globally (i.e. across all running instances) if this is true. Set to false to not store.
+  /** Browser resources will be cached globally (i.e. across all running instances) if this is true. Set to false to
+   * not store.
    * @default true */
-  useGlobalCache?: boolean
+  useGlobalBrowserCache?: boolean
+
+  /** Amount of seconds to cache the results for (TTL). Set to 0 to not cache. Set to null to use the configured
+   * default (defaultResultCacheTtl).
+   * @default undefined */
+  resultCacheTtl?: number | null
 }
 export const defaultScraperMetadata: Required<ScraperMetadata> = {
-  name: "default", defaultTimeout: 15000, blockUrls: [], useGlobalCache: true
+  name: "default", defaultTimeout: 15000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtl: null
 }
 
 export type DebugOptions = {
@@ -64,9 +71,14 @@ export type DebugOptions = {
    * @default 3 */
   maxAttempts?: number
 
-  /** Use this directory for shared global cache. Mount this as a volume to share between instances.
-   * @default "./tmp/cache" */
-  globalCacheDir?: string
+  /** Use this sqlite3 db for shared global app cache and other shared state. Mount this as a volume to share between
+   * instances.
+   * @default "./tmp/awardwiz.db" */
+  globalDb?: string
+
+  /** Use this directory for shared global browser cache. Mount this as a volume to share between instances.
+   * @default "./tmp/browser-cache" */
+  globalBrowserCacheDir?: string
 
   /** Display stdout/stderr from the browser process. Can be true/false or "verbose"
    * @default false */
@@ -77,10 +89,10 @@ export type DebugOptions = {
   drawMousePath?: boolean
 
   /** Timezone in America/Los_Angeles format. If not set, will use the system timezone.
-   * @default undefined */
-  timezone?: string | undefined
+   * @default null */
+  timezone?: string | null
 
-  /** Show requests and their cache status.
+  /** Show requests and their browser cache status.
    * @default true */
   showRequests?: boolean
 
@@ -89,12 +101,21 @@ export type DebugOptions = {
   log?: (prettyLine: string, id: string) => void
 
   /** Custom logger for the final result with metadata of the run.
-   * @default undefined */
-  winston?: winston.Logger
+   * @default null */
+  winston?: winston.Logger | null
+
+  /** Set to enable result cache
+   * @default false */
+  useResultCache?: boolean
+
+  /** Set the default TTL (in seconds) for the result cache. Set to 0 to not cache by default.
+   * @default 0 */
+  defaultResultCacheTtl?: number
 }
-export const defaultDebugOptions: DebugOptions = {
-  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, globalCacheDir: "./tmp/cache",
-  browserDebug: false, drawMousePath: false, timezone: undefined, showRequests: true, winston: undefined,
+export const defaultDebugOptions: Required<DebugOptions> = {
+  maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, browserDebug: false, winston: null,
+  globalBrowserCacheDir: "./tmp/browser-cache", globalDb: "./tmp/awardwiz.db", drawMousePath: false,
+  timezone: null, showRequests: true, useResultCache: false, defaultResultCacheTtl: 0,
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
 
@@ -102,10 +123,11 @@ export class Arkalis {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
+  private db = new Db()
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
-  private debugOptions: DebugOptions
+  private debugOptions: Required<DebugOptions>
   private scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
@@ -136,7 +158,7 @@ export class Arkalis {
   }
 
   private async launchBrowser() {
-    // tmp dir for the browser profile (without cache)
+    // tmp dir for the browser profile (without browser cache since we remap that outside the profile)
     this.tmpDir = await tmp.dir({ unsafeCleanup: true })
 
     // find port for CDP
@@ -179,7 +201,7 @@ export class Arkalis {
       // "auto-open-devtools-for-tabs",
 
       this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
-      this.scraperMeta.useGlobalCache ? `disk-cache-dir="${this.debugOptions.globalCacheDir}"` : "",
+      this.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir="${this.debugOptions.globalBrowserCacheDir}"` : "",
       `user-data-dir="${this.tmpDir.path}"`,
       windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
       `window-size=${windowSize[0]},${windowSize[1]}`,
@@ -387,17 +409,33 @@ export class Arkalis {
   // PUBLIC API
   ///////////////////////////
 
-  public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, id: string) {
+  public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, cacheKey: string) {
     const arkalis = new Arkalis(debugOptions, meta)
-    arkalis.identifier = id
-    let attemptError = false
+    await arkalis.db.init(arkalis.debugOptions.globalDb)
 
-    const attemptResult = await pRetry(async() => {
+    arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`
+    let attemptError = false
+    let attemptResult: ReturnType | undefined = undefined
+
+    const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
+    if (arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
+      const existingCache = await arkalis.db.get(`result-${cacheKey}`)
+      if (existingCache) {
+        arkalis.log(`Found cached result for ${cacheKey}`)
+        attemptResult = JSON.parse(existingCache)
+      }
+    }
+
+    attemptResult ||= await pRetry(async() => {
       await arkalis.launchBrowser()
 
       const result = await code(arkalis)
       if (arkalis.debugOptions.pauseAfterRun)
         await arkalis.pause()
+
+      // Store the successful result
+      if (arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
+        await arkalis.db.set(`result-${cacheKey}`, JSON.stringify(result), resultCacheTtl)
 
       attemptError = false
       return result
@@ -430,6 +468,8 @@ export class Arkalis {
   }
 
   public async close() {
+    await this.db.close()
+
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
     this.intercepts = []
 

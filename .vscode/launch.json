@@ -6,8 +6,9 @@
   "configurations": [
     {
       "name": "Launch Program",
+      // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
-      "args": ["delta", "SFO", "JFK", "2023-07-02"],
+      "args": ["fr24", "SFO", "JFK", "2023-07-02"],
       "envFile": "${workspaceFolder}/.env",
       "request": "launch",
       "skipFiles": [

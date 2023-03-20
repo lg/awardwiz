@@ -18,12 +18,17 @@ build:
 lint: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 --cache .
 
-check:
+[private]
+clean:
   npm clean-install
   rm -rf dist/ .eslintcache
+
+check:
   @just lint
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,arkalis,devtools-protocol
   @echo 'ok'
+
+check-clean: clean check
 
 # build docker image for running locally
 build-docker debug="1" tag=localtag platform=dockerarch: build

@@ -89,7 +89,7 @@ const runIncolumnitas = async () => {
     // await arkalis.pause()
 
     return problems.filter(p => p !== undefined)
-  }, debugOptions, { name: "incolumitas", defaultTimeout: 60_000, useGlobalCache: false }, "incolumitas")
+  }, debugOptions, { name: "incolumitas", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "incolumitas")
 
   return problems
 }
@@ -117,7 +117,7 @@ const runSannysoft = async () => {
     // await arkalis.pause()
 
     return problems.filter(p => p !== undefined)
-  }, debugOptions, { name: "sannysoft", defaultTimeout: 60_000, useGlobalCache: false }, "sannysoft")
+  }, debugOptions, { name: "sannysoft", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "sannysoft")
 
   return problems
 }
@@ -134,7 +134,7 @@ const runCreepJSWIP = async () => {
     await arkalis.pause()
 
     return []
-  }, debugOptions, { name: "creepjs", defaultTimeout: 60_000, useGlobalCache: false }, "creepjs")
+  }, debugOptions, { name: "creepjs", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "creepjs")
 
   return problems
 }

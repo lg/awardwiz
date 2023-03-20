@@ -22,4 +22,5 @@ fi
 
 trap 'exit 0;' INT TERM;
 
+mkdir -p tmp
 "$@"
