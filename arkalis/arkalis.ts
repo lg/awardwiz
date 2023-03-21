@@ -355,7 +355,7 @@ export class Arkalis {
     })
   }
 
-  private prettifyArgs = (args: any[]) => {
+  private static prettifyArgs = (args: any[]) => {
     if (typeof args === "string")
       return args
     return args.map((item: any) => typeof item === "string"
@@ -410,60 +410,63 @@ export class Arkalis {
   ///////////////////////////
 
   public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, cacheKey: string) {
-    const arkalis = new Arkalis(debugOptions, meta)
+    const startTime = Date.now()
+    let arkalis: Arkalis | undefined
+    const logLines: string[] = []
 
-    arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`
-    let attemptError = false
-    let attemptResult: ReturnType | undefined = undefined
+    return pRetry(async() => {
+      arkalis = new Arkalis(debugOptions, meta)
+      arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`    // unique id per attempt
 
-    const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
-    if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
-      const existingCache = await arkalis.db.get(`result-${cacheKey}`)
-      if (existingCache) {
-        arkalis.log(`Found cached result for ${cacheKey}`)
-        attemptResult = JSON.parse(existingCache)
+      // Use a previously cached response if available
+      const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
+      if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
+        const existingCache = await arkalis.db.get(`result-${cacheKey}`)
+        if (existingCache) {
+          arkalis.log(`Found and using cached result for ${cacheKey}`)
+          return { result: JSON.parse(existingCache) as ReturnType, logLines: arkalis.logLines }
+        }
       }
-    }
 
-    attemptResult ||= await pRetry(async() => {
       await arkalis.launchBrowser()
-
       const result = await code(arkalis)
-      if (arkalis.debugOptions.pauseAfterRun)
-        await arkalis.pause()
+      arkalis.debugOptions.pauseAfterRun && await arkalis.pause()
 
-      // Store the successful result
+      // Store the successful result into cache
       if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
         await arkalis.db.set(`result-${cacheKey}`, JSON.stringify(result), resultCacheTtl)
 
-      attemptError = false
-      return result
-
-    }, { retries: arkalis.debugOptions.maxAttempts! - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
-      attemptError = true
-      const fullError = arkalis.prettifyArgs([c.red("Ending scraper due to error"), error])
-      const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
-      arkalis.logLines.push(timestampedError)
-
-      if (arkalis.debugOptions.pauseAfterError) {
-        arkalis.log(error)
-        await arkalis.pause()
-      }
-      arkalis.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+      // Log this successful attempt
+      logLines.push(...arkalis.logLines)
+      arkalis.logAttemptResult(false)
+      arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats().summary})`)
       await arkalis.close()
 
-    }}).catch(async e => {    // failed all retries
-      arkalis.log(c.red(`All retry attempts exhausted: ${e.message}`))
-      return undefined
+      return { result, logLines }
 
-    }).finally(async () => {
-      arkalis.logAttemptResult(attemptError)
-      await arkalis.close().catch(() => {})
+    }, { retries: (debugOptions.maxAttempts ?? defaultDebugOptions.maxAttempts) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
+      const fullError = Arkalis.prettifyArgs([c.red("Ending scraper due to error"), error])
+      const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
+      arkalis!.logLines.push(timestampedError)
 
-      arkalis.log(`completed ${attemptError ? c.red("in failure ") : ""}in ${(Date.now() - arkalis.attemptStartTime).toLocaleString("en-US")}ms (${arkalis.stats().summary})`)
+      if (arkalis!.debugOptions.pauseAfterError) {
+        arkalis!.log(error)
+        await arkalis!.pause()
+      }
+      arkalis!.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
+
+      if (error.retriesLeft === 0)
+        arkalis!.log(c.red(`All retry attempts exhausted: ${error.message}`))
+
+      // Log this failed attempt
+      logLines.push(...arkalis!.logLines)
+      arkalis!.logAttemptResult(true)
+      await arkalis!.close()
+
+    }}).catch(() => {    // failed all retries
+      arkalis!.log(`completed ${c.red("in failure")} in ${(Date.now() - startTime).toLocaleString("en-US")}ms`)
+      return { result: undefined, logLines }
     })
-
-    return { result: attemptResult, logLines: arkalis.logLines }
   }
 
   public async close() {
