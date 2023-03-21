@@ -14,7 +14,7 @@ import * as dotenv from "dotenv"
 import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
-import Db from "./db.js"
+import ArkalisDb from "./db.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -71,11 +71,6 @@ export type DebugOptions = {
    * @default 3 */
   maxAttempts?: number
 
-  /** Use this sqlite3 db for shared global app cache and other shared state. Mount this as a volume to share between
-   * instances.
-   * @default "./tmp/awardwiz.db" */
-  globalDb?: string
-
   /** Use this directory for shared global browser cache. Mount this as a volume to share between instances.
    * @default "./tmp/browser-cache" */
   globalBrowserCacheDir?: string
@@ -104,6 +99,10 @@ export type DebugOptions = {
    * @default null */
   winston?: winston.Logger | null
 
+  /** Optionally use a database for things like caching results. If not set, won't use a database.
+   * @default null */
+  globalDb?: ArkalisDb | null
+
   /** Set to enable result cache
    * @default false */
   useResultCache?: boolean
@@ -114,7 +113,7 @@ export type DebugOptions = {
 }
 export const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, browserDebug: false, winston: null,
-  globalBrowserCacheDir: "./tmp/browser-cache", globalDb: "./tmp/awardwiz.db", drawMousePath: false,
+  globalBrowserCacheDir: "./tmp/browser-cache", globalDb: null, drawMousePath: false,
   timezone: null, showRequests: true, useResultCache: false, defaultResultCacheTtl: 0,
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
@@ -123,7 +122,7 @@ export class Arkalis {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
-  private db = new Db()
+  private db?: ArkalisDb
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
@@ -155,6 +154,7 @@ export class Arkalis {
   private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
     this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
     this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
+    this.db = this.debugOptions.globalDb ?? undefined
   }
 
   private async launchBrowser() {
@@ -411,14 +411,13 @@ export class Arkalis {
 
   public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, cacheKey: string) {
     const arkalis = new Arkalis(debugOptions, meta)
-    await arkalis.db.init(arkalis.debugOptions.globalDb)
 
     arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`
     let attemptError = false
     let attemptResult: ReturnType | undefined = undefined
 
     const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
-    if (arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
+    if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
       const existingCache = await arkalis.db.get(`result-${cacheKey}`)
       if (existingCache) {
         arkalis.log(`Found cached result for ${cacheKey}`)
@@ -434,7 +433,7 @@ export class Arkalis {
         await arkalis.pause()
 
       // Store the successful result
-      if (arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
+      if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
         await arkalis.db.set(`result-${cacheKey}`, JSON.stringify(result), resultCacheTtl)
 
       attemptError = false
@@ -468,8 +467,6 @@ export class Arkalis {
   }
 
   public async close() {
-    await this.db.close()
-
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
     this.intercepts = []
 

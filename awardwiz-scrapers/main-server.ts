@@ -5,15 +5,17 @@ import cors from "cors"
 import { logger, logGlobal } from "./log.js"
 import process from "node:process"
 import { DebugOptions, Arkalis } from "../arkalis/arkalis.js"
+import ArkalisDb from "../arkalis/db.js"
 
 const debugOptions: DebugOptions = {
   useProxy: true,
-  globalBrowserCacheDir: "./tmp/cache",
+  globalBrowserCacheDir: "./tmp/browser-cache",
   browserDebug: false,
   showRequests: false,
   log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
   winston: logger,
   useResultCache: true,
+  globalDb: await ArkalisDb.open("./tmp/arkalis.db")
 }
 
 const app = express()
