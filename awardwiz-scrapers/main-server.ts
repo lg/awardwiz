@@ -6,6 +6,7 @@ import { logger, logGlobal } from "./log.js"
 import process from "node:process"
 import { DebugOptions, Arkalis } from "../arkalis/arkalis.js"
 import ArkalisDb from "../arkalis/db.js"
+import Bottleneck from "bottleneck"
 
 const debugOptions: DebugOptions = {
   useProxy: true,
@@ -21,9 +22,13 @@ const debugOptions: DebugOptions = {
 const app = express()
 app.use(cors({ origin: true }))
 
-app.use((req, res, next) => {
+const limiter = new Bottleneck({ maxConcurrent: 10, minTime: 200 })
+app.use(async (req, res, next) => {
   logGlobal("Received request:", c.magenta(req.url))
-  next()
+  await limiter.schedule(async () => {
+    logGlobal("Processing request:", c.magenta(req.url))
+    next()
+  })
 })
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
