@@ -534,11 +534,14 @@ export class Arkalis {
             })
 
           case "html":
-            return new Promise<{name: string}>((resolve) => {
+            return new Promise<{name: string}>((resolve, reject) => {
               const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true, flags: "ugm" }) : params.html
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
-                const evalResult = await this.client.Runtime.evaluate({ expression: "document.documentElement.outerHTML", returnByValue: true })
+                const evalResult = await this.client.Runtime.evaluate(
+                  { expression: "document.documentElement.outerHTML", returnByValue: true }).catch((e) => { reject(e); return undefined })
+                if (!evalResult) return
+
                 const text = evalResult.result.value as string
                 if (htmlRegexp.test(text))
                   resolve({name})
