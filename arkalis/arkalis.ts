@@ -130,7 +130,7 @@ export class Arkalis {
   private scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
-  public defaultTimeoutMs = 30_000
+  public defaultTimeoutMs = 45_000
 
   private logLines: string[] = []
   private identifier: string = ""

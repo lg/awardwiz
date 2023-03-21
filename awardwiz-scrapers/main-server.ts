@@ -19,38 +19,38 @@ const debugOptions: DebugOptions = {
   globalDb: await ArkalisDb.open("./tmp/arkalis.db")
 }
 
+const limiter = new Bottleneck({ maxConcurrent: 5, minTime: 200 })
 const app = express()
-app.use(cors({ origin: true }))
 
-const limiter = new Bottleneck({ maxConcurrent: 10, minTime: 200 })
+app.use(cors({ origin: true }))
 app.use(async (req, res, next) => {
   logGlobal("Received request:", c.magenta(req.url))
-  await limiter.schedule(async () => {
-    logGlobal("Processing request:", c.magenta(req.url))
-    next()
-  })
+  next()
 })
 
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
-  const { scraperName, origin, destination, departureDate } = req.params
+  await limiter.schedule(async () => {
+    logGlobal("Processing request:", c.magenta(req.url))
+    const { scraperName, origin, destination, departureDate } = req.params
 
-  const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
-  const query = { origin: origin!, destination: destination!, departureDate: departureDate! }
+    const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
+    const query = { origin: origin!, destination: destination!, departureDate: departureDate! }
 
-  const cacheKey = scraperName === "fr24"
-    ? `${scraper.meta.name}-${query.origin}${query.destination}`
-    : `${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`
+    const cacheKey = scraperName === "fr24"
+      ? `${scraper.meta.name}-${query.origin}${query.destination}`
+      : `${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`
 
-  const results = await Arkalis.run(async (sc) => {
-    sc.log("Running scraper for", query)
-    const scraperResults = await scraper.runScraper(sc, query)
-    sc.log(c.green(`Completed with ${scraperResults.length} results`))
-    return scraperResults
-  }, debugOptions, scraper.meta, cacheKey)    // [2013-01-01 05:32:00.123 united-SFOLAX-0220-U7fw]
+    const results = await Arkalis.run(async (sc) => {
+      sc.log("Running scraper for", query)
+      const scraperResults = await scraper.runScraper(sc, query)
+      sc.log(c.green(`Completed with ${scraperResults.length} results`))
+      return scraperResults
+    }, debugOptions, scraper.meta, cacheKey)    // [2013-01-01 05:32:00.123 united-SFOLAX-0220-U7fw]
 
-  res.contentType("application/json")
-  res.status(results.result === undefined ? 500 : 200)
-  res.end(JSON.stringify(results))
+    res.contentType("application/json")
+    res.status(results.result === undefined ? 500 : 200)
+    res.end(JSON.stringify(results))
+  })
 })
 
 // app.get("/health-check", async (req, res) => {
