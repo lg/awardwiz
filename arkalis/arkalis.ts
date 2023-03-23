@@ -37,7 +37,7 @@ export type ScraperMetadata = {
   blockUrls?: string[]
 
   /** Set the default timeout for navigation and selector requests.
-   * @default 15000 */
+   * @default 30000 */
   defaultTimeout?: number
 
   /** Browser resources will be cached globally (i.e. across all running instances) if this is true. Set to false to
@@ -51,7 +51,7 @@ export type ScraperMetadata = {
   resultCacheTtl?: number | null
 }
 export const defaultScraperMetadata: Required<ScraperMetadata> = {
-  name: "default", defaultTimeout: 15000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtl: null
+  name: "default", defaultTimeout: 30000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtl: null
 }
 
 export type DebugOptions = {
