@@ -135,6 +135,7 @@ export class Arkalis {
   private logLines: string[] = []
   private identifier: string = ""
   private attemptStartTime: number = Date.now()
+  private lastResponseTime: number = Date.now()
 
   private intercepts: { pattern: RegExp, type: "Request" | "Response", callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
   private onExitHandler: any
@@ -273,6 +274,7 @@ export class Arkalis {
       this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
     })
     this.client.Network.responseReceived((response) => {    // headers only
+      this.lastResponseTime = Date.now()
       if (!this.requests[response.requestId])
         this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.response = response.response
@@ -280,6 +282,7 @@ export class Arkalis {
         this.requests[response.requestId]!.downloadedBytes = parseInt(response.response.headers["content-length"] ?? "0")
     })
     this.client.Network.loadingFinished((response) => {
+      this.lastResponseTime = Date.now()
       if (!this.requests[response.requestId])
         this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
@@ -287,6 +290,7 @@ export class Arkalis {
       this.completedLoading(response.requestId)
     })
     this.client.Network.loadingFailed((response) => {
+      this.lastResponseTime = Date.now()
       if (!this.requests[response.requestId])
         this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
@@ -550,8 +554,18 @@ export class Arkalis {
         }
       })
       promises.push(new Promise((resolve) => {
-        // eslint-disable-next-line no-restricted-globals
-        timeout = setTimeout(() => resolve({name: "timeout"}), this.defaultTimeoutMs)
+        /* eslint-disable no-restricted-globals */
+        // We use a timeout since the last response received (not since the timer started) as a way of detecting if
+        // the socket is no longer functional
+        const timeoutHandler = () => {
+          if (Date.now() - this.lastResponseTime >= this.defaultTimeoutMs) {
+            resolve({name: "timeout"})
+          } else {
+            timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs - (Date.now() - this.lastResponseTime))
+          }
+        }
+        timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs)
+        /* eslint-enable no-restricted-globals */
       }))
 
       const result = await Promise.race(promises) as {name: string, response: any}
