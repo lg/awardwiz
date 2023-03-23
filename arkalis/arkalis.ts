@@ -130,7 +130,7 @@ export class Arkalis {
   private scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
-  public defaultTimeoutMs = 45_000
+  public defaultTimeoutMs = defaultScraperMetadata.defaultTimeout
 
   private logLines: string[] = []
   private identifier: string = ""
@@ -556,7 +556,7 @@ export class Arkalis {
 
       const result = await Promise.race(promises) as {name: string, response: any}
       if (result.name === "timeout")
-        throw new Error("Timeout waiting for items")
+        throw new Error(`Timeout waiting for items (${this.defaultTimeoutMs} ms})`)
 
       return result
 

@@ -4,7 +4,7 @@ import { AeroplanResponse } from "../scraper-types/aeroplan.js"
 
 export const meta: ScraperMetadata = {
   name: "aeroplan",
-  defaultTimeout: 25000,
+  defaultTimeout: 45_000,
   blockUrls: ["go-mpulse.net", "adobedtm.com", "techlab-cdn.com"]
 }
 
