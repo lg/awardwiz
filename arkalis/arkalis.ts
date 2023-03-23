@@ -14,7 +14,7 @@ import * as dotenv from "dotenv"
 import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
-import ArkalisDb from "./db.js"
+import FileSystemCache from "./fs-cache.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
 export type WaitForReturn = { name: string, response?: any }
@@ -99,9 +99,9 @@ export type DebugOptions = {
    * @default null */
   winston?: winston.Logger | null
 
-  /** Optionally use a database for things like caching results. If not set, won't use a database.
+  /** Path to store cache of items like results. If not set, will not use a cache.
    * @default null */
-  globalDb?: ArkalisDb | null
+  globalCachePath?: string | null
 
   /** Set to enable result cache
    * @default false */
@@ -113,7 +113,7 @@ export type DebugOptions = {
 }
 export const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, browserDebug: false, winston: null,
-  globalBrowserCacheDir: "./tmp/browser-cache", globalDb: null, drawMousePath: false,
+  globalBrowserCacheDir: "./tmp/browser-cache", globalCachePath: null, drawMousePath: false,
   timezone: null, showRequests: true, useResultCache: false, defaultResultCacheTtl: 0,
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
@@ -122,7 +122,7 @@ export class Arkalis {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
-  private db?: ArkalisDb
+  private cache?: FileSystemCache
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
@@ -155,7 +155,8 @@ export class Arkalis {
   private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
     this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
     this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
-    this.db = this.debugOptions.globalDb ?? undefined
+    if (this.debugOptions.globalCachePath)
+      this.cache = new FileSystemCache(this.debugOptions.globalCachePath)
   }
 
   private async launchBrowser() {
@@ -424,11 +425,11 @@ export class Arkalis {
 
       // Use a previously cached response if available
       const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
-      if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
-        const existingCache = await arkalis.db.get(`result-${cacheKey}`)
+      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
+        const existingCache = await arkalis.cache.get(`result-${cacheKey}`)
         if (existingCache) {
           arkalis.log(`Found and using cached result for ${cacheKey}`)
-          return { result: JSON.parse(existingCache) as ReturnType, logLines: arkalis.logLines }
+          return { result: existingCache as ReturnType, logLines: arkalis.logLines }
         }
       }
 
@@ -437,8 +438,8 @@ export class Arkalis {
       arkalis.debugOptions.pauseAfterRun && await arkalis.pause()
 
       // Store the successful result into cache
-      if (arkalis.db && arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
-        await arkalis.db.set(`result-${cacheKey}`, JSON.stringify(result), resultCacheTtl)
+      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
+        await arkalis.cache.set(`result-${cacheKey}`, result, resultCacheTtl)
 
       // Log this successful attempt
       logLines.push(...arkalis.logLines)

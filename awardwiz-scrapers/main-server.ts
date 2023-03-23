@@ -5,18 +5,20 @@ import cors from "cors"
 import { logger, logGlobal } from "./log.js"
 import process from "node:process"
 import { DebugOptions, Arkalis } from "../arkalis/arkalis.js"
-import ArkalisDb from "../arkalis/db.js"
 import Bottleneck from "bottleneck"
+import path from "node:path"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 const debugOptions: DebugOptions = {
   useProxy: true,
-  globalBrowserCacheDir: "./tmp/browser-cache",
+  globalBrowserCacheDir: process.env["TMP_PATH"] ? path.join(process.env["TMP_PATH"], "browser-cache") : "./tmp/browser-cache",
   browserDebug: false,
   showRequests: false,
   log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
   winston: logger,
   useResultCache: true,
-  globalDb: await ArkalisDb.open("./tmp/arkalis.db")
+  globalCachePath: process.env["TMP_PATH"] ? path.join(process.env["TMP_PATH"], "arkalis-cache") : "./tmp/arkalis-cache"
 }
 
 const limiter = new Bottleneck({ maxConcurrent: 5, minTime: 200 })

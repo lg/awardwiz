@@ -8,7 +8,7 @@
       "name": "Launch Program",
       // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
-      "args": ["aeroplan", "LIH", "SFO", "2023-03-27"],
+      "args": ["fr24", "LIH", "SFO", "2023-03-27"],
       "envFile": "${workspaceFolder}/.env",
       "request": "launch",
       "skipFiles": [

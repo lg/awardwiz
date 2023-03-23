@@ -35,7 +35,6 @@
     "glob-to-regexp": "^0.4.1",
     "p-retry": "^5.1.2",
     "pako": "^2.1.0",
-    "sqlite3": "^5.1.6",
     "tmp-promise": "^3.0.3",
     "winston": "^3.8.2",
     "winston-loki": "^6.0.6"

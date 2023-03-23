@@ -11,6 +11,9 @@ const options: DebugOptions = {
   drawMousePath: false,
   log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
   winston: logger,
+
+  useResultCache: true,
+  globalCachePath: "./tmp/arkalis-cache"
 }
 
 if (process.argv.length < 6)
