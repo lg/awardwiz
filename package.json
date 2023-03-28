@@ -9,17 +9,16 @@
     "coverage": "NODE_NO_WARNINGS=1 vitest run --coverage",
     "build": "pnpm run schemas && tsc && vite build",
     "preview": "vite preview",
-    "start": "pnpm run schemas && concurrently --kill-others --names firebase,vite,tsc-watch --prefix-colors yellow,white,cyan \"pnpm start-emulators\" \"vite\" \"cd functions; pnpm tsc -w --preserveWatchOutput\" ",
+    "start": "pnpm run schemas && concurrently --kill-others --names firebase,vite,tsc-watch --prefix-colors yellow,white,cyan \"pnpm start-emulators\" \"vite\" ",
     "start-emulators": "pnpm exec firebase emulators:start",
     "depcheck": "depcheck --ignores @iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch",
     "schemas": "json2ts -i 'src/**/*.schema.json' -o 'src/types/'",
     "prepare": "husky install",
-    "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test run && SHOW_VIZ=false pnpm build --log-level=error && cd functions && pnpm check && echo 'ok'",
+    "check": "NODE_NO_WARNINGS=1 pnpm run depcheck && echo 'linting' && TIMING=1 eslint --cache . && pnpm test run && SHOW_VIZ=false pnpm build --log-level=error && echo 'ok'",
     "lets-upgrade-packages": "NPM_CHECK_INSTALLER=pnpm npm-check -u",
     "marked-fares-worker": "NODE_OPTIONS=--no-experimental-fetch NODE_NO_WARNINGS=1 vite-node src/workers/marked-fares.ts",
     "preview-email-worker": "vite-node src/workers/preview-email.ts",
-    "gen-statics-worker": "vite-node src/workers/gen-statics.ts",
-    "deploy-functions": "pnpm firebase deploy --only functions --force --debug"
+    "gen-statics-worker": "vite-node src/workers/gen-statics.ts"
   },
   "lint-staged": {
     "*.{ts,tsx}": "eslint --fix"
@@ -93,7 +92,6 @@
   "eslintIgnore": [
     "src/types/*.schema.d.ts",
     "dist/",
-    "functions/lib/",
     "vite-plugin-firebase.ts"
   ]
 }

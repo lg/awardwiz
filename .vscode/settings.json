@@ -13,7 +13,6 @@
     "**/node_modules": true,
     "coverage": true,
     "src/scrapers/dist": true,
-    "functions/lib": true,
     "old": true,
     "**/dist": true,
     "**/*-debug.log": true,

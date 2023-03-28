@@ -7,7 +7,7 @@ interface ImportMetaEnv {
   /** Google client id for oauth (ex. "123123123213-jgjkhewfgj23hgjkhgfk3.apps.googleusercontent.com") */
   readonly VITE_GOOGLE_CLIENT_ID: string
 
-  /** The URL on Google Functions where the scrapers are deployed. ex: `https://awardwiz-abcdefgh-uc.a.run.app` */
+  /** The URL for `awardwiz-scrapers`, example: `http://127.0.0.1:2222` */
   readonly VITE_SCRAPERS_URL: string
 
   /** The url to log scraper results to ex: https://123456:apikey@logs-prod3.grafana.net/loki/api/v1/push (optional) */
@@ -30,10 +30,6 @@ interface ImportMetaEnv {
    * 'Settings > Project settings > General' and scroll to the bottom and select Config for your web app.
    * The format is: {"apiKey": "...", "authDomain": "...", ...} */
   readonly VITE_FIREBASE_CONFIG_JSON: string
-
-  /** Beginning of url where we will hit our functions. Ex: `https://us-central1-ABCD.cloudfunctions.net`.
-   * This is overridden when using firebase emulators. */
-  readonly VITE_FIREBASE_FUNCTIONS_URL: string
 
   /** Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts'
    * from when you created it. If you create a new one now, note the old one will be immediately disabled.

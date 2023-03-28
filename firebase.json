@@ -15,23 +15,5 @@
     "auth": {
       "port": 9099
     }
-  },
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "runtime": "nodejs16",
-      "ignore": [
-        "node_modules",
-        "pnpm-lock.yaml",
-        ".*",
-        "*.log",
-        "tsconfig.json"
-      ],
-      "predeploy": [
-        "pnpm --prefix \"$RESOURCE_DIR\" run lint",
-        "pnpm --prefix \"$RESOURCE_DIR\" run build"
-      ]
-    }
-  ]
+  }
 }
