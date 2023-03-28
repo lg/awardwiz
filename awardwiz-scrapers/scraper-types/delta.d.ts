@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
+
 export interface DeltaResponse {
   badgesInfo: BadgesInfo
   tripOriginAirportCode: string
@@ -55,7 +57,7 @@ export interface DeltaResponse {
         errorKey: string
         reasonCode: string
         reasonMsg: string
-        errorTags: {}
+        errorTags: unknown
       }
     }
   }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-interface */
 export interface UnitedResponse {
   data?: Data
   Error: any

@@ -4,7 +4,7 @@ import { Bezier, Point } from "bezier-js"
 export class Mouse {
   private curMousePos
 
-  constructor(private client: CDP.Client, private viewportSize: number[], private debug: boolean) {
+  public constructor(private readonly client: CDP.Client, private readonly viewportSize: number[], private readonly debug: boolean) {
     this.curMousePos = [Math.random() * viewportSize[0]!, 0]  // start at top of viewport since that's where the URL bar would be
   }
 

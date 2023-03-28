@@ -122,19 +122,19 @@ export class Arkalis {
   private browserInstance?: ChildProcess
   private requests: Record<string, Request> = {}
   private mouse!: Mouse
-  private cache?: FileSystemCache
+  private readonly cache?: FileSystemCache
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
-  private debugOptions: Required<DebugOptions>
-  private scraperMeta: Required<ScraperMetadata>
+  private readonly debugOptions: Required<DebugOptions>
+  private readonly scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
   public defaultTimeoutMs = defaultScraperMetadata.defaultTimeout
 
-  private logLines: string[] = []
-  private identifier: string = ""
-  private attemptStartTime: number = Date.now()
+  private readonly logLines: string[] = []
+  private identifier = ""
+  private readonly attemptStartTime: number = Date.now()
   private lastResponseTime: number = Date.now()
 
   private intercepts: { pattern: RegExp, type: "Request" | "Response", callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
@@ -308,7 +308,7 @@ export class Arkalis {
   }
 
   // Called whenever a request/response is processed
-  private onRequestPaused = (req: Protocol.Fetch.RequestPausedEvent) => {
+  private async onRequestPaused(req: Protocol.Fetch.RequestPausedEvent) {
     for (const intercept of this.intercepts.filter(i => (req.responseStatusCode && i.type === "Response")
         || (!req.responseStatusCode && i.type === "Request"))) {
       if (intercept.pattern.test(req.request.url)) {
@@ -343,7 +343,7 @@ export class Arkalis {
   }
 
   // Called when HTTP proxy auth is required
-  private onAuthRequired = (authReq: Protocol.Fetch.AuthRequiredEvent) => {
+  private onAuthRequired(authReq: Protocol.Fetch.AuthRequiredEvent) {
     if (authReq.authChallenge.source !== "Proxy")
       return
     if (!this.proxy)
@@ -360,7 +360,7 @@ export class Arkalis {
     })
   }
 
-  private static prettifyArgs = (args: any[]) => {
+  private static prettifyArgs(args: any[]) {
     if (typeof args === "string")
       return args
     return args.map((item: any) => typeof item === "string"
@@ -505,12 +505,12 @@ export class Arkalis {
    * will wait only trigger on that http status code, unless the expected code is 200 in which case the request will be
    * validated */
   public async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
-    const subscriptions: Function[] = []
+    const subscriptions: (() => void)[] = []
     const pollingTimers: NodeJS.Timer[] = []
     let timeout: NodeJS.Timeout | undefined
 
     try {
-      const promises = Object.entries(items).map(([name, params]) => {
+      const promises = Object.entries(items).map(async ([name, params]) => {
         switch (params.type) {
           case "url":
             return new Promise<{name: string, response: object}>((resolve, reject) => {

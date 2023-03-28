@@ -5,7 +5,7 @@ import fsSync from "fs"
 class FileSystemCache {
   private static readonly keyRegex = /^[\w-]+$/u
 
-  constructor(private basePath: string) {
+  public constructor(private readonly basePath: string) {
     if (!fsSync.existsSync(basePath))
       fsSync.mkdirSync(basePath, { recursive: true })
   }
@@ -24,7 +24,7 @@ class FileSystemCache {
     )
   }
 
-  async set(key: string, value: any, ttl: number): Promise<void> {
+  public async set(key: string, value: any, ttl: number): Promise<void> {
     if (!FileSystemCache.keyRegex.test(key))
       throw new Error(`Invalid key: ${key}`)
 
@@ -35,7 +35,7 @@ class FileSystemCache {
     await fs.writeFile(filePath, content)
   }
 
-  async get<T>(key: string): Promise<T | undefined> {
+  public async get<T>(key: string): Promise<T | undefined> {
     if (!FileSystemCache.keyRegex.test(key))
       throw new Error(`Invalid key: ${key}`)
 
