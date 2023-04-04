@@ -45,6 +45,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
   arkalis.goto("https://www.delta.com/flight-search/book-a-flight")
   await arkalis.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", statusCode: 200 }})
+  await arkalis.waitFor({ "success": { type: "selector", selector: "#chkFlexDate" }})
+  await arkalis.waitFor({ "success": { type: "selector", selector: "#btnSubmit" }})
   await arkalis.clickSelector("#chkFlexDate")
   void arkalis.clickSelector("#btnSubmit")   // async
 
@@ -52,6 +54,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     "success": { type: "url", url: "https://www.delta.com/shop/ow/search", statusCode: 200 },
     "system unavailable anti-botting": { type: "url", url: "https://www.delta.com/content/www/en_US/system-unavailable1.html" },
     "continue button": { type: "url", url: "https://www.delta.com/shop/ow/flexdatesearch" },
+    "oh no anti-botting": { type: "html", html: "Please try again.#100904A" },
   })
   if (waitForResult.name === "continue button") {
     arkalis.log("interstitial page with continue button appeared, clicking it")
@@ -71,9 +74,14 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     }
     if (searchResults.shoppingError.error.message.errorKey === "ITA404Error3Award")    // No results were found
       return []
+
+    // No results were found for the direct (ex PVG-LHR on most days)
+    if (searchResults.shoppingError.error.message.errorKey === "ita210Error4")
+      return []
+
     if (searchResults.shoppingError.error.message.reasonCode === "406")   // All flights already departed
       return []
-    throw new Error(searchResults.shoppingError.error.message.message)
+    throw new Error(`Unknown error: ${JSON.stringify(searchResults.shoppingError.error.message)}`)
   }
 
   arkalis.log("finished getting results, parsing")
