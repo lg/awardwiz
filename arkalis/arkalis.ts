@@ -16,7 +16,7 @@ import util from "util"
 import winston from "winston"
 import FileSystemCache from "./fs-cache.js"
 
-export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp }
+export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
 export type WaitForReturn = { name: string, response?: any }
 type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success?: boolean }
 
@@ -549,6 +549,17 @@ export class Arkalis {
 
                 const text = evalResult.result.value as string
                 if (htmlRegexp.test(text))
+                  resolve({name})
+              }, 1000))
+            })
+
+          case "selector":
+            return new Promise<{name: string}>((resolve, reject) => {
+              // eslint-disable-next-line no-restricted-globals
+              pollingTimers.push(setInterval(async () => {
+                const doc = await this.client.DOM.getDocument({ depth: -1 })
+                const node = await this.client.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
+                if (node.nodeId)
                   resolve({name})
               }, 1000))
             })
