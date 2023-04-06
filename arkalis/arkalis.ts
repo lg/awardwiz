@@ -184,6 +184,12 @@ export class Arkalis {
       windowPos = [Math.ceil((screenResolution[0]! - windowSize[0]!) * Math.random()), Math.ceil((screenResolution[1]! - windowSize[1]!) * Math.random())]
     }
 
+    // these domains are used by the browser when creating a new profile
+    const blockDomains = [
+      "accounts.google.com", "clients2.google.com", "www.google.com", "optimizationguide-pa.googleapis.com",
+      "content-autofill.googleapis.com"
+    ]
+
     const switches = [
       // these should all be undetectable, but speed things up
       "disable-sync", "disable-backgrounding-occluded-windows", "disable-breakpad",
@@ -192,7 +198,7 @@ export class Arkalis {
       "no-first-run", "no-default-browser-check", "disable-prompt-on-repost", "disable-client-side-phishing-detection",
       "disable-features=InterestFeedContentSuggestions", "disable-features=Translate", "disable-hang-monitor",
       "autoplay-policy=no-user-gesture-required", "use-mock-keychain", "disable-omnibox-autocomplete-off-method",
-      "disable-gaia-services", "disable-crash-reporter", "homepage 'about:blank'",
+      "disable-gaia-services", "disable-crash-reporter", "homepage \"about:blank\"",
       "disable-features=MediaRouter", "metrics-recording-only", "disable-features=OptimizationHints",
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
       "noerrdialogs", "disable-component-update",
@@ -201,8 +207,10 @@ export class Arkalis {
 
       // "disable-blink-features=AutomationControlled", // not working
       // "auto-open-devtools-for-tabs",
+      // "log-net-log=tmp/out.json", "net-log-capture-mode=Everything",     // note, does not log requests
 
       this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
+      `host-rules="${blockDomains.map(blockDomain => `MAP ${blockDomain} 0.0.0.0`).join(", ")}"`,   // NOTE: detectable!
       this.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir="${this.debugOptions.globalBrowserCacheDir}"` : "",
       `user-data-dir="${this.tmpDir.path}"`,
       windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
