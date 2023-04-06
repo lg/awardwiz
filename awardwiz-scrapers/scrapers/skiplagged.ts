@@ -21,7 +21,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     throw new Error(`Error: ${json.message}`)
   }
 
-  const flightsWithFares: FlightWithFares[] = Object.entries(json.flights).map(([id, flight]) => {
+  const flightsWithFares: FlightWithFares[] = Object.entries(json.flights ?? {}).map(([id, flight]) => {
     if (flight.count !== 1 || flight.segments.length !== 1)
       return
     const segment = flight.segments[0]! as Segment

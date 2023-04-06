@@ -2,7 +2,7 @@ export interface SkipLaggedResponse {
   airlines: Airlines
   cities: Cities
   airports: Airports
-  flights: Flights
+  flights?: Flights
   itineraries?: Itineraries
   info: Info
   duration: number
