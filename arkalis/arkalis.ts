@@ -186,7 +186,7 @@ export class Arkalis {
 
     // these domains are used by the browser when creating a new profile
     const blockDomains = [
-      "accounts.google.com", "clients2.google.com", "www.google.com", "optimizationguide-pa.googleapis.com",
+      "accounts.google.com", "clients2.google.com", "optimizationguide-pa.googleapis.com",
       "content-autofill.googleapis.com"
     ]
 
