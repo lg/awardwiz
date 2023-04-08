@@ -48,15 +48,19 @@ tail-prod-logs:
     sleep 1
   done
 
+# 9229 is for node debugger, 8282 is for the vnc web server
 [private]
 run-docker extra="": build-docker
-  docker run -it --rm -p 8282:8282 --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro --volume $(pwd)/tmp:/usr/src/awardwiz/tmp {{extra}}
+  docker run -it --rm -p 8282:8282 -p 9229:9229 --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro --volume $(pwd)/tmp:/usr/src/awardwiz/tmp {{extra}}
 
 run-server:
   just run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-server.js"
 
 run-debug scraper origin destination date:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+
+run-debug-brk scraper origin destination date:
+  just run-docker "awardwiz:scrapers node --inspect-brk=0.0.0.0:9229 --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
 test-anti-botting:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"

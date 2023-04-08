@@ -5,7 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Program",
+      "name": "Attach to Docker",
+      "address": "127.0.0.1",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/usr/src/awardwiz",
+      "request": "attach",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node",
+      "continueOnAttach": true,
+    },
+    {
+      "name": "Launch Debug",
       // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
       "args": ["fr24", "LIH", "SFO", "2023-03-27"],
