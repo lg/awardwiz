@@ -15,17 +15,11 @@ import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
 import FileSystemCache from "./fs-cache.js"
+import { Stats } from "./stats.js"
+import { Intercept, InterceptAction } from "./intercept.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
 export type WaitForReturn = { name: string, response?: any }
-type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success?: boolean }
-
-export type InterceptAction = {
-  action: "fulfill" | "continue" | "fail"
-  dataObj?: object
-} & (
-  (Protocol.Fetch.FulfillRequestRequest | Protocol.Fetch.ContinueRequestRequest | Protocol.Fetch.FailRequestRequest) | Omit<Protocol.Fetch.FulfillRequestRequest, "requestId">
-)
 
 export type ScraperMetadata = {
   /** Unique name for the scraper */
@@ -119,15 +113,18 @@ export const defaultDebugOptions: Required<DebugOptions> = {
 }
 
 export class Arkalis {
-  private browserInstance?: ChildProcess
-  private requests: Record<string, Request> = {}
+  public readonly debugOptions: Required<DebugOptions>
+  public readonly scraperMeta: Required<ScraperMetadata>
+
   private mouse!: Mouse
+  private stats!: Stats
+  private intercept!: Intercept
+
+  private browserInstance?: ChildProcess
   private readonly cache?: FileSystemCache
 
   private static proxies: Record<string, string[]> = {}
   private proxy: string | undefined = undefined
-  private readonly debugOptions: Required<DebugOptions>
-  private readonly scraperMeta: Required<ScraperMetadata>
 
   public client!: CDP.Client
   public defaultTimeoutMs = defaultScraperMetadata.defaultTimeout
@@ -135,9 +132,7 @@ export class Arkalis {
   private readonly logLines: string[] = []
   private identifier = ""
   private readonly attemptStartTime: number = Date.now()
-  private lastResponseTime: number = Date.now()
 
-  private intercepts: { pattern: RegExp, type: "Request" | "Response", callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction }[] = []
   private onExitHandler: any
   private tmpDir?: tmp.DirectoryResult
 
@@ -264,10 +259,8 @@ export class Arkalis {
     await this.client.Runtime.enable()
     await this.client.DOM.enable()
 
-    await this.client.Fetch.enable({ handleAuthRequests: true, patterns:
-      [{ urlPattern: "*", requestStage: "Request" }, { urlPattern: "*", requestStage: "Response" }] })
-    this.client.Fetch.requestPaused(this.onRequestPaused.bind(this))
-    this.client.Fetch.authRequired(this.onAuthRequired.bind(this))
+    this.intercept = new Intercept(this.client, this.onAuthRequired.bind(this))
+    await this.intercept.enable()
 
     // timezone
     if (this.debugOptions.timezone)
@@ -277,35 +270,7 @@ export class Arkalis {
     this.mouse = new Mouse(this.client, windowSize, this.debugOptions.drawMousePath!)
 
     // used for stats and request logging
-    this.client.Network.requestWillBeSent((request) => {
-      if (!this.requests[request.requestId])
-        this.requests[request.requestId] = { requestId: request.requestId, downloadedBytes: 0 }
-      this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
-    })
-    this.client.Network.responseReceived((response) => {    // headers only
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
-      this.requests[response.requestId]!.response = response.response
-      if (!response.response.fromDiskCache)
-        this.requests[response.requestId]!.downloadedBytes = parseInt(response.response.headers["content-length"] ?? "0")
-    })
-    this.client.Network.loadingFinished((response) => {
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
-      this.requests[response.requestId]!.endTime = response.timestamp
-      this.requests[response.requestId]!.success = true
-      this.completedLoading(response.requestId)
-    })
-    this.client.Network.loadingFailed((response) => {
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
-      this.requests[response.requestId]!.endTime = response.timestamp
-      this.requests[response.requestId]!.success = false
-      this.completedLoading(response.requestId, response)
-    })
+    this.stats = new Stats(this.client, this.debugOptions.showRequests, this.log.bind(this))
 
     // timeouts
     this.scraperMeta.defaultTimeout && (this.defaultTimeoutMs = this.scraperMeta.defaultTimeout)
@@ -313,41 +278,6 @@ export class Arkalis {
     // block requested URLs
     if (this.scraperMeta.blockUrls.length > 0)
       await this.client.Network.setBlockedURLs({ urls: this.scraperMeta.blockUrls })
-  }
-
-  // Called whenever a request/response is processed
-  private async onRequestPaused(req: Protocol.Fetch.RequestPausedEvent) {
-    for (const intercept of this.intercepts.filter(i => (req.responseStatusCode && i.type === "Response")
-        || (!req.responseStatusCode && i.type === "Request"))) {
-      if (intercept.pattern.test(req.request.url)) {
-        const action = intercept.callback(req)
-        if (action.action === "continue") {
-          if (req.responseStatusCode) {
-            return this.client.Fetch.continueResponse({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueResponseRequest)
-          } else {
-            if (action.dataObj)
-              return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId, postData: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.ContinueRequestRequest)
-            else
-              return this.client.Fetch.continueRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.ContinueRequestRequest)
-          }
-
-        } else if (action.action === "fulfill") {
-          if (action.dataObj)
-            return this.client.Fetch.fulfillRequest({ ...action, requestId: req.requestId, body: Buffer.from(JSON.stringify(action.dataObj)).toString("base64") } as Protocol.Fetch.FulfillRequestRequest)
-          else
-            return this.client.Fetch.fulfillRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.FulfillRequestRequest)
-
-        } else {
-          return this.client.Fetch.failRequest({ ...action, requestId: req.requestId } as Protocol.Fetch.FailRequestRequest)
-        }
-      }
-    }
-
-    // No intercepts matched, continue as normal
-    if (req.responseStatusCode)
-      return this.client.Fetch.continueResponse({ requestId: req.requestId }).catch(() => {})
-    else
-      return this.client.Fetch.continueRequest({ requestId: req.requestId }).catch(() => {})
   }
 
   // Called when HTTP proxy auth is required
@@ -388,32 +318,6 @@ export class Arkalis {
       },
       noConsole: true,
     })
-  }
-
-  private completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
-    const item = this.requests[requestId]!
-    if (!this.requests[requestId]?.request?.method)
-      return
-
-    let status = c.red("???")
-    if (item.response?.status) {
-      status = c[item.response.status >= 400 ? "red" : item.response.status >= 300 ? "yellow" : "green"](item.response.status.toString())
-
-    } else if (failedResponse) {
-      status = c.red(failedResponse.blockedReason === "inspector" ? "BLK" : "ERR")
-      if (failedResponse.blockedReason !== "inspector" && failedResponse.errorText !== "net::ERR_ABORTED")
-        this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url}`))
-    }
-
-    const urlToShow = item.request!.url.startsWith("data:") ? `${item.request!.url.slice(0, 80)}...` : item.request!.url
-    const line =
-      `${status} ` +
-      `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
-      `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
-      `${c.white(urlToShow)} ` +
-      `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
-
-    this.debugOptions.showRequests && this.log(line)
   }
 
   private async throwIfBadResponse(statusCode: number, bodyText: string) {
@@ -462,7 +366,7 @@ export class Arkalis {
       // Log this successful attempt
       logLines.push(...arkalis.logLines)
       arkalis.logAttemptResult(false)
-      arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats().summary})`)
+      arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats.toString().summary})`)
       await arkalis.close()
 
       return { result, logLines }
@@ -494,7 +398,7 @@ export class Arkalis {
 
   public async close() {
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
-    this.intercepts = []
+    await this.intercept.disable()
 
     process.removeListener("exit", this.onExitHandler)
 
@@ -502,7 +406,6 @@ export class Arkalis {
     await this.client.Page.disable().catch(() => {})
     await this.client.Runtime.disable().catch(() => {})
     await this.client.DOM.disable().catch(() => {})
-    await this.client.Fetch.disable().catch(() => {})
 
     await this.client.Browser.close().catch(() => {})
     await this.client.close().catch(() => {})
@@ -588,10 +491,10 @@ export class Arkalis {
         // We use a timeout since the last response received (not since the timer started) as a way of detecting if
         // the socket is no longer functional
         const timeoutHandler = () => {
-          if (Date.now() - this.lastResponseTime >= this.defaultTimeoutMs) {
+          if (Date.now() - this.stats.lastResponseTime >= this.defaultTimeoutMs) {
             resolve({name: "timeout"})
           } else {
-            timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs - (Date.now() - this.lastResponseTime))
+            timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs - (Date.now() - this.stats.lastResponseTime))
           }
         }
         timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs)
@@ -621,26 +524,16 @@ export class Arkalis {
     return result.result.value as ReturnType
   }
 
-  public stats() {
-    const totRequests = Object.values(this.requests).length
-    const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
-    const cacheMisses = totRequests - cacheHits
-    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.downloadedBytes), 0)
-
-    const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
-    return { totRequests, cacheHits, cacheMisses, bytes, summary }
-  }
-
   public async clickSelector(selector: string) {
     return this.mouse.clickSelector(selector)
   }
 
   public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), type: "Request", callback })
+    this.intercept.add(globToRegexp(urlPattern, { extended: true }), "Request", callback)
   }
 
   public async interceptResponse(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercepts.push({ pattern: globToRegexp(urlPattern, { extended: true }), type: "Response", callback })
+    this.intercept.add(globToRegexp(urlPattern, { extended: true }), "Response", callback)
   }
 
   public log(...args: any[]) {
