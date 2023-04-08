@@ -304,7 +304,7 @@ export class Arkalis {
         this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
       this.requests[response.requestId]!.endTime = response.timestamp
       this.requests[response.requestId]!.success = false
-      this.completedLoading(response.requestId)
+      this.completedLoading(response.requestId, response)
     })
 
     // timeouts
@@ -390,14 +390,24 @@ export class Arkalis {
     })
   }
 
-  private completedLoading(requestId: string) {
+  private completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
     const item = this.requests[requestId]!
     if (!this.requests[requestId]?.request?.method)
       return
 
+    let status = c.red("???")
+    if (item.response?.status) {
+      status = c[item.response.status >= 400 ? "red" : item.response.status >= 300 ? "yellow" : "green"](item.response.status.toString())
+
+    } else if (failedResponse) {
+      status = c.red(failedResponse.blockedReason === "inspector" ? "BLK" : "ERR")
+      if (failedResponse.blockedReason !== "inspector")
+        this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url}`))
+    }
+
     const urlToShow = item.request!.url.startsWith("data:") ? `${item.request!.url.slice(0, 80)}...` : item.request!.url
     const line =
-      `${item.response?.status ? c.green(item.response.status.toString()) : c.red("BLK")} ` +
+      `${status} ` +
       `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
       `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
       `${c.white(urlToShow)} ` +
