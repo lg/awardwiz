@@ -1,17 +1,18 @@
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { AeroplanResponse } from "../scraper-types/aeroplan.js"
+import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "aeroplan",
-  blockUrls: ["go-mpulse.net", "adobedtm.com", "techlab-cdn.com"]
+  blockUrls: ["go-mpulse.net", "adobedtm.com"] // , "techlab-cdn.com"]
 }
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const paramsText = `org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`
   await arkalis.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
   const waitForResult = await arkalis.waitFor({
-    "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds", statusCode: 200 },
+    "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds" },
     "anti-botting1": { type: "url", url: "*/aeroplan/redeem/" },
     "anti-botting2": { type: "url", url: "*/loyalty/dapidynamic/*/v2/reward/market-token", statusCode: 403 },
     "anti-botting3": { type: "html", html: "Air Canada's website is not available right now." }
@@ -19,6 +20,10 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
   const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
+  if (fetchFlights.errors?.length) {
+    arkalis.log(c.yellowBright(`WARN: request returned error (${fetchFlights.errors.map((error) => error.title).join(", ")})`))
+    return []
+  }
 
   arkalis.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []

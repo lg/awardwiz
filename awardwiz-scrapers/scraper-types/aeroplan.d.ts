@@ -1,6 +1,7 @@
 export interface AeroplanResponse {
   data?: Data
   dictionaries: Dictionaries
+  errors?: { code: string, title: string }[]
 }
 
 export interface Dictionaries {
