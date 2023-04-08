@@ -6,7 +6,8 @@ import { ScraperMetadata } from "../../arkalis/arkalis.js"
 export const meta: ScraperMetadata = {
   name: "southwest",
   blockUrls: ["go-mpulse.net", "*.mpeasylink.com", "cdn.branch.io", "*.demdex.net", "www.uplift-platform.com",
-    "app.link", "smetrics.southwest.com", "soptimize.southwest.com"]
+    "app.link", "smetrics.southwest.com", "soptimize.southwest.com",
+    "*.twitter.com", "*.siteimproveanalytics.io", "*.flashtalking.com", "*.facebook.com", "*.qualtrics.com"]
 }
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
@@ -38,8 +39,25 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     } else if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FARE_FOUND")) {
       throw new Error("Failed to find fares, retry plz")
     }
-    if (raw.code === 403050700)       // the code for "we know youre a bot"
-      throw new Error("Failed with anti-botting error")
+
+    // the code for "we know youre a bot". note that hitting this here means you're suspect, normally this page would
+    // load right away without needing to click the search button.
+    if (raw.code === 403050700) {
+      arkalis.log("got botting error, retrying by clicking the search button")
+      await arkalis.waitFor({ "search button": { type: "selector", selector: "#form-mixin--submit-button" } })
+      await arkalis.clickSelector("#form-mixin--submit-button")
+      const waitForResult2 = await arkalis.waitFor({
+        "xhr": { type: "url", url: "https://www.southwest.com/api/air-booking/v1/air-booking/page/air/booking/shopping" },
+        "html": { type: "html", html: "#price-matrix-heading-0" }
+      })
+      if (waitForResult2.name === "html")
+        throw new Error("not supporting the html method yet")
+
+      arkalis.log("got xhr response (again)")
+      raw = JSON.parse(waitForResult2.response?.body) as SouthwestResponse
+      if (raw.code === 403050700)
+        throw new Error("Failed with anti-botting error")
+    }
     if (!raw.success)
       throw new Error(`Failed to retrieve response: ${JSON.stringify(raw.notifications?.formErrors ?? raw.notifications?.fieldErrors ?? raw)}`)
 
