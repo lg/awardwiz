@@ -401,7 +401,7 @@ export class Arkalis {
 
     } else if (failedResponse) {
       status = c.red(failedResponse.blockedReason === "inspector" ? "BLK" : "ERR")
-      if (failedResponse.blockedReason !== "inspector")
+      if (failedResponse.blockedReason !== "inspector" && failedResponse.errorText !== "net::ERR_ABORTED")
         this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url}`))
     }
 
