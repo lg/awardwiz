@@ -81,6 +81,15 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
     if (searchResults.shoppingError.error.message.reasonCode === "406")   // All flights already departed
       return []
+
+    // Sometimes comes up when searching for a historical date
+    if (searchResults.shoppingError.error.message.errorKey === "inputErrorsWarningITA10")
+      return []
+
+    // Searching too far in the future
+    if (searchResults.shoppingError.error.message.errorKey === "invalidFlightDates")
+      return []
+
     throw new Error(`Unknown error: ${JSON.stringify(searchResults.shoppingError.error.message)}`)
   }
 
