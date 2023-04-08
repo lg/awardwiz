@@ -62,6 +62,9 @@ run-debug scraper origin destination date:
 run-debug-brk scraper origin destination date:
   just run-docker "awardwiz:scrapers node --inspect-brk=0.0.0.0:9229 --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
 
+run-tests:
+  just run-docker "awardwiz:scrapers npm exec -- vitest run"
+
 test-anti-botting:
   just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"
 

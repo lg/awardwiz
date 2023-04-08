@@ -25,6 +25,6 @@
     "sourceMap": true,
     "outDir": "dist"
   },
-  "include": ["arkalis", "awardwiz-scrapers"],
+  "include": ["arkalis", "awardwiz-scrapers", "vite.config.ts"],
   "exclude": ["node_modules", "dist"],
 }

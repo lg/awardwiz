@@ -123,7 +123,7 @@ export class Arkalis {
   private browserInstance?: ChildProcess
   private readonly cache?: FileSystemCache
 
-  private static proxies: Record<string, string[]> = {}
+  private readonly proxies: Record<string, string[]>
   private proxy: string | undefined = undefined
 
   public client!: CDP.Client
@@ -136,7 +136,12 @@ export class Arkalis {
   private onExitHandler: any
   private tmpDir?: tmp.DirectoryResult
 
-  static {
+  private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
+    this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
+    this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
+    if (this.debugOptions.globalCachePath)
+      this.cache = new FileSystemCache(this.debugOptions.globalCachePath)
+
     dotenv.config()
     this.proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
       if (!k.startsWith("PROXY_ADDRESS_"))
@@ -145,13 +150,6 @@ export class Arkalis {
       acc[groupName] = (process.env[k] ?? "").split(",")
       return acc
     }, {})
-  }
-
-  private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
-    this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
-    this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
-    if (this.debugOptions.globalCachePath)
-      this.cache = new FileSystemCache(this.debugOptions.globalCachePath)
   }
 
   private async launchBrowser() {
@@ -215,7 +213,7 @@ export class Arkalis {
 
     // proxy
     if (this.debugOptions.useProxy) {
-      const proxies = Arkalis.proxies[this.scraperMeta.name] ?? Arkalis.proxies["default"]
+      const proxies = this.proxies[this.scraperMeta.name] ?? this.proxies["default"]
       if ((proxies ?? []).length > 0) {
         this.proxy = proxies![Math.floor(Math.random() * proxies!.length)]!
 

@@ -30,15 +30,21 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     arkalis.log("got xhr response")
     raw = JSON.parse(waitForResult.response?.body) as SouthwestResponse
 
-    if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
-      arkalis.log(c.yellow("WARN: No flights available (likely bad date)"))
-      return []
-    } else if (raw.notifications?.fieldErrors?.some((formError) => formError.code === "ERROR__AIRPORT__INVALID")) {
-      arkalis.log(c.yellow("WARN: invalid origin/destination"))
-      return []
-    } else if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_FARE_FOUND")) {
-      throw new Error("Failed to find fares, retry plz")
+    const shouldFastReturn = (notifications: typeof raw.notifications) => {
+      if (raw.notifications?.formErrors?.some((err) => err.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
+        arkalis.log(c.yellow("WARN: No flights available (likely bad date)"))
+        return true
+      } else if (raw.notifications?.fieldErrors?.some((err) => err.code === "ERROR__AIRPORT__INVALID")) {
+        arkalis.log(c.yellow("WARN: invalid origin/destination"))
+        return true
+      } else if (raw.notifications?.formErrors?.some((err) => err.code === "ERROR__NO_FARE_FOUND")) {
+        throw new Error("Failed to find fares, retry plz")
+      }
+      return false
     }
+
+    if (shouldFastReturn(raw.notifications))
+      return []
 
     // the code for "we know youre a bot". note that hitting this here means you're suspect, normally this page would
     // load right away without needing to click the search button.
@@ -55,6 +61,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
       arkalis.log("got xhr response (again)")
       raw = JSON.parse(waitForResult2.response?.body) as SouthwestResponse
+      if (shouldFastReturn(raw.notifications))
+        return []
       if (raw.code === 403050700)
         throw new Error("Failed with anti-botting error")
     }
