@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Response, NextFunction } from "express"
 import { AwardWizScraperModule } from "./awardwiz-types.js"
 import c from "ansi-colors"
 import cors from "cors"
@@ -7,7 +7,10 @@ import process from "node:process"
 import { DebugOptions, Arkalis } from "../arkalis/arkalis.js"
 import Bottleneck from "bottleneck"
 import path from "node:path"
+import { expressjwt, Request } from "express-jwt"
 import * as dotenv from "dotenv"
+import jwksRsa, { GetVerificationKey } from "jwks-rsa"
+import rateLimit from "express-rate-limit"
 dotenv.config()
 
 const debugOptions: DebugOptions = {
@@ -21,18 +24,69 @@ const debugOptions: DebugOptions = {
   globalCachePath: process.env["TMP_PATH"] ? path.join(process.env["TMP_PATH"], "arkalis-cache") : "./tmp/arkalis-cache"
 }
 
-const limiter = new Bottleneck({ maxConcurrent: 5, minTime: 200 })
+const SERVER_CONFIG = {
+  serverPort: parseInt(process.env["PORT"] ?? "2222"),
+  googleProjectId: process.env["GOOGLE_PROJECT_ID"] ?? "awardwiz",
+  rateLimitMax: parseInt(process.env["RATE_LIMIT_MAX"] ?? "100"),
+  rateLimitWindowMs: parseInt(process.env["RATE_LIMIT_WINDOW_MS"] ?? "3600000"), // 60 * 60 * 1000,
+  concurrentRequests: parseInt(process.env["CONCURRENT_REQUESTS"] ?? "5"),
+}
+
 const app = express()
 
+// Enable CORS
 app.use(cors({ origin: true }))
-app.use(async (req, res, next) => {
-  logGlobal("Received request:", c.magenta(req.url))
+
+// Simple unprotected endpoint
+app.get("/", (req, res) => {
+  res.send("Hello!\n")
+})
+
+// Enforce authorization for all remaining endpoints
+app.use(expressjwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: "https://www.googleapis.com/robot/v1/metadata/jwk/securetoken@system.gserviceaccount.com"
+  }) as GetVerificationKey,
+  algorithms: ["RS256"],
+  audience: SERVER_CONFIG.googleProjectId,
+  issuer: `https://securetoken.google.com/${SERVER_CONFIG.googleProjectId}`
+}))
+
+// Log the request and stop if there was an error
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  logGlobal("Received request:", c.magenta(req.url), c.red(`(${err.message})`))
+  if (err.name === "UnauthorizedError") {
+    res.status(401).send({ error: "Invalid authorization token" })
+  } else {
+    next(err)
+  }
+})
+app.use((req: Request, res: Response, next: NextFunction) => {
+  logGlobal("Received request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`))
   next()
 })
 
-app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req, res) => {
+// Enforce rate limiting per user id
+app.use(rateLimit({
+  windowMs: SERVER_CONFIG.rateLimitWindowMs,
+  max: SERVER_CONFIG.rateLimitMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => req.auth!["user_id"],
+  handler: (req: Request, res: Response) => {
+    logGlobal(c.red("Request rate limit exceeded:"), c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`))
+    res.status(429).send({ error: "Too many requests" })
+  }
+}))
+
+const limiter = new Bottleneck({ maxConcurrent: SERVER_CONFIG.concurrentRequests, minTime: 200 })
+app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req: Request, res: Response) => {
+  // Limit concurrency
   await limiter.schedule(async () => {
-    logGlobal("Processing request:", c.magenta(req.url))
+    logGlobal("Processing request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`), c.whiteBright(`(${(req as any).rateLimit.current}/${(req as any).rateLimit.limit})`))
     const { scraperName, origin, destination, departureDate } = req.params
 
     const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
@@ -55,18 +109,8 @@ app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:depar
   })
 })
 
-// app.get("/health-check", async (req, res) => {
-//   const result = await pool.runScraper(async (sc) => "ok", { name: "health-check" }, "health-check").catch(() => undefined)
-//   res.status(result ? 200 : 500).send(result)
-// })
-
-app.get("/", (req, res) => {
-  res.send("Hello!\n")
-})
-
-const port = parseInt(process.env["PORT"] ?? "2222")
-const server = app.listen(port, () => {
-  logGlobal(`Started Awardwiz HTTP server on port ${port}`)
+const server = app.listen(SERVER_CONFIG.serverPort, () => {
+  logGlobal(`Started Awardwiz HTTP server on port ${SERVER_CONFIG.serverPort}`)
 })
 
 process.on("SIGTERM", async () => {
