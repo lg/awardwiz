@@ -125,7 +125,7 @@ await new Listr<{}>(
      }], { rendererOptions: { collapse: false } })
     },
     retry: 3,
-  })), { concurrent: 5, exitOnError: false, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
+  })), { concurrent: 5, exitOnError: true, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }
 ).run()
 
 console.log("done")
