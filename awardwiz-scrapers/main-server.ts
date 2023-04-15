@@ -30,6 +30,7 @@ const SERVER_CONFIG = {
   rateLimitMax: parseInt(process.env["RATE_LIMIT_MAX"] ?? "100"),
   rateLimitWindowMs: parseInt(process.env["RATE_LIMIT_WINDOW_MS"] ?? "3600000"), // 60 * 60 * 1000,
   concurrentRequests: parseInt(process.env["CONCURRENT_REQUESTS"] ?? "5"),
+  serviceWorkerJwtSecret: process.env["SERVICE_WORKER_JWT_SECRET"]
 }
 
 const app = express()
@@ -42,7 +43,7 @@ app.get("/", (req, res) => {
   res.send("Hello!\n")
 })
 
-// Enforce authorization for all remaining endpoints
+// Authorize users via a JWT signed by Google
 app.use(expressjwt({
   secret: jwksRsa.expressJwtSecret({
     cache: true,
@@ -55,6 +56,17 @@ app.use(expressjwt({
   issuer: `https://securetoken.google.com/${SERVER_CONFIG.googleProjectId}`
 }))
 
+// Alternatively, authorize service workers via secret-based HS256 jwt
+// ex. { "sub": "marked-fares-worker", "email": "sw@awardwiz.com", "no-rl": true, "iat": 1516239022 }
+if (SERVER_CONFIG.serviceWorkerJwtSecret) {
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => err.name === "UnauthorizedError"
+    ? void expressjwt({
+        secret: SERVER_CONFIG.serviceWorkerJwtSecret!,
+        algorithms: ["HS256"],
+      })(req, res, next)
+    : next(err))
+}
+
 // Log the request and stop if there was an error
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   logGlobal("Received request:", c.magenta(req.url), c.red(`(${err.message})`))
@@ -65,19 +77,20 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   }
 })
 app.use((req: Request, res: Response, next: NextFunction) => {
-  logGlobal("Received request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`))
+  logGlobal("Received request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!.sub} (${req.auth!["email"]})`))
   next()
 })
 
-// Enforce rate limiting per user id
+// Enforce rate limiting per user id (unless the no-rl flag is set on the jwt)
 app.use(rateLimit({
   windowMs: SERVER_CONFIG.rateLimitWindowMs,
   max: SERVER_CONFIG.rateLimitMax,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request) => req.auth!["user_id"],
+  skip: (req: Request) => req.auth!["no-rl"] === true,
+  keyGenerator: (req: Request) => req.auth!.sub!,
   handler: (req: Request, res: Response) => {
-    logGlobal(c.red("Request rate limit exceeded:"), c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`))
+    logGlobal(c.red("Request rate limit exceeded:"), c.magenta(req.url), "by", c.greenBright(`${req.auth!.sub} (${req.auth!["email"]})`))
     res.status(429).send({ error: "Too many requests" })
   }
 }))
@@ -86,7 +99,7 @@ const limiter = new Bottleneck({ maxConcurrent: SERVER_CONFIG.concurrentRequests
 app.get("/run/:scraperName(\\w+)-:origin([A-Z]{3})-:destination([A-Z]{3})-:departureDate(\\d{4}-\\d{2}-\\d{2})", async (req: Request, res: Response) => {
   // Limit concurrency
   await limiter.schedule(async () => {
-    logGlobal("Processing request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!["user_id"]} (${req.auth!["email"]})`), c.whiteBright(`(${(req as any).rateLimit.current}/${(req as any).rateLimit.limit})`))
+    logGlobal("Processing request:", c.magenta(req.url), "by", c.greenBright(`${req.auth!.sub} (${req.auth!["email"]})`), (req as any).rateLimit ? c.whiteBright(`(${(req as any).rateLimit.current}/${(req as any).rateLimit.limit})`) : "")
     const { scraperName, origin, destination, departureDate } = req.params
 
     const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.js`)
