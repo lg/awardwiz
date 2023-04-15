@@ -4,7 +4,7 @@ import { FlightRadar24Response } from "../scraper-types/fr24.js"
 
 export const meta: ScraperMetadata = {
   name: "fr24",
-  resultCacheTtl: 60 * 60 * 24 * 30, // 30 days
+  resultCacheTtlMs: 1000 * 60 * 60 * 24 * 30, // 30 days
 }
 
 export const runScraper: AwardWizScraper<FlightRadar24Response> = async (arkalis, query) => {

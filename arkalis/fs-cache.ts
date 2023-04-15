@@ -24,11 +24,11 @@ class FileSystemCache {
     )
   }
 
-  public async set(key: string, value: any, ttl: number): Promise<void> {
+  public async set(key: string, value: any, ttlMs: number): Promise<void> {
     if (!FileSystemCache.keyRegex.test(key))
       throw new Error(`Invalid key: ${key}`)
 
-    const expiration = Date.now() + ttl
+    const expiration = Date.now() + ttlMs
     const content = JSON.stringify({ value, expiration })
     const filePath = path.join(this.basePath, key)
 

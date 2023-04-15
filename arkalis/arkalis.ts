@@ -39,13 +39,13 @@ export type ScraperMetadata = {
    * @default true */
   useGlobalBrowserCache?: boolean
 
-  /** Amount of seconds to cache the results for (TTL). Set to 0 to not cache. Set to null to use the configured
+  /** Amount of miliseconds to cache the results for (TTL). Set to 0 to not cache. Set to null to use the configured
    * default (defaultResultCacheTtl).
    * @default undefined */
-  resultCacheTtl?: number | null
+  resultCacheTtlMs?: number | null
 }
 export const defaultScraperMetadata: Required<ScraperMetadata> = {
-  name: "default", defaultTimeout: 30000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtl: null
+  name: "default", defaultTimeout: 30000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtlMs: null
 }
 
 export type DebugOptions = {
@@ -344,8 +344,8 @@ export class Arkalis {
       arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`    // unique id per attempt
 
       // Use a previously cached response if available
-      const resultCacheTtl = arkalis.scraperMeta.resultCacheTtl ?? arkalis.debugOptions.defaultResultCacheTtl
-      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtl > 0) {
+      const resultCacheTtlMs = arkalis.scraperMeta.resultCacheTtlMs ?? arkalis.debugOptions.defaultResultCacheTtl
+      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtlMs > 0) {
         const existingCache = await arkalis.cache.get(`result-${cacheKey}`)
         if (existingCache) {
           arkalis.log(`Found and using cached result for ${cacheKey}`)
@@ -358,8 +358,8 @@ export class Arkalis {
       arkalis.debugOptions.pauseAfterRun && await arkalis.pause()
 
       // Store the successful result into cache
-      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtl > 0)
-        await arkalis.cache.set(`result-${cacheKey}`, result, resultCacheTtl)
+      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtlMs > 0)
+        await arkalis.cache.set(`result-${cacheKey}`, result, resultCacheTtlMs)
 
       // Log this successful attempt
       logLines.push(...arkalis.logLines)
