@@ -27,8 +27,8 @@ const debugOptions: DebugOptions = {
 const SERVER_CONFIG = {
   serverPort: parseInt(process.env["PORT"] ?? "2222"),
   googleProjectId: process.env["GOOGLE_PROJECT_ID"] ?? "awardwiz",
-  rateLimitMax: parseInt(process.env["RATE_LIMIT_MAX"] ?? "100"),
-  rateLimitWindowMs: parseInt(process.env["RATE_LIMIT_WINDOW_MS"] ?? "3600000"), // 60 * 60 * 1000,
+  rateLimitMax: 100,
+  rateLimitWindowMs: 60 * 60 * 1000,
   concurrentRequests: parseInt(process.env["CONCURRENT_REQUESTS"] ?? "5"),
   serviceWorkerJwtSecret: process.env["SERVICE_WORKER_JWT_SECRET"]
 }
