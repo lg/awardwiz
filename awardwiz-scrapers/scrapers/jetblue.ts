@@ -27,6 +27,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   }
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
+  if (waitForResult.response?.body === "Invalid Request")
+    throw new Error("JetBlue returned 'Invalid Request' anti-botting response")
   const fetchFlights = JSON.parse(waitForResult.response?.body) as JetBlueResponse
   if (fetchFlights.error?.code === "JB_RESOURCE_NOT_FOUND") {
     arkalis.log(c.yellow("WARN: No scheduled flights between cities"))
