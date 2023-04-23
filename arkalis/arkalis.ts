@@ -228,7 +228,7 @@ export class Arkalis {
 
         this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host}`))
       } else {
-        this.log(c.yellowBright("Not using proxy server!"))
+        this.warn("Not using proxy server!")
       }
     }
 
@@ -538,6 +538,11 @@ export class Arkalis {
     const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
     this.logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
     this.debugOptions.log!(prettyLine, this.identifier)
+  }
+
+  public warn(...args: any[]) {
+    this.log(c.yellowBright(`WARN: ${args}`))
+    return []
   }
 
   public async pause() {

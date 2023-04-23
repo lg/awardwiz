@@ -1,7 +1,6 @@
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { FlightFare, FlightWithFares, AwardWizQuery, AwardWizScraper } from "../awardwiz-types.js"
 import { JetBlueResponse } from "../scraper-types/jetblue.js"
-import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "jetblue",
@@ -21,18 +20,16 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     "success": { type: "url", url: "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" },
     "prev-day": { type: "html", html: "The dates for your search cannot be in the past." },
   })
-  if (waitForResult.name === "prev-day") {
-    arkalis.log(c.yellow("WARN: date in past"))
-    return []
-  }
+  if (waitForResult.name === "prev-day")
+    return arkalis.warn("date in past")
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
   if (waitForResult.response?.body === "Invalid Request")
     throw new Error("JetBlue returned 'Invalid Request' anti-botting response")
+
   const fetchFlights = JSON.parse(waitForResult.response?.body) as JetBlueResponse
   if (fetchFlights.error?.code === "JB_RESOURCE_NOT_FOUND") {
-    arkalis.log(c.yellow("WARN: No scheduled flights between cities"))
-    return []
+    return arkalis.warn("No scheduled flights between cities")
   } else if (fetchFlights.error) {
     throw new Error(`JetBlue error: ${fetchFlights.error.message}`)
   }

@@ -1,7 +1,6 @@
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { AeroplanResponse } from "../scraper-types/aeroplan.js"
-import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "aeroplan",
@@ -20,10 +19,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
   const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
-  if (fetchFlights.errors?.length) {
-    arkalis.log(c.yellowBright(`WARN: request returned error (${fetchFlights.errors.map((error) => error.title).join(", ")})`))
-    return []
-  }
+  if (fetchFlights.errors?.length)
+    return arkalis.warn(`request returned error (${fetchFlights.errors.map((error) => error.title).join(", ")})`)
 
   arkalis.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []

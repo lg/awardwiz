@@ -1,6 +1,5 @@
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { SouthwestResponse } from "../scraper-types/southwest.js"
-import c from "ansi-colors"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 
 export const meta: ScraperMetadata = {
@@ -32,10 +31,10 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
     const shouldFastReturn = (notifications: typeof raw.notifications) => {
       if (raw.notifications?.formErrors?.some((err) => err.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
-        arkalis.log(c.yellow("WARN: No flights available (likely bad date)"))
+        arkalis.warn("No flights available (likely bad date)")
         return true
       } else if (raw.notifications?.fieldErrors?.some((err) => err.code === "ERROR__AIRPORT__INVALID")) {
-        arkalis.log(c.yellow("WARN: invalid origin/destination"))
+        arkalis.warn("invalid origin/destination")
         return true
       } else if (raw.notifications?.formErrors?.some((err) => err.code === "ERROR__NO_FARE_FOUND")) {
         throw new Error("Failed to find fares, retry plz")
@@ -76,8 +75,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     }}
 
   } else {
-    arkalis.log(c.yellow(`WARN: ${waitForResult.name}`))
-    return []
+    return arkalis.warn(waitForResult.name)
   }
 
   // Even if results is undefined, because of the of the 'raw.success' above we're assuming it's ok

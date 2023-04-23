@@ -4,7 +4,6 @@ import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { AwardWizQuery, AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { DeltaResponse } from "../scraper-types/delta.js"
 import dayjs from "dayjs"
-import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "delta",
@@ -68,10 +67,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const searchResults = JSON.parse(waitForResult.response?.body) as DeltaResponse
 
   if (searchResults.shoppingError?.error?.message) {
-    if (searchResults.shoppingError.error.message.message.includes("There are no scheduled Delta/Partner flights")) {
-      arkalis.log(c.yellow("WARN: No scheduled flights between cities"))
-      return []
-    }
+    if (searchResults.shoppingError.error.message.message.includes("There are no scheduled Delta/Partner flights"))
+      return arkalis.warn("No scheduled flights between cities")
     if (searchResults.shoppingError.error.message.errorKey === "ITA404Error3Award")    // No results were found
       return []
 

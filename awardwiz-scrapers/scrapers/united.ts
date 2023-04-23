@@ -1,6 +1,5 @@
 import { AwardWizQuery, AwardWizScraper, FlightWithFares } from "../awardwiz-types.js"
 import type { Trip, UnitedResponse } from "../scraper-types/united.js"
-import c from "ansi-colors"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 
 export const meta: ScraperMetadata = {
@@ -22,8 +21,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   if (waitForResult.name !== "success") {
     if (waitForResult.name === "anti-botting")
       throw new Error(waitForResult.name)
-    arkalis.log(c.yellow(`WARN: ${waitForResult.name}`))
-    return []
+    return arkalis.warn(waitForResult.name)
   }
   const fetchFlights = JSON.parse(waitForResult.response?.body) as UnitedResponse
 

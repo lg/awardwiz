@@ -1,7 +1,6 @@
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { Segment, SkipLaggedResponse } from "../scraper-types/skiplagged.js"
-import c from "ansi-colors"
 
 export const meta: ScraperMetadata = {
   name: "skiplagged"
@@ -15,8 +14,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   })
   const json = JSON.parse(response.response?.body) as SkipLaggedResponse
   if (json.success === false && json.message?.includes("Invalid range for depart")) {
-    arkalis.log(c.yellowBright("WARN: invalid date range"))
-    return []
+    return arkalis.warn("invalid date range")
   } else if (json.success === false) {
     throw new Error(`Error: ${json.message}`)
   }
