@@ -15,6 +15,8 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const json = JSON.parse(response.response?.body) as SkipLaggedResponse
   if (json.success === false && json.message?.includes("Invalid range for depart")) {
     return arkalis.warn("invalid date range")
+  } else if (json.success === false && (json.message?.includes("Invalid value for from") || json.message?.includes("Invalid value for to"))) {
+    return arkalis.warn("invalid from/to airport")
   } else if (json.success === false) {
     throw new Error(`Error: ${json.message}`)
   }
