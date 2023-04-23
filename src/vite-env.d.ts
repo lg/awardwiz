@@ -11,7 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_SCRAPERS_URL: string
 
   /** The JWT token service worker token. Keep secret, do not publish to client. */
-  readonly VITE_SCRAPERS_TOKEN: string
+  readonly VITE_SCRAPERS_TOKEN?: string
 
   /** The url to log scraper results to ex: https://123456:apikey@logs-prod3.grafana.net/loki/api/v1/push (optional) */
   readonly VITE_LOKI_LOGGING_URL: string
