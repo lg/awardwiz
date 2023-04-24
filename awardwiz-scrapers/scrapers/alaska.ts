@@ -60,12 +60,12 @@ const standardizeResults = (raw: AlaskaResponse, query: AwardWizQuery): FlightWi
         throw new Error(`multiple booking codes\n${JSON.stringify(fare, null, 2)}}`)
       if (fare.cabins.length !== 1)
         throw new Error(`multiple cabins\n${JSON.stringify(fare, null, 2)}}`)
-      if (fare.cabins[0] !== "MAIN" && fare.cabins[0] !== "FIRST" && fare.cabins[0] !== "SAVER" && fare.cabins[0] !== "COACH")
+      if (fare.cabins[0] !== "MAIN" && fare.cabins[0] !== "FIRST" && fare.cabins[0] !== "SAVER" && fare.cabins[0] !== "COACH" && fare.cabins[0] !== "BUSINESS")
         throw new Error(`unknown cabin: ${fare.cabins[0]}\n${JSON.stringify(fare, null, 2)}}`)
 
       const fareToAdd: FlightFare = {
         bookingClass: fare.bookingCodes[0],
-        cabin: {"FIRST": "business", "MAIN": "economy", "SAVER": "economy", "COACH": "economy"}[fare.cabins[0]!]!,
+        cabin: {"FIRST": "business", "MAIN": "economy", "SAVER": "economy", "COACH": "economy", "BUSINESS": "business"}[fare.cabins[0]!]!,
         cash: fare.grandTotal,
         currencyOfCash: "USD",
         miles: fare.milesPoints,
