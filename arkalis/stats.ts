@@ -2,40 +2,45 @@ import type { Protocol } from "devtools-protocol"
 import c from "ansi-colors"
 import CDP from "chrome-remote-interface"
 
-type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success?: boolean }
+type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success: boolean }
 
 export class Stats {
   public requests: Record<string, Request> = {}
   public lastResponseTime: number = Date.now()
 
   public constructor(private readonly client: CDP.Client, private readonly showRequests: boolean, private readonly log: (msg: string) => void) {
+    const initRequest = (requestId: string) => {
+      if (!this.requests[requestId])
+        this.requests[requestId] = { requestId: requestId, downloadedBytes: 0, success: false }
+    }
+    const responseEvent = (response: Protocol.Network.ResponseReceivedEvent | Protocol.Network.DataReceivedEvent | Protocol.Network.LoadingFinishedEvent | Protocol.Network.LoadingFailedEvent) => {
+      this.lastResponseTime = Date.now()
+      if (response.timestamp)
+        this.requests[response.requestId]!.endTime = response.timestamp
+      initRequest(response.requestId)
+    }
+
     client.Network.requestWillBeSent((request) => {
-      if (!this.requests[request.requestId])
-        this.requests[request.requestId] = { requestId: request.requestId, downloadedBytes: 0 }
+      initRequest(request.requestId)
       this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
     })
     client.Network.responseReceived((response) => {    // headers only
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
+      responseEvent(response)
       this.requests[response.requestId]!.response = response.response
       if (!response.response.fromDiskCache)
-        this.requests[response.requestId]!.downloadedBytes = parseInt(response.response.headers["content-length"] ?? "0")
+        this.requests[response.requestId]!.downloadedBytes += response.response.encodedDataLength
+    })
+    client.Network.dataReceived((response) => {
+      responseEvent(response)
+      this.requests[response.requestId]!.downloadedBytes += response.encodedDataLength
     })
     client.Network.loadingFinished((response) => {
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
-      this.requests[response.requestId]!.endTime = response.timestamp
+      responseEvent(response)
       this.requests[response.requestId]!.success = true
       this.completedLoading(response.requestId)
     })
     client.Network.loadingFailed((response) => {
-      this.lastResponseTime = Date.now()
-      if (!this.requests[response.requestId])
-        this.requests[response.requestId] = { requestId: response.requestId, downloadedBytes: 0 }
-      this.requests[response.requestId]!.endTime = response.timestamp
-      this.requests[response.requestId]!.success = false
+      responseEvent(response)
       this.completedLoading(response.requestId, response)
     })
   }
