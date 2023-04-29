@@ -1,14 +1,9 @@
-import tmp from "tmp-promise"
-import { ChildProcess, exec } from "node:child_process"
+import { exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
 import type { Protocol } from "devtools-protocol" // "chrome-remote-interface" // "chrome-remote-interface/node_modules/devtools-protocol"
-import pRetry from "p-retry"
 import globToRegexp from "glob-to-regexp"
 import c from "ansi-colors"
 import url from "node:url"
-import { promises as fs } from "node:fs"
-import os from "node:os"
-import net from "node:net"
 import { Mouse } from "./mouse.js"
 import * as dotenv from "dotenv"
 import dayjs from "dayjs"
@@ -17,6 +12,8 @@ import winston from "winston"
 import FileSystemCache from "./fs-cache.js"
 import { Stats } from "./stats.js"
 import { Intercept, InterceptAction } from "./intercept.js"
+import ChromeLauncher from "chrome-launcher"
+import pRetry from "p-retry"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
 export type WaitForReturn = { name: string, response?: any }
@@ -120,7 +117,7 @@ export class Arkalis {
   private stats!: Stats
   private intercept!: Intercept
 
-  private browserInstance?: ChildProcess
+  private browserInstance?: ChromeLauncher.LaunchedChrome
   private readonly cache?: FileSystemCache
 
   private readonly proxies: Record<string, string[]>
@@ -132,9 +129,6 @@ export class Arkalis {
   private readonly logLines: string[] = []
   private identifier = ""
   private readonly attemptStartTime: number = Date.now()
-
-  private onExitHandler: any
-  private tmpDir?: tmp.DirectoryResult
 
   private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
     this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
@@ -153,18 +147,6 @@ export class Arkalis {
   }
 
   private async launchBrowser() {
-    // tmp dir for the browser profile (without browser cache since we remap that outside the profile)
-    this.tmpDir = await tmp.dir({ unsafeCleanup: true })
-
-    // find port for CDP
-    const freePort = await new Promise<number>(resolve => {
-      const srv = net.createServer()
-      srv.listen(0, () => {
-        const port = (srv.address() as net.AddressInfo).port
-        srv.close((err) => resolve(port))
-      })
-    })
-
     // pick a random window size
     const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
       exec("xdpyinfo | grep dimensions", (err, stdout) =>
@@ -191,10 +173,9 @@ export class Arkalis {
       "no-first-run", "no-default-browser-check", "disable-prompt-on-repost", "disable-client-side-phishing-detection",
       "disable-features=InterestFeedContentSuggestions", "disable-features=Translate", "disable-hang-monitor",
       "autoplay-policy=no-user-gesture-required", "use-mock-keychain", "disable-omnibox-autocomplete-off-method",
-      "disable-gaia-services", "disable-crash-reporter", "homepage \"about:blank\"",
+      "disable-gaia-services", "disable-crash-reporter", "noerrdialogs", "disable-component-update",
       "disable-features=MediaRouter", "metrics-recording-only", "disable-features=OptimizationHints",
       "disable-component-update", "disable-features=CalculateNativeWinOcclusion", "enable-precise-memory-info",
-      "noerrdialogs", "disable-component-update",
 
       "no-sandbox", "disable-dev-shm-usage",  // for linux docker
 
@@ -202,13 +183,12 @@ export class Arkalis {
       // "auto-open-devtools-for-tabs",
       // "log-net-log=tmp/out.json", "net-log-capture-mode=Everything",     // note, does not log requests
 
-      this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr --v=2": "",
-      `host-rules="${blockDomains.map(blockDomain => `MAP ${blockDomain} 0.0.0.0`).join(", ")}"`,   // NOTE: detectable!
+      `host-rules=${blockDomains.map(blockDomain => `MAP ${blockDomain} 0.0.0.0`).join(", ")}`,   // NOTE: detectable!
+      this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
+      this.debugOptions.browserDebug === "verbose" ? "v=2" : "",
       this.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir="${this.debugOptions.globalBrowserCacheDir}"` : "",
-      `user-data-dir="${this.tmpDir.path}"`,
       windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
       `window-size=${windowSize[0]},${windowSize[1]}`,
-      `remote-debugging-port=${freePort}`
     ]
 
     // proxy
@@ -223,8 +203,8 @@ export class Arkalis {
         if (dynamicProxy)
           this.proxy = this.proxy.replace(dynamicProxy.groups!["sess"]!, Math.random().toString(36).slice(2).substring(0, 8))
 
-        switches.push(`proxy-server='${url.parse(this.proxy).protocol}//${url.parse(this.proxy).host}'`)
-        switches.push(`host-resolver-rules='MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.proxy).hostname}'`)
+        switches.push(`proxy-server=${url.parse(this.proxy).protocol}//${url.parse(this.proxy).host}`)
+        switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.proxy).hostname}`)
 
         this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host}`))
       } else {
@@ -232,26 +212,15 @@ export class Arkalis {
       }
     }
 
-    // detect chrome binary
-    const defaultPath =
-      os.type() === "Darwin" ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" :
-      os.type() === "Linux" ? "/usr/bin/chromium-browser" : ""
-    const binPath = process.env["CHROME_PATH"] ?? defaultPath
-    if (!await fs.access(binPath).then(() => true).catch(() => false))
-      throw new Error(`Chrome binary not found at "${binPath}". Please set the CHROME_PATH environment variable to the location of the Chrome binary`)
-    const cmd = `"${binPath}" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")}`
-
-    // launch browser
-    this.debugOptions.browserDebug && this.log(`Launching browser: ${cmd}`)
-    this.browserInstance = exec(cmd)
-    this.browserInstance.stdout!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
-    this.browserInstance.stderr!.on("data", (data) => this.debugOptions.browserDebug && this.log(data.toString().trim()))
-    this.onExitHandler = () => this.browserInstance?.kill("SIGKILL")
-    process.on("exit", this.onExitHandler)
+    this.browserInstance = await ChromeLauncher.launch({
+      chromeFlags: switches.map(s => s.length > 0 ? `--${s}` : ""),
+      ignoreDefaultFlags: true,
+      logLevel: this.debugOptions.browserDebug ? "verbose" : "silent",
+    })
 
     // connect to cdp client
     this.debugOptions.browserDebug && this.log("connecting to cdp client")
-    this.client = await pRetry(async () => CDP({ port: freePort }), { forever: true, maxTimeout: 1000, maxRetryTime: this.defaultTimeoutMs })
+    this.client = await CDP({ port: this.browserInstance!.port })
     await this.client.Network.enable()
     await this.client.Page.enable()
     await this.client.Runtime.enable()
@@ -398,8 +367,6 @@ export class Arkalis {
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
     await this.intercept.disable()
 
-    process.removeListener("exit", this.onExitHandler)
-
     await this.client.Network.disable().catch(() => {})
     await this.client.Page.disable().catch(() => {})
     await this.client.Runtime.disable().catch(() => {})
@@ -408,8 +375,7 @@ export class Arkalis {
     await this.client.Browser.close().catch(() => {})
     await this.client.close().catch(() => {})
 
-    this.onExitHandler()
-    await this.tmpDir?.cleanup().catch(() => {})
+    this.browserInstance?.kill()
   }
 
   /** Navigates to the specified URL and returns immediately
