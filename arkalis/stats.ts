@@ -15,9 +15,9 @@ export class Stats {
     }
     const responseEvent = (response: Protocol.Network.ResponseReceivedEvent | Protocol.Network.DataReceivedEvent | Protocol.Network.LoadingFinishedEvent | Protocol.Network.LoadingFailedEvent) => {
       this.lastResponseTime = Date.now()
+      initRequest(response.requestId)
       if (response.timestamp)
         this.requests[response.requestId]!.endTime = response.timestamp
-      initRequest(response.requestId)
     }
 
     client.Network.requestWillBeSent((request) => {
