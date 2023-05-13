@@ -34,6 +34,10 @@ check-clean: clean check
 build-docker debug="1" tag=localtag platform=dockerarch: build
   docker buildx build -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
 
+# build arkalis docker image
+build-arkalis-docker:
+  docker buildx build --platform=linux/amd64 --file ./arkalis/Dockerfile -t "arkalis" ./
+
 # build, deploy and run in prod
 deploy-prod tag="registry.kub.lg.io:31119/awardwiz:scrapers" platform="amd64" kubectl-deployment="-n awardwiz deployment/awardwiz": (build-docker "0" tag platform)
   docker push {{tag}}
