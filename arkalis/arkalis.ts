@@ -116,7 +116,7 @@ export class Arkalis {
 
   private mouse!: Mouse
   private stats!: Stats
-  private intercept!: Intercept
+  private intercept?: Intercept
 
   private browserInstance?: ChromeLauncher.LaunchedChrome
   private readonly cache?: FileSystemCache
@@ -359,7 +359,7 @@ export class Arkalis {
       // Log this failed attempt
       logLines.push(...arkalis!.logLines)
       arkalis!.logAttemptResult(true)
-      await arkalis!.close()
+      await arkalis?.close()
       arkalis = undefined
 
     }}).catch((e) => {    // failed all retries + failed in error handlers
@@ -375,7 +375,7 @@ export class Arkalis {
 
   public async close() {
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
-    await this.intercept.disable()
+    await this.intercept?.disable()
 
     await this.client.Network.disable().catch(() => {})
     await this.client.Page.disable().catch(() => {})
@@ -503,11 +503,11 @@ export class Arkalis {
   }
 
   public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercept.add(globToRegexp(urlPattern, { extended: true }), "Request", callback)
+    this.intercept?.add(globToRegexp(urlPattern, { extended: true }), "Request", callback)
   }
 
   public async interceptResponse(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercept.add(globToRegexp(urlPattern, { extended: true }), "Response", callback)
+    this.intercept?.add(globToRegexp(urlPattern, { extended: true }), "Response", callback)
   }
 
   public log(...args: any[]) {
