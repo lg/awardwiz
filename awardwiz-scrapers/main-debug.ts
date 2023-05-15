@@ -27,9 +27,11 @@ const result = await Arkalis.run(async (sc) => {
   return scraper.runScraper(sc, query)
 }, options, scraper.meta, `debug-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)
 
-if (result.result?.length !== undefined)
-  logGlobal(`Results: ${c.greenBright(result.result.length.toString())}`)
+if (result.result === undefined)
+  logGlobal("Results: (undefined)")
 else
-  logGlobal(`Results: ${JSON.stringify(result.result).length.toLocaleString()} bytes`)
+  logGlobal(Array.isArray(result.result)
+    ? `Results: ${c.greenBright(result.result.length.toLocaleString())} item(s)`
+    : `Results: ${c.greenBright(JSON.stringify(result.result).length.toLocaleString())} bytes`)
 
 logger.close()

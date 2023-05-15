@@ -74,7 +74,8 @@ export type DebugOptions = {
    * @default false */
   drawMousePath?: boolean
 
-  /** Timezone in America/Los_Angeles format. If not set, will use the system timezone.
+  /** Timezone in America/Los_Angeles format. If not set, will use the system timezone unless a proxy is used and the
+   * PROXY_TZ_SCRAPERNAME or fallback PROXY_TZ_DEFAULT is set.
    * @default null */
   timezone?: string | null
 
@@ -206,7 +207,9 @@ export class Arkalis {
         switches.push(`proxy-server=${url.parse(this.proxy).protocol}//${url.parse(this.proxy).host}`)
         switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.proxy).hostname}`)
 
-        this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host}`))
+        this.debugOptions.timezone ??= process.env[`PROXY_TZ_${this.scraperMeta.name.toUpperCase()}`] ?? process.env["PROXY_TZ_DEFAULT"] ?? null
+
+        this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host} ${this.debugOptions.timezone ? `(${this.debugOptions.timezone})` : ""}`))
       } else {
         this.warn("Not using proxy server!")
       }
@@ -229,7 +232,7 @@ export class Arkalis {
     this.intercept = new Intercept(this.client, this.onAuthRequired.bind(this))
     await this.intercept.enable()
 
-    // timezone
+    // timezone (set either by the caller or the proxy)
     if (this.debugOptions.timezone)
       await this.client.Emulation.setTimezoneOverride({ timezoneId: this.debugOptions.timezone })
 
@@ -335,6 +338,7 @@ export class Arkalis {
       arkalis.logAttemptResult(false)
       arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats.toString().summary})`)
       await arkalis.close()
+      arkalis = undefined
 
       return { result, logLines }
 
@@ -356,10 +360,16 @@ export class Arkalis {
       logLines.push(...arkalis!.logLines)
       arkalis!.logAttemptResult(true)
       await arkalis!.close()
+      arkalis = undefined
 
-    }}).catch(() => {    // failed all retries
+    }}).catch((e) => {    // failed all retries + failed in error handlers
+      arkalis!.log(e)
       arkalis!.log(`completed ${c.red("in failure")} in ${(Date.now() - startTime).toLocaleString("en-US")}ms`)
       return { result: undefined, logLines }
+
+    }).finally(async () => {
+      await arkalis?.close()
+      arkalis = undefined
     })
   }
 

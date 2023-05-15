@@ -1,3 +1,5 @@
+// note that southwest seems to care about timezone of the ip
+
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
 import { SouthwestResponse } from "../scraper-types/southwest.js"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
