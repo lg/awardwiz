@@ -124,7 +124,7 @@ export class Arkalis {
   private readonly proxies: Record<string, string[]>
   private proxy: string | undefined = undefined
 
-  public client!: CDP.Client
+  public client?: CDP.Client
   public defaultTimeoutMs = defaultScraperMetadata.defaultTimeout
 
   private readonly logLines: string[] = []
@@ -258,7 +258,7 @@ export class Arkalis {
       return
     const auth = url.parse(this.proxy).auth
 
-    void this.client.Fetch.continueWithAuth({
+    void this.client!.Fetch.continueWithAuth({
       requestId: authReq.requestId,
       authChallengeResponse: {
         response: "ProvideCredentials",
@@ -337,8 +337,6 @@ export class Arkalis {
       logLines.push(...arkalis.logLines)
       arkalis.logAttemptResult(false)
       arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats.toString().summary})`)
-      await arkalis.close()
-      arkalis = undefined
 
       return { result, logLines }
 
@@ -377,13 +375,15 @@ export class Arkalis {
     this.debugOptions.browserDebug && this.log("closing cdp client and browser")
     await this.intercept?.disable()
 
-    await this.client.Network.disable().catch(() => {})
-    await this.client.Page.disable().catch(() => {})
-    await this.client.Runtime.disable().catch(() => {})
-    await this.client.DOM.disable().catch(() => {})
+    if (this.client) {
+      await this.client.Network.disable().catch(() => {})
+      await this.client.Page.disable().catch(() => {})
+      await this.client.Runtime.disable().catch(() => {})
+      await this.client.DOM.disable().catch(() => {})
 
-    await this.client.Browser.close().catch(() => {})
-    await this.client.close().catch(() => {})
+      await this.client.Browser.close().catch(() => {})
+      await this.client.close().catch(() => {})
+    }
 
     this.browserInstance?.kill()
   }
@@ -392,7 +392,7 @@ export class Arkalis {
    * @param gotoUrl - the url to navigate to */
   public goto(gotoUrl: string) {
     this.log(`navigating to ${gotoUrl}`)
-    void this.client.Page.navigate({ url: gotoUrl })
+    void this.client!.Page.navigate({ url: gotoUrl })
   }
 
   /** Waits for a url to be loaded or specific html to be present
@@ -414,7 +414,7 @@ export class Arkalis {
               const urlRegexp = typeof params.url === "string" ? globToRegexp(params.url, { extended: true }) : params.url
 
               // The request first comes in as headers only
-              subscriptions.push(this.client.Network.responseReceived(async (response) => {
+              subscriptions.push(this.client!.Network.responseReceived(async (response) => {
                 if (urlRegexp.test(response.response.url) && response.type !== "Preflight" &&
                     (params.statusCode === undefined || params.statusCode === 200 || params.statusCode === response.response.status)) {
                   lookingForRequestId = response.requestId
@@ -423,9 +423,9 @@ export class Arkalis {
               }))
 
               // Then the body comes in via Network.dataReceived and finishes with Network.loadingFinished
-              subscriptions.push(this.client.Network.loadingFinished(async (response) => {
+              subscriptions.push(this.client!.Network.loadingFinished(async (response) => {
                 if (lookingForRequestId === response.requestId) {
-                  const responseResult = await this.client.Network.getResponseBody({ requestId: lookingForRequestId })
+                  const responseResult = await this.client!.Network.getResponseBody({ requestId: lookingForRequestId })
                   if (params.statusCode === 200)    // do extra verifications if expecting a success
                     this.throwIfBadResponse(resultResponse.status, responseResult.body).catch((e) => reject(e))
                   resolve({name, response: {...resultResponse, body: responseResult.body}})
@@ -438,7 +438,7 @@ export class Arkalis {
               const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true, flags: "ugm" }) : params.html
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
-                const evalResult = await this.client.Runtime.evaluate(
+                const evalResult = await this.client!.Runtime.evaluate(
                   { expression: "document.documentElement.outerHTML", returnByValue: true }).catch((e) => { reject(e); return undefined })
                 if (!evalResult) return
 
@@ -452,8 +452,8 @@ export class Arkalis {
             return new Promise<{name: string}>((resolve, reject) => {
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
-                const doc = await this.client.DOM.getDocument({ depth: -1 })
-                const node = await this.client.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
+                const doc = await this.client!.DOM.getDocument({ depth: -1 })
+                const node = await this.client!.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
                 if (node.nodeId)
                   resolve({name})
               }, 1000))
@@ -489,12 +489,12 @@ export class Arkalis {
   }
 
   public async getSelectorContent(selector: string) {
-    const result = await this.client.Runtime.evaluate({ expression: `document.querySelector("${selector}")?.textContent`, returnByValue: true })
+    const result = await this.client!.Runtime.evaluate({ expression: `document.querySelector("${selector}")?.textContent`, returnByValue: true })
     return result.result.value as string | undefined
   }
 
   public async evaluate<ReturnType>(expression: string) {
-    const result = await this.client.Runtime.evaluate({ expression, returnByValue: true, awaitPromise: true })
+    const result = await this.client!.Runtime.evaluate({ expression, returnByValue: true, awaitPromise: true })
     return result.result.value as ReturnType
   }
 
