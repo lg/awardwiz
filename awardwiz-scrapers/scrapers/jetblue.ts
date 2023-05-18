@@ -45,7 +45,7 @@ const standardizeResults = (raw: JetBlueResponse, query: AwardWizQuery) => {
     if (itinerary.segments.length !== 1)
       continue
     const segment = itinerary.segments[0]!
-    const durationText = /\w{2}(?<hours>\d{1,2})H(?<minutes>\d+)M/u.exec(segment.duration)
+    const durationText = /\w{2}(?<hours>\d{1,2})H(?:(?<minutes>\d+)M)?/u.exec(segment.duration)
     if (!durationText || durationText.length !== 3)
       throw new Error("Invalid duration for flight")
 
@@ -55,7 +55,7 @@ const standardizeResults = (raw: JetBlueResponse, query: AwardWizQuery) => {
       origin: segment.from,
       destination: segment.to,
       flightNo: `${segment.operatingAirlineCode} ${segment.flightno}`,
-      duration: Number.parseInt(durationText.groups!["hours"]!, 10) * 60 + Number.parseInt(durationText.groups!["minutes"]!, 10),
+      duration: Number.parseInt(durationText.groups!["hours"]!, 10) * 60 + Number.parseInt(durationText.groups!["minutes"] ?? "0", 10),
       aircraft: segment.aircraft,
       fares: [],
       amenities: {
