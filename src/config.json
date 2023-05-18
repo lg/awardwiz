@@ -60,6 +60,7 @@
     },
     {
       "name": "delta",
+      "disabled": true,
       "supportedAirlines": ["skyteam", "WS", "VS"],
       "nativeAirline": "DL"
     },
