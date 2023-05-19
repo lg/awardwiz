@@ -21,7 +21,7 @@
       "name": "Launch Debug",
       // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
-      "args": ["fr24", "LIH", "SFO", "2023-03-27"],
+      "args": ["jetblue", "SFO", "BOS", "2023-05-18"],
       "envFile": "${workspaceFolder}/.env",
       "request": "launch",
       "skipFiles": [

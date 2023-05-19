@@ -6,7 +6,7 @@ export const meta: ScraperMetadata = {
   name: "jetblue",
   blockUrls: [
     "htp.tokenex.com", "sdk.jetbluevacations.com", "sentry.io", "btstatic.com", "trustarc.com", "asapp.com",
-    "thebrighttag.com", "demdex.net", "somnistats.jetblue.com",
+    "thebrighttag.com", "demdex.net", "somnistats.jetblue.com", "*appdynamics.com",
     "https://www.jetblue.com/magnoliaauthor/dam/ui-assets/imagery/destinations/large/*"
   ],
   defaultTimeout: 40000
