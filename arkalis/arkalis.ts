@@ -14,6 +14,7 @@ import { Stats } from "./stats.js"
 import { Intercept, InterceptAction } from "./intercept.js"
 import ChromeLauncher from "chrome-launcher"
 import pRetry from "p-retry"
+import { logGlobal } from "../awardwiz-scrapers/log.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
 export type WaitForReturn = { name: string, response?: any }
@@ -361,8 +362,12 @@ export class Arkalis {
       arkalis = undefined
 
     }}).catch((e) => {    // failed all retries + failed in error handlers
-      arkalis!.log(e)
-      arkalis!.log(`completed ${c.red("in failure")} in ${(Date.now() - startTime).toLocaleString("en-US")}ms`)
+      if (arkalis) {
+        arkalis!.log(e)
+        arkalis!.log(`completed ${c.red("in failure")} in ${(Date.now() - startTime).toLocaleString("en-US")}ms`)
+      } else {
+        logGlobal("Error running scraper attempt", e)
+      }
       return { result: undefined, logLines }
 
     }).finally(async () => {
