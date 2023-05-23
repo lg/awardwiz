@@ -16,7 +16,7 @@ build:
 
 [private]
 lint: build
-  TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 --cache .
+  TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
 
 [private]
 clean:

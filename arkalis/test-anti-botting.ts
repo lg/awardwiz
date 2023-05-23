@@ -126,7 +126,7 @@ const runSannysoft = async () => {
   return problems
 }
 
-// eslint-disable-next-line no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const runCreepJSWIP = async () => {
   const problems = await runArkalis(async (arkalis) => {
     arkalis.goto("https://abrahamjuliot.github.io/creepjs/")
@@ -155,7 +155,7 @@ console.log("done")
 
 
 //////////////////////////
-/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // types for the bot tests
 // used https://transform.tools/json-to-typescript for this
@@ -262,7 +262,6 @@ type FP = {
 
 //////////////////
 
-// eslint-disable-next-line no-unused-vars
 type TLSFingerprint = {
   num_fingerprints: number;
   sha3_384: string;
