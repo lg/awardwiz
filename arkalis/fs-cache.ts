@@ -2,6 +2,11 @@ import fs from "fs/promises"
 import path from "path"
 import fsSync from "fs"
 
+type CacheValue = {
+  value: unknown
+  expiration: number
+}
+
 class FileSystemCache {
   private static readonly keyRegex = /^[\w-]+$/u
 
@@ -16,7 +21,7 @@ class FileSystemCache {
       files.map(async (file) => {
         const filePath = path.join(this.basePath, file)
         const content = await fs.readFile(filePath, "utf-8")
-        const { expiration } = JSON.parse(content)
+        const { expiration } = JSON.parse(content) as CacheValue
 
         if (expiration < Date.now())
           await fs.unlink(filePath)
@@ -24,7 +29,7 @@ class FileSystemCache {
     )
   }
 
-  public async set(key: string, value: any, ttlMs: number): Promise<void> {
+  public async set(key: string, value: unknown, ttlMs: number): Promise<void> {
     if (!FileSystemCache.keyRegex.test(key))
       throw new Error(`Invalid key: ${key}`)
 
@@ -43,14 +48,14 @@ class FileSystemCache {
 
     try {
       const content = await fs.readFile(filePath, "utf-8")
-      const { value, expiration } = JSON.parse(content)
+      const { value, expiration } = JSON.parse(content) as CacheValue
 
       if (expiration >= Date.now())
-        return value
+        return value as T
 
       await fs.unlink(filePath)
     } catch (error: any) {
-      if (error.code !== "ENOENT")
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
         throw error
     }
 

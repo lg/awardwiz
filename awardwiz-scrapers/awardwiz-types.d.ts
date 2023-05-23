@@ -1,4 +1,4 @@
-import { Arkalis, ScraperMetadata } from "arkalis"
+import { ScraperMetadata, Arkalis } from "../arkalis/arkalis.ts"
 
 export type ScraperResult<ReturnType> = {
   result: ReturnType | undefined

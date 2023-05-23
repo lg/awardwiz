@@ -19,7 +19,7 @@ export const meta: ScraperMetadata = {
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
   // Auto fill in the origin/destination when it comes up
-  await arkalis.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
+  arkalis.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
     return {
       action: "fulfill",
       responseCode: 200,
@@ -64,7 +64,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   }
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
-  const searchResults = JSON.parse(waitForResult.response?.body) as DeltaResponse
+  const searchResults = JSON.parse(waitForResult.response!.body) as DeltaResponse
 
   if (searchResults.shoppingError?.error?.message) {
     if (searchResults.shoppingError.error.message.message.includes("There are no scheduled Delta/Partner flights"))

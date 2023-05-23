@@ -48,8 +48,8 @@ export class Mouse {
   private async plotPath(path: Point[]) {
     await this.client.Runtime.evaluate({ expression: `(() => {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("width", "${this.viewportSize[0]}");
-      svg.setAttribute("height", "${this.viewportSize[1]}");
+      svg.setAttribute("width", "${this.viewportSize[0]!}");
+      svg.setAttribute("height", "${this.viewportSize[1]!}");
       svg.setAttribute("style", "position: fixed; top: 0; left: 0; z-index: 10000; pointer-events: none;");
       svg.innerHTML = \`${path.map((point, i) => {
         const color = i === path.length - 1 ? "red" : "lightgreen"

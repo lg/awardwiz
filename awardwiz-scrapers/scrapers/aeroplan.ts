@@ -9,7 +9,7 @@ export const meta: ScraperMetadata = {
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const paramsText = `org0=${query.origin}&dest0=${query.destination}&departureDate0=${query.departureDate}&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB`
-  await arkalis.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
+  arkalis.goto(`https://www.aircanada.com/aeroplan/redeem/availability/outbound?${paramsText}`)
   const waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds" },
     "anti-botting1": { type: "url", url: "*/aeroplan/redeem/" },
@@ -18,7 +18,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   })
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
-  const fetchFlights = JSON.parse(waitForResult.response?.body) as AeroplanResponse
+  const fetchFlights = JSON.parse(waitForResult.response!.body) as AeroplanResponse
   if (fetchFlights.errors?.length)
     return arkalis.warn(`request returned error (${fetchFlights.errors.map((error) => error.title).join(", ")})`)
 
@@ -36,7 +36,7 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
   const results: FlightWithFares[] = []
   for (const group of raw.data?.airBoundGroups ?? []) {
     const { flightId } = group.boundDetails.segments[0]!
-    const flightLookup = raw.dictionaries.flight[flightId as keyof typeof raw.dictionaries.flight]!
+    const flightLookup = raw.dictionaries.flight[flightId]!
 
     const result: FlightWithFares = {
       departureDateTime: flightLookup.departure.dateTime.slice(0, 19).replace("T", " "),
@@ -45,7 +45,7 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
       destination: flightLookup.arrival.locationCode,
       flightNo: `${flightLookup.marketingAirlineCode} ${flightLookup.marketingFlightNumber}`,
       duration: flightLookup.duration / 60,
-      aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft],
+      aircraft: raw.dictionaries.aircraft[flightLookup.aircraftCode],
       fares: [],
       amenities: {
         hasPods: undefined,
@@ -60,7 +60,7 @@ const standardizeResults = (raw: AeroplanResponse, origOrigin: string, origDesti
     if (flightLookup.departure.locationCode !== origOrigin || flightLookup.arrival.locationCode !== origDestination)
       continue
 
-    const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode as keyof typeof raw.dictionaries.aircraft]
+    const aircraft = raw.dictionaries.aircraft[flightLookup.aircraftCode]
     if (!aircraft)
       throw new Error(`Unknown aircraft type: ${flightLookup.aircraftCode}`)
 

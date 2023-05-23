@@ -1,7 +1,7 @@
 export interface FlightRadar24Response {
   result?: Result
   errors?: Errors
-  _api: Api
+  _api?: Api
 }
 
 export interface Result {

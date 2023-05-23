@@ -1,10 +1,12 @@
 import c from "ansi-colors"
 import { logger, logGlobal } from "./log.js"
 import { AwardWizQuery, AwardWizScraperModule } from "./awardwiz-types.js"
-import { Arkalis, DebugOptions } from "../arkalis/arkalis.js"
+import { DebugOptions, runArkalis } from "../arkalis/arkalis.js"
+import * as dotenv from "dotenv"
+dotenv.config()
 
 const options: DebugOptions = {
-  maxAttempts: 5,
+  maxAttempts: 1,
   useProxy: true,
   pauseAfterRun: false,
   pauseAfterError: true,
@@ -19,12 +21,12 @@ const options: DebugOptions = {
 if (process.argv.length < 6)
   throw new Error("Not enough arguments. Example: <executable> delta SFO LAX 2023-05-01")
 
-const scraper: AwardWizScraperModule = await import(`./scrapers/${process.argv[2]}.js`)
+const scraper = await import(`./scrapers/${process.argv[2]!}.js`) as AwardWizScraperModule
 const query: AwardWizQuery = { origin: process.argv[3]!, destination: process.argv[4]!, departureDate: process.argv[5]! }
 
-const result = await Arkalis.run(async (sc) => {
-  sc.log("Using query:", query)
-  return scraper.runScraper(sc, query)
+const result = await runArkalis(async (arkalis) => {
+  arkalis.log("Using query:", query)
+  return scraper.runScraper(arkalis, query)
 }, options, scraper.meta, `debug-${scraper.meta.name}-${query.origin}${query.destination}-${query.departureDate.substring(5, 7)}${query.departureDate.substring(8, 10)}`)
 
 if (result.result === undefined)

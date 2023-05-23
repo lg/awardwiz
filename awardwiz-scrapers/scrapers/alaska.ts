@@ -21,7 +21,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   })
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
-  const fetchFlights = JSON.parse(waitForResult.response?.body) as AlaskaResponse
+  const fetchFlights = JSON.parse(waitForResult.response!.body) as AlaskaResponse
   if (!fetchFlights.slices)
     return arkalis.warn("No scheduled flights between cities")
 
@@ -61,7 +61,7 @@ const standardizeResults = (raw: AlaskaResponse, query: AwardWizQuery): FlightWi
       if (fare.cabins.length !== 1)
         throw new Error(`multiple cabins\n${JSON.stringify(fare, null, 2)}}`)
       if (fare.cabins[0] !== "MAIN" && fare.cabins[0] !== "FIRST" && fare.cabins[0] !== "SAVER" && fare.cabins[0] !== "COACH" && fare.cabins[0] !== "BUSINESS")
-        throw new Error(`unknown cabin: ${fare.cabins[0]}\n${JSON.stringify(fare, null, 2)}}`)
+        throw new Error(`unknown cabin: ${fare.cabins[0]!}\n${JSON.stringify(fare, null, 2)}}`)
 
       const fareToAdd: FlightFare = {
         bookingClass: fare.bookingCodes[0],

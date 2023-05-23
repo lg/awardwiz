@@ -11,10 +11,10 @@ const options: winston.LoggerOptions = {
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format((info) => info["noConsole"] ? false : info)(),
-        winston.format((info) => ({ ...info, message: prettifyArgs(info.message) }))(),
-        winston.format((info) => ({ ...info, message: highlightText(info.message) }))(),
+        winston.format((info) => ({ ...info, message: prettifyArgs(info.message as string) }))(),
+        winston.format((info) => ({ ...info, message: highlightText(info.message as string) }))(),
         winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
-        winston.format.printf(info => `[${info["timestamp"]} ${info["id"] ? colorFromId(info["id"])!(info["id"]) : "-"}] ${info.message}`)
+        winston.format.printf(info => `[${info["timestamp"] as string} ${info["id"] ? colorFromId(info["id"] as string)!(info["id"] as string) : "-"}] ${info.message as string}`)
       )
     })
   ]
@@ -33,7 +33,7 @@ const HIGHLIGHT_WORDS = ["timeout", "anti-bot"]
 
 const highlightText = (input: string) =>
   typeof input === "string" ? HIGHLIGHT_WORDS.reduce((acc, toRed) => acc.replace(new RegExp(toRed, "gi"), c.red(toRed.toUpperCase())), input) : input
-export const prettifyArgs = (args: any[]) =>
+export const prettifyArgs = (args: any[] | string) =>
   typeof args === "string" ? args : args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
 
 export const logGlobal = (...args: any[]) => logger.info({ message: args })

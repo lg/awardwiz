@@ -16,8 +16,10 @@ export const runScraper: AwardWizScraper<FlightRadar24Response> = async (arkalis
   const response = await arkalis.waitFor({
     "success": { type: "url", url: fr24Url }
   })
-  if (response.response.status === 520)
-    return arkalis.warn("FlightRadar24 returned 520 error, usually for invalid routes. Returning empty results.")
+  if (response.response!.status === 520) {
+    arkalis.warn("FlightRadar24 returned 520 error, usually for invalid routes. Returning empty results.")
+    return { result: undefined } as FlightRadar24Response
+  }
 
-  return JSON.parse(response.response?.body)
+  return JSON.parse(response.response!.body) as FlightRadar24Response
 }

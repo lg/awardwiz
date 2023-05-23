@@ -3,7 +3,7 @@
     "target": "ESNext",
     "lib": ["ESNext"],
     "allowJs": false,
-    "skipLibCheck": true,                   // doesnt type check .d.ts files
+    "skipLibCheck": true,                   // doesnt type check .d.ts files (DISABLE WHEN https://github.com/vitejs/vite/issues/11552 IS FIXED)
     "esModuleInterop": true,                // also enables allowSyntheticDefaultImports (allows for importing default exports)
 
     "forceConsistentCasingInFileNames": true,
@@ -26,5 +26,5 @@
     "outDir": "dist"
   },
   "include": ["arkalis", "awardwiz-scrapers", "vite.config.ts"],
-  "exclude": ["node_modules", "dist"],
+  "exclude": ["node_modules", "dist"]
 }

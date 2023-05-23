@@ -1,7 +1,7 @@
 // note that southwest seems to care about timezone of the ip
 
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
-import { SouthwestResponse } from "../scraper-types/southwest.js"
+import { Anyred, Busred, SouthwestResponse, Wgared } from "../scraper-types/southwest.js"
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 
 export const meta: ScraperMetadata = {
@@ -29,7 +29,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   let raw: SouthwestResponse
   if (waitForResult.name === "xhr") {
     arkalis.log("got xhr response")
-    raw = JSON.parse(waitForResult.response?.body) as SouthwestResponse
+    raw = JSON.parse(waitForResult.response!.body) as SouthwestResponse
 
     const shouldFastReturn = (notifications: typeof raw.notifications) => {
       if (raw.notifications?.formErrors?.some((err) => err.code === "ERROR__NO_FLIGHTS_AVAILABLE")) {
@@ -61,7 +61,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
         throw new Error("not supporting the html method yet")
 
       arkalis.log("got xhr response (again)")
-      raw = JSON.parse(waitForResult2.response?.body) as SouthwestResponse
+      raw = JSON.parse(waitForResult2.response!.body) as SouthwestResponse
       if (shouldFastReturn(raw.notifications))
         return []
       if (raw.code === 403050700)
@@ -85,7 +85,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   if (raw.notifications?.formErrors?.some((formError) => formError.code === "ERROR__NO_ROUTES_EXIST"))
     arkalis.log("No routes exist between the origin and destination")
 
-  const flights: FlightWithFares[] = results.map((result) => {
+  const flights = results.map((result) => {
     if (result.flightNumbers.length > 1)
       return
     if (!result.fareProducts)   // this will sometimes be missing when a flight has already taken off for same-day flights
@@ -105,7 +105,9 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
         hasWiFi: result.segments[0]!.wifiOnBoard,
       }
     }
-    const bestFare = Object.values(result.fareProducts.ADULT).reduce<FlightFare | undefined>((lowestFare: FlightFare | undefined, product) => {
+
+    const fareTypes = Object.values(result.fareProducts.ADULT) as (Busred | Anyred | Wgared)[]
+    const bestFare = fareTypes.reduce<FlightFare | undefined>((lowestFare, product) => {
       if (product.availabilityStatus !== "AVAILABLE")
         return lowestFare
       const fare: FlightFare = {

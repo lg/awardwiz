@@ -1,6 +1,6 @@
 import { ScraperMetadata } from "../../arkalis/arkalis.js"
 import { AwardWizScraper, FlightFare, FlightWithFares } from "../awardwiz-types.js"
-import { Segment, SkipLaggedResponse } from "../scraper-types/skiplagged.js"
+import { SkipLaggedResponse } from "../scraper-types/skiplagged.js"
 
 export const meta: ScraperMetadata = {
   name: "skiplagged"
@@ -12,19 +12,19 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const response = await arkalis.waitFor({
     "success": { type: "url", url }
   })
-  const json = JSON.parse(response.response?.body) as SkipLaggedResponse
+  const json = JSON.parse(response.response!.body) as SkipLaggedResponse
   if (json.success === false && json.message?.includes("Invalid range for depart")) {
     return arkalis.warn("invalid date range")
   } else if (json.success === false && (json.message?.includes("Invalid value for from") || json.message?.includes("Invalid value for to"))) {
     return arkalis.warn("invalid from/to airport")
   } else if (json.success === false) {
-    throw new Error(`Error: ${json.message}`)
+    throw new Error(`Error: ${json.message!}`)
   }
 
   const flightsWithFares: FlightWithFares[] = Object.entries(json.flights ?? {}).map(([id, flight]) => {
     if (flight.count !== 1 || flight.segments.length !== 1)
       return
-    const segment = flight.segments[0]! as Segment
+    const segment = flight.segments[0]!
 
     return {
       departureDateTime: segment.departure.time.replace("T", " ").slice(0, 16),

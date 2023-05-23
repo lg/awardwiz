@@ -2,15 +2,17 @@
 //   docker run -it --rm awardwiz:scrapers node dist/arkalis/test-anti-botting.js
 
 /* eslint-disable no-console */
-import { DebugOptions, Arkalis } from "./arkalis.js"
+import { DebugOptions, runArkalis } from "./arkalis.js"
 import os from "node:os"
 import pako from "pako"
 import fetch from "cross-fetch"
+import * as dotenv from "dotenv"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
 dayjs.extend(utc)
 dayjs.extend(timezone)
+dotenv.config()
 
 const debugOptions: DebugOptions = {
   maxAttempts: 5,
@@ -30,15 +32,15 @@ const ULIXEE_URL_BY_OS_AND_BROWSER: Record<string, string> = {
 }
 
 const getDomDefaults = async (osType: string) => {
-  const osAndBrowser = ULIXEE_URL_BY_OS_AND_BROWSER[osType]
+  const osAndBrowser = ULIXEE_URL_BY_OS_AND_BROWSER[osType]!
   const url = `https://github.com/ulixee/browser-profile-data/raw/main/profiles/${osAndBrowser}/browser-dom-environment--https.json.gz`
   const gzippedResponse = await fetch(url)
   const buffer = await gzippedResponse.arrayBuffer()
   const text = new TextDecoder("utf-8").decode(pako.inflate(buffer))
-  const raw = JSON.parse(text)
+  const raw = JSON.parse(text) as { data: { window: { Navigator?: { prototype: Record<string, unknown> } } } }
 
   const navigatorProperties = [
-    ...Object.keys(raw.data.window.Navigator.prototype).filter(check => !["_$protos", "Symbol(Symbol.toStringTag)", "_$type", "_$flags"].includes(check)),
+    ...Object.keys(raw.data.window.Navigator?.prototype ?? {}).filter(check => !["_$protos", "Symbol(Symbol.toStringTag)", "_$type", "_$flags"].includes(check)),
     "constructor", "toString", "toLocaleString", "valueOf", "hasOwnProperty", "isPrototypeOf", "propertyIsEnumerable",
     "__defineGetter__", "__defineSetter__", "__lookupGetter__", "__lookupSetter__", "__proto__", "constructor"
   ]
@@ -50,27 +52,28 @@ console.log(`downloading dom defaults for ${os.type()}`)
 const domDefaults = await getDomDefaults(os.type())
 
 const runIncolumnitas = async () => {
-  const problems = await Arkalis.run(async (arkalis) => {
+  const problems = await runArkalis(async (arkalis) => {
     arkalis.goto("https://bot.incolumitas.com/")
 
     arkalis.log("waiting for tests to finish")
     await arkalis.waitFor({ "fingerprint": { type: "html", html: /"fpscanner": \{\n/gu } })
 
-    const newTests: NewDetectionTests = JSON.parse(await arkalis.getSelectorContent("#new-tests") ?? "{}")
-    const oldTestsIntoli: OldTests["intoli"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").intoli
-    const oldTestsFpscanner: OldTests["fpscanner"] = JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}").fpscanner
-    const datacenter: DatacenterIpCheck = JSON.parse(await arkalis.getSelectorContent("#datacenter-ip-api-data").catch(() => undefined) ?? "{}")
+    const newTests = JSON.parse(await arkalis.getSelectorContent("#new-tests") ?? "{}") as NewDetectionTests
+    const oldTestsIntoli = (JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}") as OldTests).intoli
+    const oldTestsFpscanner = (JSON.parse(await arkalis.getSelectorContent("#detection-tests") ?? "{}") as OldTests).fpscanner
+    const datacenter = JSON.parse(await arkalis.getSelectorContent("#datacenter-ip-api-data").catch(() => undefined) ?? "{}") as DatacenterIpCheck
     const datacenterOffset = -dayjs().utcOffset(datacenter.location.timezone).utcOffset() // ex 480
-    const tcpipFingerprint: TcpIpFingerprint = JSON.parse(await arkalis.getSelectorContent("#p0f").catch(() => undefined) ?? "{}")
-    const fp: FP = JSON.parse(await arkalis.getSelectorContent("#fp").catch(() => undefined) ?? "{}")
+    //const tcpipFingerprint = JSON.parse(await arkalis.getSelectorContent("#p0f").catch(() => undefined) ?? "{}") as TcpIpFingerprint
+    const fp = JSON.parse(await arkalis.getSelectorContent("#fp").catch(() => undefined) ?? "{}") as FP
 
+    /* eslint-disable @typescript-eslint/restrict-template-expressions */
     const problems = [
       ...Object.entries(newTests).filter(([k, v]) => v === "FAIL").map(([k, v]) => `new-tests.${k} = ${v}`),
       ...Object.entries(oldTestsIntoli).filter(([k, v]) => v === "FAIL").map(([k, v]) => `intoli.${k} = ${v}`),
       ...Object.entries(oldTestsFpscanner).filter(([k, v]) => v === "FAIL").map(([k, v]) => `fpscanner.${k} = ${v}`),
       ...["is_bogon", "is_datacenter", "is_tor", "is_proxy", "is_vpn", "is_abuser"].map(k => datacenter[k as keyof DatacenterIpCheck] === false ? undefined : `datacenter.${k} = ${datacenter[k as keyof DatacenterIpCheck] as string}`),
       datacenter.asn.type !== "isp" ? `datacenter.asn.type = ${datacenter.asn.type} (not "isp")` : undefined,
-      tcpipFingerprint.os_mismatch ? `tcpip-fingerprint.os_mismatch = ${tcpipFingerprint.os_mismatch}` : undefined,
+      //tcpipFingerprint.os_mismatch ? `tcpip-fingerprint.os_mismatch = ${tcpipFingerprint.os_mismatch}` : undefined,
       fp.webDriver ? undefined : `fp.webDriver = ${fp.webDriver} (was expecting true)`,
       fp.webDriverValue ? `fp.webDriverValue = ${fp.webDriverValue} (was expecting false/undefined)` : undefined,
       fp.selenium.some((item) => item) ? `fp.selenium = ${fp.selenium}` : undefined,
@@ -81,6 +84,7 @@ const runIncolumnitas = async () => {
       fp.getTimezoneOffset !== datacenterOffset ? `fp.getTimezoneOffset = ${fp.getTimezoneOffset} (was expecting ${datacenterOffset} as per ip from fp)` : undefined,
       fp.navigatorProperties.join(",") === domDefaults.navigatorProperties.join(",") ? undefined : `fp.navigatorProperties = MISMATCH (vs the expected items in ${ULIXEE_URL_BY_OS_AND_BROWSER[os.type()]!})`,
     ]
+    /* eslint-enable @typescript-eslint/restrict-template-expressions */
 
     // These tests are being done innacurately on incolumitas
     problems[problems.indexOf("fpscanner.WEBDRIVER = FAIL")] = undefined    // fails on real Chrome too
@@ -89,13 +93,13 @@ const runIncolumnitas = async () => {
     // await arkalis.pause()
 
     return problems.filter(p => p !== undefined)
-  }, debugOptions, { name: "incolumitas", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "incolumitas")
+  }, debugOptions, { name: "incolumitas", defaultTimeoutMs: 60_000, useGlobalBrowserCache: false }, "incolumitas")
 
   return problems
 }
 
 const runSannysoft = async () => {
-  const problems = await Arkalis.run(async (arkalis) => {
+  const problems = await runArkalis(async (arkalis) => {
     arkalis.goto("https://bot.sannysoft.com/")
 
     arkalis.log("waiting for tests to finish")
@@ -117,14 +121,14 @@ const runSannysoft = async () => {
     // await arkalis.pause()
 
     return problems.filter(p => p !== undefined)
-  }, debugOptions, { name: "sannysoft", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "sannysoft")
+  }, debugOptions, { name: "sannysoft", defaultTimeoutMs: 60_000, useGlobalBrowserCache: false }, "sannysoft")
 
   return problems
 }
 
 // eslint-disable-next-line no-unused-vars
 const runCreepJSWIP = async () => {
-  const problems = await Arkalis.run(async (arkalis) => {
+  const problems = await runArkalis(async (arkalis) => {
     arkalis.goto("https://abrahamjuliot.github.io/creepjs/")
 
     arkalis.log("waiting for tests to finish")
@@ -134,7 +138,7 @@ const runCreepJSWIP = async () => {
     await arkalis.pause()
 
     return []
-  }, debugOptions, { name: "creepjs", defaultTimeout: 60_000, useGlobalBrowserCache: false }, "creepjs")
+  }, debugOptions, { name: "creepjs", defaultTimeoutMs: 60_000, useGlobalBrowserCache: false }, "creepjs")
 
   return problems
 }
@@ -151,6 +155,7 @@ console.log("done")
 
 
 //////////////////////////
+/* eslint-disable no-unused-vars */
 
 // types for the bot tests
 // used https://transform.tools/json-to-typescript for this
@@ -374,7 +379,7 @@ type OldTests = {
 
 //////////////////
 
-export type NewDetectionTests = {
+type NewDetectionTests = {
   puppeteerEvaluationScript: OkUnknownFail
   webdriverPresent: OkUnknownFail
   connectionRTT: OkUnknownFail

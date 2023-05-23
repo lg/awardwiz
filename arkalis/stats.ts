@@ -57,14 +57,14 @@ export class Stats {
     } else if (failedResponse) {
       status = c.red(failedResponse.blockedReason === "inspector" ? "BLK" : "ERR")
       if (failedResponse.blockedReason !== "inspector" && failedResponse.errorText !== "net::ERR_ABORTED")
-        this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url}`))
+        this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url ?? "(unknown url)"}`))
     }
 
     const urlToShow = item.request!.url.startsWith("data:") ? `${item.request!.url.slice(0, 80)}...` : item.request!.url
     const line =
       `${status} ` +
       `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
-      `${item.request?.method.padEnd(4, " ").slice(0, 4)} ` +
+      `${item.request?.method.padEnd(4, " ").slice(0, 4) ?? "????"} ` +
       `${c.white(urlToShow)} ` +
       `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
 

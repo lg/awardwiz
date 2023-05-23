@@ -3,7 +3,7 @@ import { AwardWizScraperModule, DatedRoute, FlightFare, FlightWithFares } from "
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
 import timezone from "dayjs/plugin/timezone.js"
-import { Arkalis, DebugOptions } from "../arkalis/arkalis.js"
+import { DebugOptions, runArkalis } from "../arkalis/arkalis.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -37,13 +37,13 @@ const scrapers: ScraperConfig = [
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 
 const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
-  const scraper: AwardWizScraperModule = await import(`./scrapers/${scraperName}.ts`)
+  const scraper = await import(`./scrapers/${scraperName}.ts`) as AwardWizScraperModule
   const datedRoute: DatedRoute = { origin: route[0]!, destination: route[1]!, departureDate: checkDate }
   const options: DebugOptions = { maxAttempts: 3, showRequests: false }
 
-  return Arkalis.run(async (sc) => {
-    sc.log("Using query:", datedRoute)
-    return scraper.runScraper(sc, datedRoute)
+  return runArkalis(async (arkalis) => {
+    arkalis.log("Using query:", datedRoute)
+    return scraper.runScraper(arkalis, datedRoute)
   }, options, scraper.meta, `debug-${scraper.meta.name}-${datedRoute.origin}${datedRoute.destination}-${datedRoute.departureDate.substring(5, 7)}${datedRoute.departureDate.substring(8, 10)}`).then((response) => {
     if (response.result === undefined)
       throw new Error(`Scraper failed:\n\n${response.logLines.join("\n")}`)

@@ -46,7 +46,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const xhrResponse = await arkalis.waitFor({ "success": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary", statusCode: 200 }})
 
   arkalis.log("parsing")
-  const json = JSON.parse(xhrResponse.response?.body) as AAResponse
+  const json = JSON.parse(xhrResponse.response!.body) as AAResponse
   if (json.error && json.error !== "309")
     throw new Error(json.error)
 

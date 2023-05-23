@@ -9,7 +9,7 @@ export const meta: ScraperMetadata = {
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = `https://www.united.com/en/us/fsr/choose-flights?f=${query.origin}&t=${query.destination}&d=${query.departureDate}&tt=1&at=1&sc=7&px=1&taxng=1&newHP=True&clm=7&st=bestmatches&tqp=A`
-  await arkalis.goto(url)
+  arkalis.goto(url)
 
   arkalis.log("waiting for results")
   const waitForResult = await arkalis.waitFor({
@@ -23,7 +23,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
       throw new Error(waitForResult.name)
     return arkalis.warn(waitForResult.name)
   }
-  const fetchFlights = JSON.parse(waitForResult.response?.body) as UnitedResponse
+  const fetchFlights = JSON.parse(waitForResult.response!.body) as UnitedResponse
 
   arkalis.log("parsing results")
   const flightsWithFares: FlightWithFares[] = []
@@ -77,7 +77,7 @@ const standardizeResults = (query: AwardWizQuery, unitedTrip: Trip) => {
 
       const cabin = { "United First": "business", "United Economy": "economy", "United Business": "business", Economy: "economy", Business: "business", First: "first", "United Polaris business": "business", "United Premium Plus": "economy" }[product.Description!]
       if (cabin === undefined)
-        throw new Error(`Unknown cabin type: ${product.Description}`)
+        throw new Error(`Unknown cabin type: ${product.Description!}`)
 
       let existingFare = result.fares.find((fare) => fare.cabin === cabin)
       if (existingFare !== undefined) {

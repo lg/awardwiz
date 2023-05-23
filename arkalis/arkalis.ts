@@ -1,11 +1,10 @@
 import { exec } from "node:child_process"
 import CDP from "chrome-remote-interface"
-import type { Protocol } from "devtools-protocol" // "chrome-remote-interface" // "chrome-remote-interface/node_modules/devtools-protocol"
+import type { Protocol } from "devtools-protocol"
 import globToRegexp from "glob-to-regexp"
 import c from "ansi-colors"
 import url from "node:url"
 import { Mouse } from "./mouse.js"
-import * as dotenv from "dotenv"
 import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
@@ -14,10 +13,9 @@ import { Stats } from "./stats.js"
 import { Intercept, InterceptAction } from "./intercept.js"
 import ChromeLauncher from "chrome-launcher"
 import pRetry from "p-retry"
-import { logGlobal } from "../awardwiz-scrapers/log.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
-export type WaitForReturn = { name: string, response?: any }
+export type WaitForReturn = { name: string, response?: Protocol.Network.Response & { body: string } }
 
 export type ScraperMetadata = {
   /** Unique name for the scraper */
@@ -30,7 +28,7 @@ export type ScraperMetadata = {
 
   /** Set the default timeout for navigation and selector requests.
    * @default 30000 */
-  defaultTimeout?: number
+  defaultTimeoutMs?: number
 
   /** Browser resources will be cached globally (i.e. across all running instances) if this is true. Set to false to
    * not store.
@@ -43,7 +41,7 @@ export type ScraperMetadata = {
   resultCacheTtlMs?: number | null
 }
 export const defaultScraperMetadata: Required<ScraperMetadata> = {
-  name: "default", defaultTimeout: 30000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtlMs: null
+  name: "default", defaultTimeoutMs: 30000, blockUrls: [], useGlobalBrowserCache: true, resultCacheTtlMs: null
 }
 
 export type DebugOptions = {
@@ -111,56 +109,121 @@ export const defaultDebugOptions: Required<DebugOptions> = {
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
 
-export class Arkalis {
-  public readonly debugOptions: Required<DebugOptions>
-  public readonly scraperMeta: Required<ScraperMetadata>
+export type Arkalis = Parameters<Parameters<(typeof runArkalisAttempt)>[0]>[0]
+async function runArkalisAttempt<T, R extends typeof arkalisPublic>(code: (arkalis: R) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
+  const debugOptions = { ...defaultDebugOptions, ...debugOpts }
+  const scraperMeta = { ...defaultScraperMetadata, ...scraperMetadata }
+  const logLines: string[] = []
 
-  private mouse!: Mouse
-  private stats!: Stats
-  private intercept?: Intercept
+  const identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`
+  const startTime = Date.now()
+  log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
-  private browserInstance?: ChromeLauncher.LaunchedChrome
-  private readonly cache?: FileSystemCache
+  // add ability to cache results
+  const cache = debugOptions.globalCachePath !== null && new FileSystemCache(debugOptions.globalCachePath)
 
-  private readonly proxies: Record<string, string[]>
-  private proxy: string | undefined = undefined
+  // generate a random window size
+  const window = await genWindowCoords()
 
-  public client?: CDP.Client
-  public defaultTimeoutMs = defaultScraperMetadata.defaultTimeout
+  // pick a proxy server (if one is required)
+  const { proxy, onAuthRequired } = getProxy()
 
-  private readonly logLines: string[] = []
-  private identifier = ""
-  private readonly attemptStartTime: number = Date.now()
+  // launch the browser
+  const { browserInstance, client } = await launchBrowser()
 
-  private constructor(debugOptions: DebugOptions, scraperMeta: ScraperMetadata) {
-    this.debugOptions = { ...defaultDebugOptions, ...debugOptions }
-    this.scraperMeta = { ...defaultScraperMetadata, ...scraperMeta }
-    if (this.debugOptions.globalCachePath)
-      this.cache = new FileSystemCache(this.debugOptions.globalCachePath)
+  // create interceptor and pre-configure for http auth for proxy
+  const intercept = new Intercept(client, onAuthRequired)
+  await intercept.enable()
 
-    dotenv.config()
-    this.proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
+  // timezone (set either by the caller or the proxy)
+  if (debugOptions.timezone)
+    await client.Emulation.setTimezoneOverride({ timezoneId: debugOptions.timezone })
+
+  // human-y mouse and keyboard control
+  const mouse = new Mouse(client, window.size, debugOptions.drawMousePath)
+
+  // used for stats and request logging
+  const stats: Stats = new Stats(client, debugOptions.showRequests, (msg) => { log(msg) })
+
+  // block requested URLs
+  if (scraperMeta.blockUrls.length > 0)
+    await client.Network.setBlockedURLs({ urls: scraperMeta.blockUrls })
+
+  /////////////////////////////////
+
+  const arkalisPublic = {
+    client, log, warn, pause,
+    goto, getSelectorContent, clickSelector, waitFor, evaluate,
+    interceptRequest, interceptResponse,
+  }
+
+  /////////////////////////////////
+
+  function getProxy() {
+    // load proxies from env variables
+    const proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
       if (!k.startsWith("PROXY_ADDRESS_"))
         return acc
       const groupName = k.replace("PROXY_ADDRESS_", "").toLowerCase()
       acc[groupName] = (process.env[k] ?? "").split(",")
       return acc
     }, {})
+
+    const proxiesForScraper = proxies[scraperMeta.name] ?? proxies["default"]
+    if (!debugOptions.useProxy || !proxiesForScraper || proxiesForScraper.length === 0) {
+      warn("Not using proxy server!")
+      return { proxy: undefined, onAuthRequired: undefined }
+    }
+
+    let proxyUrl = proxiesForScraper[Math.floor(Math.random() * proxiesForScraper.length)]!
+
+    // if the format is `http://user:pass_country-UnitedStates_session-AAABBBCC@proxy.abcdef.io:31112`, roll the
+    // proxy session id to get a new ip address
+    const dynamicProxy = /http.*:\/\/.+:(?<start>\S{16}_country-\S+_session-)(?<sess>\S{8})@/u.exec(proxyUrl)
+    if (dynamicProxy)
+      proxyUrl = proxyUrl.replace(dynamicProxy.groups!["sess"]!, Math.random().toString(36).slice(2).substring(0, 8))
+
+    debugOptions.timezone ??= process.env[`PROXY_TZ_${scraperMeta.name.toUpperCase()}`] ?? process.env["PROXY_TZ_DEFAULT"] ?? null
+
+    log(c.magentaBright(`Using proxy server: ${url.parse(proxyUrl).host!} ${debugOptions.timezone !== null ? `(${debugOptions.timezone})` : ""}`))
+
+    const onAuthRequiredFunc = (authReq: Protocol.Fetch.AuthRequiredEvent) => {
+      if (authReq.authChallenge.source !== "Proxy")
+        return
+      if (!proxyUrl)
+        return
+      const auth = url.parse(proxyUrl).auth
+
+      void client.Fetch.continueWithAuth({
+        requestId: authReq.requestId,
+        authChallengeResponse: {
+          response: "ProvideCredentials",
+          username: auth!.split(":")[0],
+          password: auth!.split(":")[1]
+        }
+      })
+    }
+
+    return { proxy: proxyUrl, onAuthRequired: onAuthRequiredFunc }
   }
 
-  private async launchBrowser() {
+  async function genWindowCoords() {
     // pick a random window size
     const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
       exec("xdpyinfo | grep dimensions", (err, stdout) =>
         resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
     })
-    let windowSize = [1920, 1080]
-    let windowPos: number[] | undefined = undefined
+    let size = [1920, 1080]
+    let pos: number[] | undefined = undefined
     if (screenResolution) {
-      windowSize = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
-      windowPos = [Math.ceil((screenResolution[0]! - windowSize[0]!) * Math.random()), Math.ceil((screenResolution[1]! - windowSize[1]!) * Math.random())]
+      size = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
+      pos = [Math.ceil((screenResolution[0]! - size[0]!) * Math.random()), Math.ceil((screenResolution[1]! - size[1]!) * Math.random())]
     }
 
+    return { size, pos }
+  }
+
+  async function launchBrowser() {
     // these domains are used by the browser when creating a new profile
     const blockDomains = [
       "accounts.google.com", "clients2.google.com", "optimizationguide-pa.googleapis.com",
@@ -186,240 +249,130 @@ export class Arkalis {
       // "log-net-log=tmp/out.json", "net-log-capture-mode=Everything",     // note, does not log requests
 
       `host-rules=${blockDomains.map(blockDomain => `MAP ${blockDomain} 0.0.0.0`).join(", ")}`,   // NOTE: detectable!
-      this.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
-      this.debugOptions.browserDebug === "verbose" ? "v=2" : "",
-      this.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir="${this.debugOptions.globalBrowserCacheDir}"` : "",
-      windowPos ? `window-position=${windowPos[0]},${windowPos[1]}` : "",
-      `window-size=${windowSize[0]},${windowSize[1]}`,
+      debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
+      debugOptions.browserDebug === "verbose" ? "v=2" : "",
+      scraperMeta.useGlobalBrowserCache ? `disk-cache-dir="${debugOptions.globalBrowserCacheDir}"` : "",
+      window.pos ? `window-position=${window.pos[0]!},${window.pos[1]!}` : "",
+      `window-size=${window.size[0]!},${window.size[1]!}`,
     ]
 
-    // proxy
-    if (this.debugOptions.useProxy) {
-      const proxies = this.proxies[this.scraperMeta.name] ?? this.proxies["default"]
-      if ((proxies ?? []).length > 0) {
-        this.proxy = proxies![Math.floor(Math.random() * proxies!.length)]!
-
-        // if the format is `http://user:pass_country-UnitedStates_session-AAABBBCC@proxy.abcdef.io:31112`, roll the
-        // proxy session id to get a new ip address
-        const dynamicProxy = /http.*:\/\/.+:(?<start>\S{16}_country-\S+_session-)(?<sess>\S{8})@/u.exec(this.proxy)
-        if (dynamicProxy)
-          this.proxy = this.proxy.replace(dynamicProxy.groups!["sess"]!, Math.random().toString(36).slice(2).substring(0, 8))
-
-        switches.push(`proxy-server=${url.parse(this.proxy).protocol}//${url.parse(this.proxy).host}`)
-        switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(this.proxy).hostname}`)
-
-        this.debugOptions.timezone ??= process.env[`PROXY_TZ_${this.scraperMeta.name.toUpperCase()}`] ?? process.env["PROXY_TZ_DEFAULT"] ?? null
-
-        this.log(c.magentaBright(`Using proxy server: ${url.parse(this.proxy).host} ${this.debugOptions.timezone ? `(${this.debugOptions.timezone})` : ""}`))
-      } else {
-        this.warn("Not using proxy server!")
-      }
+    // apply proxy
+    if (proxy) {
+      switches.push(`proxy-server=${url.parse(proxy).protocol!}//${url.parse(proxy).host!}`)
+      switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname!}`)
     }
 
-    this.browserInstance = await ChromeLauncher.launch({
+    // launch chrome
+    const instance = await ChromeLauncher.launch({
       chromeFlags: switches.map(s => s.length > 0 ? `--${s}` : ""),
       ignoreDefaultFlags: true,
-      logLevel: this.debugOptions.browserDebug ? "verbose" : "silent",
+      logLevel: debugOptions.browserDebug ? "verbose" : "silent",
     })
 
     // connect to cdp client
-    this.debugOptions.browserDebug && this.log("connecting to cdp client")
-    this.client = await CDP({ port: this.browserInstance!.port })
-    await this.client.Network.enable()
-    await this.client.Page.enable()
-    await this.client.Runtime.enable()
-    await this.client.DOM.enable()
+    debugOptions.browserDebug && log("connecting to cdp client")
+    const cdpClient = await CDP({ port: instance.port })
+    await cdpClient.Network.enable()
+    await cdpClient.Page.enable()
+    await cdpClient.Runtime.enable()
+    await cdpClient.DOM.enable()
 
-    this.intercept = new Intercept(this.client, this.onAuthRequired.bind(this))
-    await this.intercept.enable()
-
-    // timezone (set either by the caller or the proxy)
-    if (this.debugOptions.timezone)
-      await this.client.Emulation.setTimezoneOverride({ timezoneId: this.debugOptions.timezone })
-
-    // human-y mouse and keyboard control
-    this.mouse = new Mouse(this.client, windowSize, this.debugOptions.drawMousePath!)
-
-    // used for stats and request logging
-    this.stats = new Stats(this.client, this.debugOptions.showRequests, this.log.bind(this))
-
-    // timeouts
-    this.scraperMeta.defaultTimeout && (this.defaultTimeoutMs = this.scraperMeta.defaultTimeout)
-
-    // block requested URLs
-    if (this.scraperMeta.blockUrls.length > 0)
-      await this.client.Network.setBlockedURLs({ urls: this.scraperMeta.blockUrls })
+    return { browserInstance: instance, client: cdpClient }
   }
 
-  // Called when HTTP proxy auth is required
-  private onAuthRequired(authReq: Protocol.Fetch.AuthRequiredEvent) {
-    if (authReq.authChallenge.source !== "Proxy")
-      return
-    if (!this.proxy)
-      return
-    const auth = url.parse(this.proxy).auth
+  ////////////////////////////////////
 
-    void this.client!.Fetch.continueWithAuth({
-      requestId: authReq.requestId,
-      authChallengeResponse: {
-        response: "ProvideCredentials",
-        username: auth!.split(":")[0],
-        password: auth!.split(":")[1]
-      }
-    })
+  async function close() {
+    debugOptions.browserDebug && log("closing cdp client and browser")
+    await intercept.disable()
+
+    await client.Network.disable().catch(() => {})
+    await client.Page.disable().catch(() => {})
+    await client.Runtime.disable().catch(() => {})
+    await client.DOM.disable().catch(() => {})
+
+    await client.Browser.close().catch(() => {})
+    await client.close().catch(() => {})
+
+    browserInstance.kill()
   }
 
-  private static prettifyArgs(args: any[]) {
-    if (typeof args === "string")
-      return args
-    return args.map((item: any) => typeof item === "string"
-      ? item
-      : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+  function log(...args: any[]) {
+    const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+    logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
+    debugOptions.log(prettyLine, identifier)
   }
 
-  private logAttemptResult(failed: boolean) {
-    this.debugOptions.winston?.log(failed ? "error" : "info", this.logLines.join("\n"), {
+  function warn(...args: any[]) {
+    const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+    log(c.yellowBright("WARN"), c.yellowBright(prettyLine))
+    return []
+  }
+
+  async function pause() {
+    log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
+    // eslint-disable-next-line no-restricted-globals
+    return new Promise((resolve) => setTimeout(resolve, 10000000))
+  }
+
+  function logAttemptResult(failed: boolean) {
+    debugOptions.winston?.log(failed ? "error" : "info", logLines.join("\n"), {
       labels: {
         type: "scraper-run",
-        scraper_name: this.scraperMeta.name,
-        start_unix: this.attemptStartTime,
-        id: this.identifier,
-        duration_ms: Date.now() - this.attemptStartTime,
+        scraper_name: scraperMeta.name,
+        start_unix: startTime,
+        id: identifier,
+        duration_ms: Date.now() - startTime,
         status: failed ? "failure" : "success",
       },
       noConsole: true,
     })
   }
 
-  private async throwIfBadResponse(statusCode: number, bodyText: string) {
+  /** Navigates to the specified URL and returns immediately
+   * @param gotoUrl - the url to navigate to */
+  function goto(gotoUrl: string) {
+    log(`navigating to ${gotoUrl}`)
+    void client.Page.navigate({ url: gotoUrl })
+  }
+
+  async function getSelectorContent(selector: string) {
+    const result = await client.Runtime.evaluate({ expression: `document.querySelector("${selector}")?.textContent`, returnByValue: true })
+    return result.result.value as string | undefined
+  }
+
+  function throwIfBadResponse(statusCode: number, bodyText: string) {
     if (statusCode !== 200) {
       if (bodyText.includes("<H1>Access Denied</H1>"))
         throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
       if (bodyText.includes("div class=\"px-captcha-error-header\""))
         throw new Error("Perimeter-X captcha anti-botting while loading page")
-      this.log(bodyText)
+      log(bodyText)
 
       throw new Error(`Page loading failed with status ${statusCode}`)
     }
-  }
-
-  ///////////////////////////
-  // PUBLIC API
-  ///////////////////////////
-
-  public static async run<ReturnType>(code: (arkalis: Arkalis) => Promise<ReturnType>, debugOptions: DebugOptions, meta: ScraperMetadata, cacheKey: string) {
-    const startTime = Date.now()
-    let arkalis: Arkalis | undefined
-    const logLines: string[] = []
-
-    return pRetry(async() => {
-      arkalis = new Arkalis(debugOptions, meta)
-      arkalis.identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`    // unique id per attempt
-
-      // Use a previously cached response if available
-      const resultCacheTtlMs = arkalis.scraperMeta.resultCacheTtlMs ?? arkalis.debugOptions.defaultResultCacheTtl
-      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtlMs > 0) {
-        const existingCache = await arkalis.cache.get(`result-${cacheKey}`)
-        if (existingCache) {
-          arkalis.log(`Found and using cached result for ${cacheKey}`)
-          return { result: existingCache as ReturnType, logLines: arkalis.logLines }
-        }
-      }
-
-      await arkalis.launchBrowser()
-      const result = await code(arkalis)
-      arkalis.debugOptions.pauseAfterRun && await arkalis.pause()
-
-      // Store the successful result into cache
-      if (arkalis.cache && arkalis.debugOptions.useResultCache && resultCacheTtlMs > 0)
-        await arkalis.cache.set(`result-${cacheKey}`, result, resultCacheTtlMs)
-
-      // Log this successful attempt
-      logLines.push(...arkalis.logLines)
-      arkalis.logAttemptResult(false)
-      arkalis.log(`completed in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats.toString().summary})`)
-
-      return { result, logLines }
-
-    }, { retries: (debugOptions.maxAttempts ?? defaultDebugOptions.maxAttempts) - 1, minTimeout: 0, maxTimeout: 0, async onFailedAttempt(error) {
-      const fullError = Arkalis.prettifyArgs([c.red("Ending scraper due to error"), error])
-      const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
-      arkalis!.logLines.push(timestampedError)
-
-      if (arkalis!.debugOptions.pauseAfterError) {
-        arkalis!.log(error)
-        await arkalis!.pause()
-      }
-      arkalis!.log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]}`))
-
-      if (error.retriesLeft === 0)
-        arkalis!.log(c.red(`All retry attempts exhausted: ${error.message}`))
-
-      // Log this failed attempt
-      logLines.push(...arkalis!.logLines)
-      arkalis!.logAttemptResult(true)
-      await arkalis?.close()
-      arkalis = undefined
-
-    }}).catch((e) => {    // failed all retries + failed in error handlers
-      if (arkalis) {
-        arkalis!.log(e)
-        arkalis!.log(`completed ${c.red("in failure")} in ${(Date.now() - startTime).toLocaleString("en-US")}ms`)
-      } else {
-        logGlobal("Error running scraper attempt", e)
-      }
-      return { result: undefined, logLines }
-
-    }).finally(async () => {
-      await arkalis?.close()
-      arkalis = undefined
-    })
-  }
-
-  public async close() {
-    this.debugOptions.browserDebug && this.log("closing cdp client and browser")
-    await this.intercept?.disable()
-
-    if (this.client) {
-      await this.client.Network.disable().catch(() => {})
-      await this.client.Page.disable().catch(() => {})
-      await this.client.Runtime.disable().catch(() => {})
-      await this.client.DOM.disable().catch(() => {})
-
-      await this.client.Browser.close().catch(() => {})
-      await this.client.close().catch(() => {})
-    }
-
-    this.browserInstance?.kill()
-  }
-
-  /** Navigates to the specified URL and returns immediately
-   * @param gotoUrl - the url to navigate to */
-  public goto(gotoUrl: string) {
-    this.log(`navigating to ${gotoUrl}`)
-    void this.client!.Page.navigate({ url: gotoUrl })
   }
 
   /** Waits for a url to be loaded or specific html to be present
    * @param items - a map of name to url/html to wait for. when waiting for a url, optionally passing a `statusCode`
    * will wait only trigger on that http status code, unless the expected code is 200 in which case the request will be
    * validated */
-  public async waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
+  async function waitFor(items: Record<string, WaitForType>): Promise<WaitForReturn> {
     const subscriptions: (() => void)[] = []
     const pollingTimers: NodeJS.Timer[] = []
     let timeout: NodeJS.Timeout | undefined
 
     try {
-      const promises = Object.entries(items).map(async ([name, params]) => {
+      const promises = Object.entries(items).map(async ([name, params]): Promise<WaitForReturn> => {
         switch (params.type) {
           case "url":
-            return new Promise<{name: string, response: object}>((resolve, reject) => {
-              let resultResponse = {} as any
+            return new Promise((resolve, reject) => {
+              let resultResponse: Protocol.Network.Response
               let lookingForRequestId: string | undefined = undefined
               const urlRegexp = typeof params.url === "string" ? globToRegexp(params.url, { extended: true }) : params.url
 
               // The request first comes in as headers only
-              subscriptions.push(this.client!.Network.responseReceived(async (response) => {
+              subscriptions.push(client.Network.responseReceived((response) => {
                 if (urlRegexp.test(response.response.url) && response.type !== "Preflight" &&
                     (params.statusCode === undefined || params.statusCode === 200 || params.statusCode === response.response.status)) {
                   lookingForRequestId = response.requestId
@@ -428,11 +381,11 @@ export class Arkalis {
               }))
 
               // Then the body comes in via Network.dataReceived and finishes with Network.loadingFinished
-              subscriptions.push(this.client!.Network.loadingFinished(async (response) => {
+              subscriptions.push(client.Network.loadingFinished(async (response) => {
                 if (lookingForRequestId === response.requestId) {
-                  const responseResult = await this.client!.Network.getResponseBody({ requestId: lookingForRequestId })
+                  const responseResult = await client.Network.getResponseBody({ requestId: lookingForRequestId })
                   if (params.statusCode === 200)    // do extra verifications if expecting a success
-                    this.throwIfBadResponse(resultResponse.status, responseResult.body).catch((e) => reject(e))
+                    throwIfBadResponse(resultResponse.status, responseResult.body) // TODO: STILL NEEDS FIXING .catch((e: Error) => reject(e))
                   resolve({name, response: {...resultResponse, body: responseResult.body}})
                 }
               }))
@@ -443,7 +396,7 @@ export class Arkalis {
               const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true, flags: "ugm" }) : params.html
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
-                const evalResult = await this.client!.Runtime.evaluate(
+                const evalResult = await client.Runtime.evaluate(
                   { expression: "document.documentElement.outerHTML", returnByValue: true }).catch((e) => { reject(e); return undefined })
                 if (!evalResult) return
 
@@ -457,8 +410,8 @@ export class Arkalis {
             return new Promise<{name: string}>((resolve, reject) => {
               // eslint-disable-next-line no-restricted-globals
               pollingTimers.push(setInterval(async () => {
-                const doc = await this.client!.DOM.getDocument({ depth: -1 })
-                const node = await this.client!.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
+                const doc = await client.DOM.getDocument({ depth: -1 })
+                const node = await client.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
                 if (node.nodeId)
                   resolve({name})
               }, 1000))
@@ -470,19 +423,19 @@ export class Arkalis {
         // We use a timeout since the last response received (not since the timer started) as a way of detecting if
         // the socket is no longer functional
         const timeoutHandler = () => {
-          if (Date.now() - this.stats.lastResponseTime >= this.defaultTimeoutMs) {
+          if (Date.now() - stats.lastResponseTime >= scraperMeta.defaultTimeoutMs) {
             resolve({name: "timeout"})
           } else {
-            timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs - (Date.now() - this.stats.lastResponseTime))
+            timeout = setTimeout(() => timeoutHandler(), scraperMeta.defaultTimeoutMs - (Date.now() - stats.lastResponseTime))
           }
         }
-        timeout = setTimeout(timeoutHandler.bind(this), this.defaultTimeoutMs)
+        timeout = setTimeout(() => timeoutHandler(), scraperMeta.defaultTimeoutMs)
         /* eslint-enable no-restricted-globals */
       }))
 
-      const result = await Promise.race(promises) as {name: string, response: any}
+      const result = await Promise.race(promises)
       if (result.name === "timeout")
-        throw new Error(`Timeout waiting for items (${this.defaultTimeoutMs} ms})`)
+        throw new Error(`Timeout waiting for items (${scraperMeta.defaultTimeoutMs} ms})`)
 
       return result
 
@@ -493,42 +446,94 @@ export class Arkalis {
     }
   }
 
-  public async getSelectorContent(selector: string) {
-    const result = await this.client!.Runtime.evaluate({ expression: `document.querySelector("${selector}")?.textContent`, returnByValue: true })
-    return result.result.value as string | undefined
-  }
-
-  public async evaluate<ReturnType>(expression: string) {
-    const result = await this.client!.Runtime.evaluate({ expression, returnByValue: true, awaitPromise: true })
+  async function evaluate<ReturnType>(expression: string) {
+    const result = await client.Runtime.evaluate({ expression, returnByValue: true, awaitPromise: true })
     return result.result.value as ReturnType
   }
 
-  public async clickSelector(selector: string) {
-    return this.mouse.clickSelector(selector)
+  async function clickSelector(selector: string) {
+    return mouse.clickSelector(selector)
   }
 
-  public async interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercept?.add(globToRegexp(urlPattern, { extended: true }), "Request", callback)
+  function interceptRequest(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
+    intercept.add(globToRegexp(urlPattern, { extended: true }), "Request", callback)
   }
 
-  public async interceptResponse(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
-    this.intercept?.add(globToRegexp(urlPattern, { extended: true }), "Response", callback)
+  function interceptResponse(urlPattern: string, callback: (params: Protocol.Fetch.RequestPausedEvent) => InterceptAction) {
+    intercept.add(globToRegexp(urlPattern, { extended: true }), "Response", callback)
   }
 
-  public log(...args: any[]) {
+  function prettifyArgs(args: any[]) {
+    if (typeof args === "string")
+      return args
+    return args.map((item: any) => typeof item === "string"
+      ? item
+      : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
+  }
+
+  async function run() {
+    // Use a previously cached response if available
+    const resultCacheTtlMs = scraperMeta.resultCacheTtlMs ?? debugOptions.defaultResultCacheTtl
+    if (cache && debugOptions.useResultCache && resultCacheTtlMs > 0) {
+      const existingCache = await cache.get<T>(`result-${cacheKey}`)
+      if (existingCache) {
+        log(`Found and using cached result for ${cacheKey}`)
+        return { result: existingCache, logLines }
+      }
+    }
+
+    // **NOTE**: be careful doing any more logic after here because this code will NOT be run if a cache hit happened.
+    const result = await code(arkalisPublic as R)
+
+    // Store the successful result into cache
+    if (cache && debugOptions.useResultCache && resultCacheTtlMs > 0)
+      await cache.set(`result-${cacheKey}`, result, resultCacheTtlMs)
+
+    return { result, logLines }
+  }
+
+  ///////////////
+
+  let success = false
+  return run().then((result) => { success = true; return result }).catch(async (error) => {
+    const fullError = prettifyArgs([c.red("Ending scraper attempt due to:"), error])
+    const timestampedError = fullError.split("\n").map(errLine => `[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${errLine}`).join("\n")
+    log(timestampedError)
+
+    if (debugOptions.pauseAfterError)
+      await pause()
+
+    throw error
+
+  }).finally(async () => {
+    if (success && debugOptions.pauseAfterRun)
+       await pause()
+
+    const successText = success ? c.greenBright("SUCCESSFULLY") : c.redBright("UNSUCCESSFULLY")
+    log(`Completed attempt ${successText} in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${stats.toString().summary})`)
+    logAttemptResult(!success)
+    await close()
+  })
+}
+
+export async function runArkalis<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
+  const logLines: string[] = []
+
+  function log(...args: any[]) {
     const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
-    this.logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
-    this.debugOptions.log!(prettyLine, this.identifier)
+    logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
+    ;(debugOpts.log ?? defaultDebugOptions.log)(prettyLine, "-")
   }
 
-  public warn(...args: any[]) {
-    this.log(c.yellowBright(`WARN: ${args}`))
-    return []
-  }
+  return pRetry(async() => {
+    const attemptResult = await runArkalisAttempt(code, debugOpts, scraperMetadata, cacheKey)
+    logLines.push(...attemptResult.logLines)
+    return { result: attemptResult.result, logLines }
 
-  public async pause() {
-    this.log(c.bold(c.redBright("*** paused (open browser to http://127.0.0.1:8282/vnc.html) ***")))
-    // eslint-disable-next-line no-restricted-globals
-    await new Promise((resolve) => setTimeout(resolve, 10000000))
-  }
+  }, { minTimeout: 0, maxTimeout: 0, retries: (debugOpts.maxAttempts ?? defaultDebugOptions.maxAttempts) - 1, onFailedAttempt: (error) => {
+    log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]!}`))
+
+  } }).catch(e => {
+    return { result: undefined, logLines }
+  })
 }
