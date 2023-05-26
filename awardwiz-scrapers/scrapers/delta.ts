@@ -18,29 +18,31 @@ export const meta: ScraperMetadata = {
 }
 
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
+  // TODO: THIS NEEDS TO BE FIXED
+
   // Auto fill in the origin/destination when it comes up
-  arkalis.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
-    return {
-      action: "fulfill",
-      responseCode: 200,
-      dataObj: [{
-        "airports": {
-          "fromCity": `${query.origin}`,
-          "toCity": `${query.destination}`,
-          "fromAirportcode": `${query.origin}`,
-          "toAirportcode": `${query.destination}`,
-          "fromStateCode": "",
-          "toStateCode": ""
-        },
-        "selectTripType": "ONE_WAY",
-        "dates": { "departureDate": dayjs(query.departureDate).format("MM/DD/YYYY"), "returnDate": "" },
-        "passenger": "1", "swapedFromCity": "null", "swapedToCity": "null", "schedulePrice": { "value": "miles" },
-        "faresFor": "BE", "meetingEventCode": "", "refundableFlightsOnly": false, "nearbyAirports": false,
-        "deltaOnly": "off", "awardTravel": true, "departureTime": "AT", "returnTime": "AT", "infantCount": 0,
-        "adtCount": 0, "cnnCount": 0, "gbeCount": 0,
-      }]
-    }
-  })
+  // arkalis.interceptRequest("https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", () => {
+  //   return {
+  //     action: "fulfill",
+  //     responseCode: 200,
+  //     dataObj: [{
+  //       "airports": {
+  //         "fromCity": `${query.origin}`,
+  //         "toCity": `${query.destination}`,
+  //         "fromAirportcode": `${query.origin}`,
+  //         "toAirportcode": `${query.destination}`,
+  //         "fromStateCode": "",
+  //         "toStateCode": ""
+  //       },
+  //       "selectTripType": "ONE_WAY",
+  //       "dates": { "departureDate": dayjs(query.departureDate).format("MM/DD/YYYY"), "returnDate": "" },
+  //       "passenger": "1", "swapedFromCity": "null", "swapedToCity": "null", "schedulePrice": { "value": "miles" },
+  //       "faresFor": "BE", "meetingEventCode": "", "refundableFlightsOnly": false, "nearbyAirports": false,
+  //       "deltaOnly": "off", "awardTravel": true, "departureTime": "AT", "returnTime": "AT", "infantCount": 0,
+  //       "adtCount": 0, "cnnCount": 0, "gbeCount": 0,
+  //     }]
+  //   }
+  // })
 
   arkalis.goto("https://www.delta.com/flight-search/book-a-flight")
   await arkalis.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", statusCode: 200 }})

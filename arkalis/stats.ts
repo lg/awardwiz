@@ -1,53 +1,51 @@
+import { ArkalisCore } from "./arkalis.js"
 import type { Protocol } from "devtools-protocol"
 import c from "ansi-colors"
-import CDP from "chrome-remote-interface"
 
 type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success: boolean }
 
-export class Stats {
-  public requests: Record<string, Request> = {}
-  public lastResponseTime: number = Date.now()
+export const arkalisStats = (arkalis: ArkalisCore) => {
+  const requests: Record<string, Request> = {}
+  let lastResponseTime: number = Date.now()
 
-  public constructor(private readonly client: CDP.Client, private readonly showRequests: boolean, private readonly log: (msg: string) => void) {
-    const initRequest = (requestId: string) => {
-      if (!this.requests[requestId])
-        this.requests[requestId] = { requestId: requestId, downloadedBytes: 0, success: false }
-    }
-    const responseEvent = (response: Protocol.Network.ResponseReceivedEvent | Protocol.Network.DataReceivedEvent | Protocol.Network.LoadingFinishedEvent | Protocol.Network.LoadingFailedEvent) => {
-      this.lastResponseTime = Date.now()
-      initRequest(response.requestId)
-      if (response.timestamp)
-        this.requests[response.requestId]!.endTime = response.timestamp
-    }
-
-    client.Network.requestWillBeSent((request) => {
-      initRequest(request.requestId)
-      this.requests[request.requestId] = { ...this.requests[request.requestId]!, request: request.request, startTime: request.timestamp }
-    })
-    client.Network.responseReceived((response) => {    // headers only
-      responseEvent(response)
-      this.requests[response.requestId]!.response = response.response
-      if (!response.response.fromDiskCache)
-        this.requests[response.requestId]!.downloadedBytes += response.response.encodedDataLength
-    })
-    client.Network.dataReceived((response) => {
-      responseEvent(response)
-      this.requests[response.requestId]!.downloadedBytes += response.encodedDataLength
-    })
-    client.Network.loadingFinished((response) => {
-      responseEvent(response)
-      this.requests[response.requestId]!.success = true
-      this.completedLoading(response.requestId)
-    })
-    client.Network.loadingFailed((response) => {
-      responseEvent(response)
-      this.completedLoading(response.requestId, response)
-    })
+  const initRequest = (requestId: string) => {
+    if (!requests[requestId])
+      requests[requestId] = { requestId: requestId, downloadedBytes: 0, success: false }
+  }
+  const responseEvent = (response: Protocol.Network.ResponseReceivedEvent | Protocol.Network.DataReceivedEvent | Protocol.Network.LoadingFinishedEvent | Protocol.Network.LoadingFailedEvent) => {
+    lastResponseTime = Date.now()
+    initRequest(response.requestId)
+    if (response.timestamp)
+      requests[response.requestId]!.endTime = response.timestamp
   }
 
-  private completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
-    const item = this.requests[requestId]!
-    if (!this.requests[requestId]?.request?.method)
+  arkalis.client.Network.requestWillBeSent((request) => {
+    initRequest(request.requestId)
+    requests[request.requestId] = { ...requests[request.requestId]!, request: request.request, startTime: request.timestamp }
+  })
+  arkalis.client.Network.responseReceived((response) => {    // headers only
+    responseEvent(response)
+    requests[response.requestId]!.response = response.response
+    if (!response.response.fromDiskCache)
+      requests[response.requestId]!.downloadedBytes += response.response.encodedDataLength
+  })
+  arkalis.client.Network.dataReceived((response) => {
+    responseEvent(response)
+    requests[response.requestId]!.downloadedBytes += response.encodedDataLength
+  })
+  arkalis.client.Network.loadingFinished((response) => {
+    responseEvent(response)
+    requests[response.requestId]!.success = true
+    completedLoading(response.requestId)
+  })
+  arkalis.client.Network.loadingFailed((response) => {
+    responseEvent(response)
+    completedLoading(response.requestId, response)
+  })
+
+  function completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
+    const item = requests[requestId]!
+    if (!requests[requestId]?.request?.method)
       return
 
     let status = c.red("???")
@@ -57,7 +55,7 @@ export class Stats {
     } else if (failedResponse) {
       status = c.red(failedResponse.blockedReason === "inspector" ? "BLK" : "ERR")
       if (failedResponse.blockedReason !== "inspector" && failedResponse.errorText !== "net::ERR_ABORTED")
-        this.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url ?? "(unknown url)"}`))
+        arkalis.log(c.red(`Request failed with ${failedResponse.errorText}: ${item.request?.url ?? "(unknown url)"}`))
     }
 
     const urlToShow = item.request!.url.startsWith("data:") ? `${item.request!.url.slice(0, 80)}...` : item.request!.url
@@ -66,18 +64,21 @@ export class Stats {
       `${item.response?.fromDiskCache ? c.yellowBright("CACHE") : (Math.ceil(item.downloadedBytes / 1024).toString() + "kB").padStart(5, " ")} ` +
       `${item.request?.method.padEnd(4, " ").slice(0, 4) ?? "????"} ` +
       `${c.white(urlToShow)} ` +
-      `${c.yellowBright(item.response?.headers["cache-control"] ?? "")}`
+      `${c.yellowBright(item.response?.headers["cache-control"] ?? item.response?.headers["Cache-Control"] ?? "")}`
 
-    this.showRequests && this.log(line)
+    arkalis.debugOptions.showRequests && arkalis.log(line)
   }
 
-  public toString() {
-    const totRequests = Object.values(this.requests).length
-    const cacheHits = Object.values(this.requests).filter((request) => request.response?.fromDiskCache).length
-    const cacheMisses = totRequests - cacheHits
-    const bytes = Object.values(this.requests).reduce((bytes, request) => (bytes += request.downloadedBytes), 0)
+  return {
+    stats: () => {
+      const totRequests = Object.values(requests).length
+      const cacheHits = Object.values(requests).filter((request) => request.response?.fromDiskCache).length
+      const cacheMisses = totRequests - cacheHits
+      const bytes = Object.values(requests).reduce((bytes, request) => (bytes += request.downloadedBytes), 0)
 
-    const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
-    return { totRequests, cacheHits, cacheMisses, bytes, summary }
+      const summary = `${totRequests.toLocaleString()} reqs, ${cacheHits.toLocaleString()} hits, ${cacheMisses.toLocaleString()} misses, ${bytes.toLocaleString()} bytes`
+      return { totRequests, cacheHits, cacheMisses, bytes, summary }
+    },
+    getLastResponseTime: () => lastResponseTime,
   }
 }
