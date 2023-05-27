@@ -1,7 +1,9 @@
 import { ArkalisCore } from "./arkalis.js"
 import { Bezier, Point } from "bezier-js"
+import { arkalisBrowser } from "./browser.js"
 
-export const arkalisInteraction = (arkalis: ArkalisCore, viewportSize: number[]) => {
+export const arkalisInteraction = (arkalis: ArkalisCore) => {
+  const viewportSize = arkalis.getPlugin<typeof arkalisBrowser>("arkalisBrowser").window.size
   let curMousePos = [Math.random() * viewportSize[0]!, 0]  // start at top of viewport since that's where the URL bar would be
 
   async function getBoxForSelector(selector: string) {

@@ -111,7 +111,8 @@ export type ArkalisCore = {
   wait: (ms: number) => Promise<unknown>,
   pause: () => Promise<unknown>,
   scraperMeta: Required<ScraperMetadata>,
-  debugOptions: Required<DebugOptions>
+  debugOptions: Required<DebugOptions>,
+  getPlugin: <P extends (...args: any) => ReturnType<P>>(name: string) => Awaited<ReturnType<P>>,
 }
 
 type Flatten<T> = T extends Record<string, any> ? { [k in keyof T] : T[k] } : never
@@ -122,6 +123,16 @@ export type ArkalisExportedPlugins =
   ReturnType<typeof arkalisStats>
 export type Arkalis = Flatten<ArkalisCore & ArkalisExportedPlugins>
 
+const DEFAULT_PLUGINS = {
+  arkalisResponseCache,    // add ability to cache results
+  arkalisProxy,            // pick a proxy server (if one is required)
+  arkalisBrowser,          // launch chrome (w/ blocking, window, timezone, proxy)
+  arkalisInteraction,      // human-y mouse and keyboard control
+  arkalisStats,            // keep track of requests, their cached status and bytes utilized
+  arkalisInterceptor,      // adds ability to intercept requests, plus adds http auth proxy support
+  arkalisPageHelpers       // page helpers
+}
+
 async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
   const debugOptions = { ...defaultDebugOptions, ...debugOpts }
   const scraperMeta = { ...defaultScraperMetadata, ...scraperMetadata }
@@ -129,40 +140,29 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
 
   const identifier = `${Math.random().toString(36).substring(2, 6)}-${cacheKey}`
   const startTime = Date.now()
-  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause }
-
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
-  // add ability to cache results
-  const responseCachePlugin = arkalisResponseCache(arkalisCore)
+  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause, getPlugin }
 
-  // pick a proxy server (if one is required)
-  const proxyPlugin = arkalisProxy(arkalisCore)
-
-  // launch the browser (w/ blocking, window, timezone,
-  const browserPlugin = await arkalisBrowser(arkalisCore, proxyPlugin.proxy)
-
-  // human-y mouse and keyboard control
-  const interactionPlugin = arkalisInteraction(arkalisCore, browserPlugin.window.size)
-
-  // keep track of requests, their cached status and bytes utilized
-  const statsPlugin = arkalisStats(arkalisCore)
-
-  // intercept
-  const interceptorPlugin = arkalisInterceptor(arkalisCore, proxyPlugin.onAuthRequired)
-
-  // page helpers
-  const pageHelpersPlugin = arkalisPageHelpers(arkalisCore, statsPlugin.getLastResponseTime)
-
-  const arkalis: Arkalis = {
-    ...arkalisCore,
-    ...interceptorPlugin, ...pageHelpersPlugin, ...interactionPlugin, ...statsPlugin
+  let pluginExports = {}
+  const plugins: Record<string, unknown> = {}
+  for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
+    const value = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalisCore)
+    plugins[pluginName] = value
+    pluginExports = { ...pluginExports, ...value }
   }
+
+  const arkalis: Arkalis = { ...arkalisCore, ...pluginExports as ArkalisExportedPlugins }
 
   ////////////////////////////////////
 
+  function getPlugin<P extends (...args: any) => ReturnType<P>>(name: string) {
+    return plugins[name] as Awaited<ReturnType<P>>
+  }
+
   async function close() {
-    await browserPlugin.close()
+    const arkalisBrowserPlugin = getPlugin<typeof arkalisBrowser>("arkalisBrowser")
+    await arkalisBrowserPlugin.close()
   }
 
   function log(...args: any[]) {
@@ -210,6 +210,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   }
 
   async function run() {
+    const responseCachePlugin = getPlugin<typeof arkalisResponseCache>("arkalisResponseCache")
     const result = await responseCachePlugin.runAndCache<T>(`result-${cacheKey}`, async () => code(arkalis))
     return { result, logLines }
   }
@@ -232,6 +233,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
        await pause()
 
     const successText = success ? c.greenBright("SUCCESSFULLY") : c.redBright("UNSUCCESSFULLY")
+    const statsPlugin = getPlugin<typeof arkalisStats>("arkalisStats")
     log(`Completed attempt ${successText} in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${statsPlugin.stats().summary})`)
     logAttemptResult(!success)
     await close()

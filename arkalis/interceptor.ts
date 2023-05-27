@@ -1,15 +1,14 @@
-import CDP from "chrome-remote-interface"
 import { ArkalisCore } from "./arkalis.js"
 import type { Protocol } from "devtools-protocol"
+import { arkalisProxy } from "./proxy.js"
 
 type InterceptorReturn = "continue"
 type InterceptorParams = Protocol.Fetch.RequestPausedEvent & { responseBody?: string, isResponse: boolean }
 type Interceptor = (requestPausedEvent: InterceptorParams) => InterceptorReturn | Promise<InterceptorReturn>
 
-type OnAuthReq = (client: CDP.Client, authReq: Protocol.Fetch.AuthRequiredEvent) => void
-
-export const arkalisInterceptor = (arkalis: ArkalisCore, onAuthReq?: OnAuthReq) => {
+export const arkalisInterceptor = (arkalis: ArkalisCore) => {
   const interceptors: Interceptor[] = []
+  const onAuthReq = arkalis.getPlugin<typeof arkalisProxy>("arkalisProxy").onAuthRequired
 
   void arkalis.client.Fetch.enable({ handleAuthRequests: !!onAuthReq }).then(() => {
     if (onAuthReq)

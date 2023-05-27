@@ -3,8 +3,9 @@ import url from "node:url"
 import ChromeLauncher from "chrome-launcher"
 import { ArkalisCore } from "./arkalis.js"
 import CDP from "chrome-remote-interface"
+import { arkalisProxy } from "./proxy.js"
 
-export const arkalisBrowser = async (arkalis: ArkalisCore, proxy?: string) => {
+export const arkalisBrowser = async (arkalis: ArkalisCore) => {
   async function genWindowCoords() {
     // pick a random window size
     const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
@@ -57,6 +58,7 @@ export const arkalisBrowser = async (arkalis: ArkalisCore, proxy?: string) => {
   ]
 
   // apply proxy
+  const proxy = arkalis.getPlugin<typeof arkalisProxy>("arkalisProxy").proxy
   if (proxy) {
     switches.push(`proxy-server=${url.parse(proxy).protocol!}//${url.parse(proxy).host!}`)
     switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname!}`)
