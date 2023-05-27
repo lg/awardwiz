@@ -1,9 +1,8 @@
 import { exec } from "node:child_process"
 import url from "node:url"
 import ChromeLauncher from "chrome-launcher"
-import { ArkalisCore } from "./arkalis.js"
+import { Arkalis, ArkalisCore } from "./arkalis.js"
 import CDP from "chrome-remote-interface"
-import { arkalisProxy } from "./proxy.js"
 
 export const arkalisBrowser = async (arkalis: ArkalisCore) => {
   async function genWindowCoords() {
@@ -58,7 +57,7 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
   ]
 
   // apply proxy
-  const proxy = arkalis.getPlugin<typeof arkalisProxy>("arkalisProxy").proxy
+  const proxy = (arkalis as Arkalis).proxy
   if (proxy) {
     switches.push(`proxy-server=${url.parse(proxy).protocol!}//${url.parse(proxy).host!}`)
     switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname!}`)

@@ -115,19 +115,15 @@ export type ArkalisCore = {
   pause: () => Promise<unknown>,
   scraperMeta: Required<ScraperMetadata>,
   debugOptions: Required<DebugOptions>,
-  getPlugin: <P extends ArkalisPlugin>(name: string) => Awaited<ReturnType<P>>,
 }
 
 type ArkalisPluginBuiltins = {
   close?: () => Promise<void> | void
 }
-export type ArkalisPlugin = (arkalis: ArkalisInit) => Record<string, any> & ArkalisPluginBuiltins
+export type ArkalisPlugin = (arkalis: ArkalisCore) => Record<string, any> & ArkalisPluginBuiltins
 type ArkalisPluginExportsAll = Omit<Flatten<UnionToIntersection<Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>>>, keyof ArkalisPluginBuiltins>
 type ArkalisPluginExports = Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>
-
-// Used by scrapers as their Arkalis parameter assuming all plugins are loaded
 export type Arkalis = Flatten<ArkalisCore & ArkalisPluginExportsAll>
-export type ArkalisInit = Flatten<ArkalisCore & Partial<ArkalisPluginExports>>
 
 const DEFAULT_PLUGINS = {
   arkalisResponseCache,    // add ability to cache results
@@ -149,19 +145,17 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
   const plugins: Record<string, ArkalisPluginExports> = {}
-  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause, getPlugin }
+  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause }
 
+  // Loading plugins one at a time, populating the Arkalis object with their exports. Note that though we cast this
+  // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.
   let arkalis = { ...arkalisCore } as Arkalis
   for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
-    plugins[pluginName] = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisInit)
+    plugins[pluginName] = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
     arkalis = { ...arkalis, ...plugins[pluginName] }
   }
 
   ////////////////////////////////////
-
-  function getPlugin<P extends (...args: any) => ReturnType<P>>(name: string) {
-    return plugins[name] as Awaited<ReturnType<P>>
-  }
 
   async function close() {
     for (const pluginName of Object.keys(plugins)) {

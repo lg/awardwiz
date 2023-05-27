@@ -1,13 +1,12 @@
-import { ArkalisCore } from "./arkalis.js"
+import { Arkalis, ArkalisCore } from "./arkalis.js"
 import type { Protocol } from "devtools-protocol"
 import globToRegexp from "glob-to-regexp"
-import { arkalisStats } from "./stats.js"
 
 export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
 export type WaitForReturn = { name: string, response?: Protocol.Network.Response & { body: string } }
 
 export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
-  const getLastResponseTime = arkalis.getPlugin<typeof arkalisStats>("arkalisStats").getLastResponseTime
+  const getLastResponseTime = (arkalis as Arkalis).getLastResponseTime
 
   function throwIfBadResponse(statusCode: number, bodyText: string) {
     if (statusCode !== 200) {
