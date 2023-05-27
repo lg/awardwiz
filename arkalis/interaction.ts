@@ -1,7 +1,7 @@
 import { ArkalisCore } from "./arkalis.js"
 import { Bezier, Point } from "bezier-js"
 
-export const arkalisInteraction = (arkalis: ArkalisCore, viewportSize: number[], debug: boolean) => {
+export const arkalisInteraction = (arkalis: ArkalisCore, viewportSize: number[]) => {
   let curMousePos = [Math.random() * viewportSize[0]!, 0]  // start at top of viewport since that's where the URL bar would be
 
   async function getBoxForSelector(selector: string) {
@@ -57,7 +57,7 @@ export const arkalisInteraction = (arkalis: ArkalisCore, viewportSize: number[],
 
   async function moveMouseTo(pos: number[]) {
     const path = genPath(curMousePos, pos)
-    if (debug)
+    if (arkalis.debugOptions.drawMousePath)
       void plotPath(path)
 
     const lastTime = 0

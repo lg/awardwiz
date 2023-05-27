@@ -143,7 +143,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   const browserPlugin = await arkalisBrowser(arkalisCore, proxyPlugin.proxy)
 
   // human-y mouse and keyboard control
-  const interactionPlugin = arkalisInteraction(arkalisCore, browserPlugin.window.size, debugOptions.drawMousePath)
+  const interactionPlugin = arkalisInteraction(arkalisCore, browserPlugin.window.size)
 
   // keep track of requests, their cached status and bytes utilized
   const statsPlugin = arkalisStats(arkalisCore)
