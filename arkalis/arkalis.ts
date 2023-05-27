@@ -104,6 +104,9 @@ export const defaultDebugOptions: Required<DebugOptions> = {
   log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
 
+type Flatten<T> = T extends Record<string, any> ? { [k in keyof T] : T[k] } : never
+type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
+
 export type ArkalisCore = {
   client: CDP.Client,
   log: (...args: any[]) => void,
@@ -112,16 +115,19 @@ export type ArkalisCore = {
   pause: () => Promise<unknown>,
   scraperMeta: Required<ScraperMetadata>,
   debugOptions: Required<DebugOptions>,
-  getPlugin: <P extends (...args: any) => ReturnType<P>>(name: string) => Awaited<ReturnType<P>>,
+  getPlugin: <P extends ArkalisPlugin>(name: string) => Awaited<ReturnType<P>>,
 }
 
-type Flatten<T> = T extends Record<string, any> ? { [k in keyof T] : T[k] } : never
-export type ArkalisExportedPlugins =
-  ReturnType<typeof arkalisInterceptor> &
-  ReturnType<typeof arkalisPageHelpers> &
-  ReturnType<typeof arkalisInteraction> &
-  ReturnType<typeof arkalisStats>
-export type Arkalis = Flatten<ArkalisCore & ArkalisExportedPlugins>
+type ArkalisPluginBuiltins = {
+  close?: () => Promise<void> | void
+}
+export type ArkalisPlugin = (arkalis: ArkalisInit) => Record<string, any> & ArkalisPluginBuiltins
+type ArkalisPluginExportsAll = Omit<Flatten<UnionToIntersection<Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>>>, keyof ArkalisPluginBuiltins>
+type ArkalisPluginExports = Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>
+
+// Used by scrapers as their Arkalis parameter assuming all plugins are loaded
+export type Arkalis = Flatten<ArkalisCore & ArkalisPluginExportsAll>
+export type ArkalisInit = Flatten<ArkalisCore & Partial<ArkalisPluginExports>>
 
 const DEFAULT_PLUGINS = {
   arkalisResponseCache,    // add ability to cache results
@@ -142,17 +148,14 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   const startTime = Date.now()
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
+  const plugins: Record<string, ArkalisPluginExports> = {}
   const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause, getPlugin }
 
-  let pluginExports = {}
-  const plugins: Record<string, unknown> = {}
+  let arkalis = { ...arkalisCore } as Arkalis
   for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
-    const value = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalisCore)
-    plugins[pluginName] = value
-    pluginExports = { ...pluginExports, ...value }
+    plugins[pluginName] = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisInit)
+    arkalis = { ...arkalis, ...plugins[pluginName] }
   }
-
-  const arkalis: Arkalis = { ...arkalisCore, ...pluginExports as ArkalisExportedPlugins }
 
   ////////////////////////////////////
 
@@ -161,8 +164,10 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   }
 
   async function close() {
-    const arkalisBrowserPlugin = getPlugin<typeof arkalisBrowser>("arkalisBrowser")
-    await arkalisBrowserPlugin.close()
+    for (const pluginName of Object.keys(plugins)) {
+      const plugin = plugins[pluginName] as ReturnType<ArkalisPlugin>
+      plugin.close && await plugin.close()
+    }
   }
 
   function log(...args: any[]) {
@@ -210,8 +215,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   }
 
   async function run() {
-    const responseCachePlugin = getPlugin<typeof arkalisResponseCache>("arkalisResponseCache")
-    const result = await responseCachePlugin.runAndCache<T>(`result-${cacheKey}`, async () => code(arkalis))
+    const result = await arkalis.runAndCache<T>(`result-${cacheKey}`, async () => code(arkalis))
     return { result, logLines }
   }
 
@@ -233,8 +237,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
        await pause()
 
     const successText = success ? c.greenBright("SUCCESSFULLY") : c.redBright("UNSUCCESSFULLY")
-    const statsPlugin = getPlugin<typeof arkalisStats>("arkalisStats")
-    log(`Completed attempt ${successText} in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${statsPlugin.stats().summary})`)
+    log(`Completed attempt ${successText} in ${(Date.now() - startTime).toLocaleString("en-US")}ms (${arkalis.stats().summary})`)
     logAttemptResult(!success)
     await close()
   })

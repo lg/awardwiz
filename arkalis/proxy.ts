@@ -4,7 +4,7 @@ import url from "node:url"
 import type { Protocol } from "devtools-protocol"
 import CDP from "chrome-remote-interface"
 
-export const arkalisProxy = (arkalis: ArkalisCore) => {
+export const arkalisProxy = (arkalis: ArkalisCore): { proxy?: string, onAuthRequired?: typeof onAuthRequiredFunc } => {
   // load proxies from env variables
   const proxies = Object.keys(process.env).reduce<Record<string, string[]>>((acc, k) => {
     if (!k.startsWith("PROXY_ADDRESS_"))

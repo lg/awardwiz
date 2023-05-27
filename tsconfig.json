@@ -22,6 +22,8 @@
 
     "useDefineForClassFields": false,      // set to true to compile #private to something more compatible
 
+    "noErrorTruncation": true,
+
     "sourceMap": true,
     "outDir": "dist"
   },
