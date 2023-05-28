@@ -122,7 +122,7 @@ type ArkalisPluginBuiltins = {
 }
 export type ArkalisPlugin = (arkalis: ArkalisCore) => Record<string, any> & ArkalisPluginBuiltins
 type ArkalisPluginExportsAll = Omit<Flatten<UnionToIntersection<Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>>>, keyof ArkalisPluginBuiltins>
-type ArkalisPluginExports = Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>
+type ArkalisPluginExports = Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>> & ArkalisPluginBuiltins
 export type Arkalis = Flatten<ArkalisCore & ArkalisPluginExportsAll>
 
 const DEFAULT_PLUGINS = {
@@ -144,24 +144,23 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   const startTime = Date.now()
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
-  const plugins: Record<string, ArkalisPluginExports> = {}
+  const loadedPlugins: ArkalisPluginExports[] = []
   const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause }
 
   // Loading plugins one at a time, populating the Arkalis object with their exports. Note that though we cast this
   // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.
   let arkalis = { ...arkalisCore } as Arkalis
   for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
-    plugins[pluginName] = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
-    arkalis = { ...arkalis, ...plugins[pluginName] }
+    const loadedPlugin = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
+    loadedPlugins.push(loadedPlugin)
+    arkalis = { ...arkalis, ...loadedPlugin }
   }
 
   ////////////////////////////////////
 
   async function close() {
-    for (const pluginName of Object.keys(plugins)) {
-      const plugin = plugins[pluginName] as ReturnType<ArkalisPlugin>
+    for (const plugin of loadedPlugins.slice().reverse())
       plugin.close && await plugin.close()
-    }
   }
 
   function log(...args: any[]) {
