@@ -79,14 +79,25 @@ const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFa
       },
       fares: slice.pricingDetail
         .filter((product) => product.productAvailable)
-        .map((product): FlightFare => ({
-          cash: product.perPassengerTaxesAndFees.amount,
-          currencyOfCash: product.perPassengerTaxesAndFees.currency,
-          miles: product.perPassengerAwardPoints,
-          cabin: { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "first", "BUSINESS": "business" }[product.productType]!,
-          scraper: "aa",
-          bookingClass: product.extendedFareCode?.[0]
-        }))
+        .map((product): FlightFare => {
+          const cabinByFareCode = { "F": "first", "J": "business", "W": "economy", "Y": "economy" }[product.extendedFareCode?.[0] ?? ""]
+          const awardCabinByFareCode = { "Z": "first", "U": "business", "T": "economy", "X": "economy" }[product.extendedFareCode?.[0] ?? ""]
+
+          const cabin = awardCabinByFareCode ?? cabinByFareCode ??
+            { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "first", "BUSINESS": "business" }[product.productType]
+          if (!cabin)
+            throw new Error(`Unknown cabin type on ${segment.flight.carrierCode} ${segment.flight.flightNumber}. Fare code: ${product.extendedFareCode?.[0] ?? "undefined"}, product type: ${product.productType}\n${JSON.stringify(segment, null, 2)}`)
+
+          return {
+            cash: product.perPassengerTaxesAndFees.amount,
+            currencyOfCash: product.perPassengerTaxesAndFees.currency,
+            miles: product.perPassengerAwardPoints,
+            cabin,
+            scraper: "aa",
+            bookingClass: product.extendedFareCode?.[0],
+            isSaverFare: awardCabinByFareCode !== undefined
+          } satisfies FlightFare
+        })
         .reduce<FlightFare[]>((lowestCabinFares, fare) => {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           if (fare.cabin === undefined)
