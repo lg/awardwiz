@@ -25,7 +25,7 @@ clean:
 
 check:
   @just lint
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,arkalis,devtools-protocol
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format
   @echo 'ok'
 
 check-clean: clean check

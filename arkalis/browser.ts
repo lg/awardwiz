@@ -47,6 +47,8 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     // "disable-blink-features=AutomationControlled", // not working
     // "auto-open-devtools-for-tabs",
     // "log-net-log=tmp/out.json", "net-log-capture-mode=Everything",     // note, does not log requests
+    // TODO: pass this in dyanmically from a hook in the har scraper
+    "log-net-log=./tmp/netlog.json", "net-log-capture-mode=Everything",
 
     arkalis.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
     arkalis.debugOptions.browserDebug === "verbose" ? "v=2" : "",
@@ -97,6 +99,7 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
       await arkalis.client.DOM.disable().catch(() => {})
 
       await arkalis.client.Browser.close().catch(() => {})
+      await arkalis.wait(1000)                                      // TODO: is this still necessary (netlog gets cut off otherwise)
       await arkalis.client.close().catch(() => {})
 
       instance.kill()

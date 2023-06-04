@@ -11,6 +11,7 @@ import { arkalisBrowser } from "./browser.js"
 import { arkalisPageHelpers } from "./page-helpers.js"
 import { arkalisInteraction } from "./interaction.js"
 import { arkalisResponseCache } from "./response-cache.js"
+import { arkalisHar } from "./har.js"
 
 export type ScraperMetadata = {
   /** Unique name for the scraper */
@@ -134,7 +135,8 @@ const DEFAULT_PLUGINS = {
   arkalisInteraction,      // human-y mouse and keyboard control
   arkalisRequests,         // subscribe to request events and see stats like bytes used and cache hits
   arkalisInterceptor,      // adds ability to intercept requests, plus adds http auth proxy support
-  arkalisPageHelpers       // page helpers
+  arkalisPageHelpers,      // page helpers
+  arkalisHar,              // EXPERIMENTAL: adds ability to generate HAR files
 }
 
 async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {

@@ -15,7 +15,8 @@ const options: DebugOptions = {
   winston: logger,
 
   useResultCache: true,
-  globalCachePath: "./tmp/arkalis-cache"
+  globalCachePath: "./tmp/arkalis-cache",
+  browserDebug: true
 }
 
 if (process.argv.length < 6)
