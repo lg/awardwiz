@@ -24,7 +24,7 @@
 
     "noErrorTruncation": true,
 
-    "sourceMap": true,
+    "inlineSourceMap": true,
     "outDir": "dist"
   },
   "include": ["arkalis", "awardwiz-scrapers", "vite.config.ts"],
