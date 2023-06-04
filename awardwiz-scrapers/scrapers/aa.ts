@@ -43,22 +43,19 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
   const cmd = `fetch("https://www.aa.com/booking/api/search/itinerary", ${JSON.stringify(fetchRequest)});`
   void arkalis.evaluate(cmd)
-  const xhrResponse = await arkalis.waitFor({ "success": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary", statusCode: 200 }})
-
-  arkalis.log("parsing")
+  const xhrResponse = await arkalis.waitFor({ "search": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary" }})
   const json = JSON.parse(xhrResponse.response!.body) as AAResponse
-  if (json.error && json.error !== "309")
-    throw new Error(json.error)
 
-  if (json.errorNumber !== 1100) { /* historic date */ }
-
-  const flightsWithFares: FlightWithFares[] = []
-  if (json.slices && json.slices.length > 0) {
-    const flights = standardizeResults(json.slices, query)
-    flightsWithFares.push(...flights)
+  // aa can return errors in two ways
+  if ((json.errorNumber ?? 0) > 0) {
+    if ("error" in json && json.errorNumber !== 309)         // only allow error 309
+      throw new Error(json.error)
+    if ("message" in json && json.errorNumber !== 1100)      // only allow historic date errors (1100)
+      throw new Error(json.message)
   }
 
-  return flightsWithFares
+  arkalis.log("parsing")
+  return standardizeResults(json.slices ?? [], query)
 }
 
 const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFares[] => (

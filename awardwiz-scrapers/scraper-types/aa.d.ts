@@ -1,10 +1,16 @@
-export interface AAResponse {
+export type AAResponse = {
   error: string
   errorNumber?: number
   responseMetadata: ResponseMetadata
   products: string[]
   slices?: Slice[]
   utag: Utag
+} | {
+  timestamp: string
+  message: string
+  details: string
+  errorNumber: number
+  slices: undefined
 }
 
 export interface ResponseMetadata {
