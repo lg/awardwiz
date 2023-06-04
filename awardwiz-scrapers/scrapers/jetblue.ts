@@ -18,10 +18,13 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
   const waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "https://jbrest.jetblue.com/lfs-rwb/outboundLFS" },
+    "no-flights": { type: "url", url: "https://www.jetblue.com/best-fare-finder?nff=true" },
     "prev-day": { type: "html", html: "The dates for your search cannot be in the past." },
   })
   if (waitForResult.name === "prev-day")
     return arkalis.warn("date in past")
+  if (waitForResult.name === "no-flights")
+    return arkalis.warn("no flights")
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)
   if (waitForResult.response?.body === "Invalid Request")
