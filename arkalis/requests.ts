@@ -11,7 +11,8 @@ type CompletedRequest = {
   startTime?: number,
   endTime?: number,
   success: boolean,
-  body?: string
+  body?: string,
+  responseType?: Protocol.Network.ResourceType
 }
 type CompletedRequestWithBody = CompletedRequest & { body: string }
 
@@ -41,6 +42,7 @@ export const arkalisRequests = (arkalis: ArkalisCore) => {
     requests[response.requestId]!.response = response.response
     if (!response.response.fromDiskCache)
       requests[response.requestId]!.downloadedBytes += response.response.encodedDataLength
+    requests[response.requestId]!.responseType = response.type
   })
   arkalis.client.Network.dataReceived((response) => {
     responseEvent(response)
@@ -81,11 +83,15 @@ export const arkalisRequests = (arkalis: ArkalisCore) => {
 
     arkalis.debugOptions.showRequests && arkalis.log(line)
 
-    // Load the body and notify subscribers
-    if (subscriptions.length > 0) {
-      const body = await arkalis.client.Network.getResponseBody({ requestId: requestId }).catch(() => {})
-      item.body = body?.body
-    }
+    // Skip loading a body since it's apparently an agressive call
+    const skipBodyLoading =
+      subscriptions.length === 0 ||
+      ["Preflight", "Beacon", "Ping", "CSPViolationReport", "PluginResource", "Manifest"].includes(item.responseType ?? "") ||
+      (Object.entries(item.response?.headers ?? {}).some(([key, value]) => key.toLowerCase() === "content-length" && parseInt(value) === 0)) ||
+      [101, 204, 205, 304].includes(item.response?.status ?? 0) ||
+      ["OPTIONS", "HEAD"].includes(item.request?.method ?? "")
+
+    item.body = skipBodyLoading ? undefined : (await arkalis.client.Network.getResponseBody({ requestId: requestId }).catch(() => undefined))?.body
     for (const subscription of subscriptions)
       await subscription(item)
   }
