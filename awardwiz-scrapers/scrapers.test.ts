@@ -27,7 +27,7 @@ const scrapers: ScraperConfig = [
   ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["HND", "FUK", "JL 303"], plusOneDayRoute: ["SFO", "JFK"] }],
   ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["FRA", "MUC", "LH 106"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
   ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"], missingAttribs: ["aircraft"] }],
-  ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"], sameDayTz: "America/New_York" }],
+  // ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"], sameDayTz: "America/New_York" }],
   ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"], sameDayTz: "America/New_York" }],
   ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
   ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
@@ -39,14 +39,15 @@ type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
   const scraper = await import(`./scrapers/${scraperName}.ts`) as AwardWizScraperModule
   const datedRoute: DatedRoute = { origin: route[0]!, destination: route[1]!, departureDate: checkDate }
-  const options: DebugOptions = { maxAttempts: 3, showRequests: false }
+  const options: DebugOptions = { maxAttempts: 2, showRequests: false, liveLog: null, }
+  const identifier = `debug-${scraper.meta.name}-${datedRoute.origin}${datedRoute.destination}-${datedRoute.departureDate.substring(5, 7)}${datedRoute.departureDate.substring(8, 10)}`
 
   return runArkalis(async (arkalis) => {
     arkalis.log("Using query:", datedRoute)
     return scraper.runScraper(arkalis, datedRoute)
-  }, options, scraper.meta, `debug-${scraper.meta.name}-${datedRoute.origin}${datedRoute.destination}-${datedRoute.departureDate.substring(5, 7)}${datedRoute.departureDate.substring(8, 10)}`).then((response) => {
+  }, options, scraper.meta, identifier).then((response) => {
     if (response.result === undefined)
-      throw new Error(`Scraper failed:\n\n${response.logLines.join("\n")}`)
+      throw new Error(`Scraper failed (${identifier}):\n\n${response.logLines.join("\n")}`)
     return response
   })
 }

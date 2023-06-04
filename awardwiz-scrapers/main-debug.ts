@@ -11,7 +11,7 @@ const options: DebugOptions = {
   pauseAfterRun: false,
   pauseAfterError: true,
   drawMousePath: false,
-  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
+  liveLog: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
   winston: logger,
 
   useResultCache: true,

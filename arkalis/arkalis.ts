@@ -77,9 +77,9 @@ export type DebugOptions = {
    * @default true */
   showRequests?: boolean
 
-  /** Custom logger. If not set, will use the general console logger.
+  /** Custom logger. If not set, will use the general console logger. If null, will not log outside of logLines.
    * @default console.log */
-  log?: (prettyLine: string, id: string) => void
+  liveLog?: ((prettyLine: string, id: string) => void) | null
 
   /** Custom logger for the final result with metadata of the run.
    * @default null */
@@ -101,8 +101,10 @@ export const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, browserDebug: false, winston: null,
   globalBrowserCacheDir: "./tmp/browser-cache", globalCachePath: null, drawMousePath: false,
   timezone: null, showRequests: true, useResultCache: false, defaultResultCacheTtl: 0,
-  log: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
+  liveLog: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
 }
+
+type ArkalisError = Error & { arkalis: Arkalis, logLines: string[] }
 
 type Flatten<T> = T extends Record<string, any> ? { [k in keyof T] : T[k] } : never
 type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
@@ -166,7 +168,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   function log(...args: any[]) {
     const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
     logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
-    debugOptions.log(prettyLine, identifier)
+    debugOptions.liveLog?.(prettyLine, identifier)
   }
 
   function warn(...args: any[]) {
@@ -223,6 +225,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
     if (debugOptions.pauseAfterError)
       await pause()
 
+    Object.assign(error, { logLines, arkalis })
     throw error
 
   }).finally(async () => {
@@ -237,23 +240,19 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
 }
 
 export async function runArkalis<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
-  const logLines: string[] = []
-
-  function log(...args: any[]) {
-    const prettyLine = args.map((item: any) => typeof item === "string" ? item : util.inspect(item, { showHidden: false, depth: null, colors: true })).join(" ")
-    logLines.push(`[${dayjs().format("YYYY-MM-DD HH:mm:ss.SSS")}] ${prettyLine}`)
-    ;(debugOpts.log ?? defaultDebugOptions.log)(prettyLine, "-")
-  }
+  const allLogLines: string[] = []
 
   return pRetry(async() => {
     const attemptResult = await runArkalisAttempt(code, debugOpts, scraperMetadata, cacheKey)
-    logLines.push(...attemptResult.logLines)
-    return { result: attemptResult.result, logLines }
+    allLogLines.push(...attemptResult.logLines)
+    return { result: attemptResult.result, logLines: allLogLines }
 
   }, { minTimeout: 0, maxTimeout: 0, retries: (debugOpts.maxAttempts ?? defaultDebugOptions.maxAttempts) - 1, onFailedAttempt: (error) => {
-    log(c.yellow(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]!}`))
+    const arkalisError = error as typeof error & ArkalisError
+    arkalisError.arkalis.warn(`Failed to run scraper (attempt ${error.attemptNumber} of ${error.retriesLeft + error.attemptNumber}): ${error.message.split("\n")[0]!}`)
+    allLogLines.push(...arkalisError.logLines)
 
   } }).catch(e => {
-    return { result: undefined, logLines }
+    return { result: undefined, logLines: allLogLines }
   })
 }

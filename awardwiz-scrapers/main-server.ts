@@ -18,7 +18,7 @@ const debugOptions: DebugOptions = {
   globalBrowserCacheDir: process.env["TMP_PATH"] ? path.join(process.env["TMP_PATH"], "browser-cache") : "./tmp/browser-cache",
   browserDebug: false,
   showRequests: false,
-  log: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
+  liveLog: (prettyLine: string, id: string) => logger.info(prettyLine, { id }),
   winston: logger,
   useResultCache: true,
   globalCachePath: process.env["TMP_PATH"] ? path.join(process.env["TMP_PATH"], "arkalis-cache") : "./tmp/arkalis-cache"
