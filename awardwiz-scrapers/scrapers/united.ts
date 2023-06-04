@@ -13,7 +13,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
 
   arkalis.log("waiting for results")
   const waitForResult = await arkalis.waitFor({
-    "success": { type: "url", url: "https://www.united.com/api/flight/FetchFlights", statusCode: 200 },
+    "success": { type: "url", url: "https://www.united.com/api/flight/FetchFlights", onlyStatusCode: 200, othersThrow: true },
     "invalid airport": { type: "html", html: "you entered is not valid or the airport is not served" },
     "invalid input": { type: "html", html: "We can't process this request. Please restart your search." },
     "anti-botting": { type: "html", html: "united.com was unable to complete" },

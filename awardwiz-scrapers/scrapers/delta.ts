@@ -45,14 +45,14 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   // })
 
   arkalis.goto("https://www.delta.com/flight-search/book-a-flight")
-  await arkalis.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", statusCode: 200 }})
+  await arkalis.waitFor({ "success": { type: "url", url: "https://www.delta.com/prefill/retrieveSearch?searchType=RecentSearchesJSON*", onlyStatusCode: 200, othersThrow: true }})
   await arkalis.waitFor({ "success": { type: "selector", selector: "#chkFlexDate" }})
   await arkalis.waitFor({ "success": { type: "selector", selector: "#btnSubmit" }})
   await arkalis.clickSelector("#chkFlexDate")
   void arkalis.clickSelector("#btnSubmit")   // async
 
   let waitForResult = await arkalis.waitFor({
-    "success": { type: "url", url: "https://www.delta.com/shop/ow/search", statusCode: 200 },
+    "success": { type: "url", url: "https://www.delta.com/shop/ow/search", onlyStatusCode: 200, othersThrow: true },
     "system unavailable anti-botting": { type: "url", url: "https://www.delta.com/content/www/en_US/system-unavailable1.html" },
     "continue button": { type: "url", url: "https://www.delta.com/shop/ow/flexdatesearch" },
     "oh no anti-botting": { type: "html", html: "Please try again.#100904A" },
@@ -61,7 +61,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     arkalis.log("interstitial page with continue button appeared, clicking it")
     await arkalis.clickSelector("#btnContinue")
     waitForResult = await arkalis.waitFor({
-      "success": { type: "url", url: "https://www.delta.com/shop/ow/search", statusCode: 200 },
+      "success": { type: "url", url: "https://www.delta.com/shop/ow/search", onlyStatusCode: 200, othersThrow: true },
     })
   }
   if (waitForResult.name !== "success")

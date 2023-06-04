@@ -10,7 +10,7 @@ export const meta: ScraperMetadata = {
 export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = "https://www.aa.com/booking/find-flights"
   arkalis.goto(url)
-  await arkalis.waitFor({ "success": { type: "url", url, statusCode: 200 }})
+  await arkalis.waitFor({ "success": { type: "url", url, onlyStatusCode: 200, othersThrow: true }})
 
   arkalis.log("fetching itinerary")
   const fetchRequest = {

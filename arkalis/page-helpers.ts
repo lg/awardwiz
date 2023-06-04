@@ -2,23 +2,17 @@ import { Arkalis, ArkalisCore } from "./arkalis.js"
 import type { Protocol } from "devtools-protocol"
 import globToRegexp from "glob-to-regexp"
 
-export type WaitForType = { type: "url", url: string | RegExp, statusCode?: number } | { type: "html", html: string | RegExp } | { type: "selector", selector: string }
-export type WaitForReturn = { name: string, response?: Protocol.Network.Response & { body: string } }
+export type WaitForType =
+  { type: "url", url: string | RegExp, onlyStatusCode?: number, othersThrow?: boolean } |
+  { type: "html", html: string | RegExp } |
+  { type: "selector", selector: string }
+export type WaitForReturn = {
+  name: string
+  response?: Protocol.Network.Response & { body: string }
+}
 
 export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
   const getLastResponseTime = (arkalis as Arkalis).getLastResponseTime
-
-  function throwIfBadResponse(statusCode: number, bodyText: string) {
-    if (statusCode !== 200) {
-      if (bodyText.includes("<H1>Access Denied</H1>"))
-        throw new Error(`Access Denied anti-botting while loading page (status: ${statusCode})`)
-      if (bodyText.includes("div class=\"px-captcha-error-header\""))
-        throw new Error("Perimeter-X captcha anti-botting while loading page")
-      arkalis.log(bodyText)
-
-      throw new Error(`Page loading failed with status ${statusCode}`)
-    }
-  }
 
   return {
     /** Navigates to the specified URL and returns immediately
@@ -43,7 +37,8 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
      * will wait only trigger on that http status code, unless the expected code is 200 in which case the request will be
      * validated */
     waitFor: async (items: Record<string, WaitForType>): Promise<WaitForReturn> => {
-      const subscriptions: (() => void)[] = []
+      type SubscriptionCancelation = () => void
+      const subscriptions: SubscriptionCancelation[] = []
       const pollingTimers: NodeJS.Timer[] = []
       let timeout: NodeJS.Timeout | undefined
 
@@ -51,28 +46,16 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
         const promises = Object.entries(items).map(async ([name, params]): Promise<WaitForReturn> => {
           switch (params.type) {
             case "url":
-              return new Promise((resolve, reject) => {
-                let resultResponse: Protocol.Network.Response
-                let lookingForRequestId: string | undefined = undefined
-                const urlRegexp = typeof params.url === "string" ? globToRegexp(params.url, { extended: true }) : params.url
-
-                // The request first comes in as headers only
-                subscriptions.push(arkalis.client.Network.responseReceived((response) => {
-                  if (urlRegexp.test(response.response.url) && response.type !== "Preflight" &&
-                      (params.statusCode === undefined || params.statusCode === 200 || params.statusCode === response.response.status)) {
-                    lookingForRequestId = response.requestId
-                    resultResponse = response.response
+              return new Promise<WaitForReturn>((resolve, reject) => {
+                // eslint-disable-next-line @typescript-eslint/require-await
+                subscriptions.push((arkalis as Arkalis).subscribeToUrl(params.url, async (completedRequest) => {
+                  const responseObj = { ...completedRequest.response!, body: completedRequest.body }
+                  if (params.onlyStatusCode && responseObj.status !== params.onlyStatusCode) {
+                    if (params.othersThrow)
+                      reject(new Error(`Expected status code ${params.onlyStatusCode} but got ${responseObj.status} for ${params.url.toString()}`))
+                    return
                   }
-                }))
-
-                // Then the body comes in via Network.dataReceived and finishes with Network.loadingFinished
-                subscriptions.push(arkalis.client.Network.loadingFinished(async (response) => {
-                  if (lookingForRequestId === response.requestId) {
-                    const responseResult = await arkalis.client.Network.getResponseBody({ requestId: lookingForRequestId })
-                    if (params.statusCode === 200)    // do extra verifications if expecting a success
-                      throwIfBadResponse(resultResponse.status, responseResult.body)  // STILL NEEDS FIXING .catch((e: Error) => reject(e))
-                    resolve({name, response: {...resultResponse, body: responseResult.body}})
-                  }
+                  resolve({name, response: responseObj})
                 }))
               })
 
@@ -125,8 +108,10 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
         return result
 
       } finally {
-        subscriptions.forEach((unsub) => unsub())
-        pollingTimers.forEach((timer) => clearInterval(timer))
+        for (const unsub of subscriptions)
+          unsub()
+        for (const timer of pollingTimers)
+          clearInterval(timer)
         if (timeout) clearTimeout(timeout)
       }
     }

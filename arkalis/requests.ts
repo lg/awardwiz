@@ -1,11 +1,24 @@
 import { ArkalisCore } from "./arkalis.js"
 import type { Protocol } from "devtools-protocol"
 import c from "ansi-colors"
+import globToRegexp from "glob-to-regexp"
 
-type Request = { requestId: string, request?: Protocol.Network.Request, response?: Protocol.Network.Response, downloadedBytes: number, startTime?: number, endTime?: number, success: boolean }
+type CompletedRequest = {
+  requestId: string,
+  request?: Protocol.Network.Request,
+  response?: Protocol.Network.Response,
+  downloadedBytes: number,
+  startTime?: number,
+  endTime?: number,
+  success: boolean,
+  body?: string
+}
+type CompletedRequestWithBody = CompletedRequest & { body: string }
 
-export const arkalisStats = (arkalis: ArkalisCore) => {
-  const requests: Record<string, Request> = {}
+export const arkalisRequests = (arkalis: ArkalisCore) => {
+  type SubscriptionCompletedEvent = (request: CompletedRequest) => Promise<void>
+  const subscriptions: SubscriptionCompletedEvent[] = []
+  const requests: Record<string, CompletedRequest> = {}
   let lastResponseTime: number = Date.now()
 
   const initRequest = (requestId: string) => {
@@ -36,14 +49,14 @@ export const arkalisStats = (arkalis: ArkalisCore) => {
   arkalis.client.Network.loadingFinished((response) => {
     responseEvent(response)
     requests[response.requestId]!.success = true
-    completedLoading(response.requestId)
+    void completedLoading(response.requestId)
   })
   arkalis.client.Network.loadingFailed((response) => {
     responseEvent(response)
-    completedLoading(response.requestId, response)
+    void completedLoading(response.requestId, response)
   })
 
-  function completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
+  async function completedLoading(requestId: string, failedResponse?: Protocol.Network.LoadingFailedEvent) {
     const item = requests[requestId]!
     if (!requests[requestId]?.request?.method)
       return
@@ -67,6 +80,14 @@ export const arkalisStats = (arkalis: ArkalisCore) => {
       `${c.yellowBright(item.response?.headers["cache-control"] ?? item.response?.headers["Cache-Control"] ?? "")}`
 
     arkalis.debugOptions.showRequests && arkalis.log(line)
+
+    // Load the body and notify subscribers
+    if (subscriptions.length > 0) {
+      const body = await arkalis.client.Network.getResponseBody({ requestId: requestId }).catch(() => {})
+      item.body = body?.body
+    }
+    for (const subscription of subscriptions)
+      await subscription(item)
   }
 
   return {
@@ -80,5 +101,19 @@ export const arkalisStats = (arkalis: ArkalisCore) => {
       return { totRequests, cacheHits, cacheMisses, bytes, summary }
     },
     getLastResponseTime: () => lastResponseTime,
+
+    subscribeToUrl: (url: string | RegExp, onCompleted: (completedRequest: CompletedRequestWithBody) => Promise<void>) => {
+      const urlRegexp = typeof url === "string" ? globToRegexp(url, { extended: true }) : url
+
+      const removeSubscription = () => subscriptions.splice(subscriptions.indexOf(checkUrl), 1)
+      const checkUrl = async (request: CompletedRequest) => {
+        if (request.request?.url && urlRegexp.test(request.request.url) && request.body) {  // we expect some data in the body
+          removeSubscription()
+          await onCompleted(request as CompletedRequestWithBody)
+        }
+      }
+      subscriptions.push(checkUrl)
+      return removeSubscription   // call to unsubscribe
+    }
   }
 }

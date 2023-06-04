@@ -13,7 +13,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const waitForResult = await arkalis.waitFor({
     "success": { type: "url", url: "*/loyalty/dapidynamic/*/v2/search/air-bounds" },
     "anti-botting1": { type: "url", url: "*/aeroplan/redeem/" },
-    "anti-botting2": { type: "url", url: "*/loyalty/dapidynamic/*/v2/reward/market-token", statusCode: 403 },
+    "anti-botting2": { type: "url", url: "*/loyalty/dapidynamic/*/v2/reward/market-token", onlyStatusCode: 403 },
     "anti-botting3": { type: "html", html: "Air Canada's website is not available right now." }
   })
   if (waitForResult.name !== "success")

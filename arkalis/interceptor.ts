@@ -25,7 +25,7 @@ export const arkalisInterceptor = (arkalis: ArkalisCore) => {
 
       for (const interceptor of interceptors)
         await interceptor(event)
-      return arkalis.client.Fetch.continueRequest({ requestId: requestPausedEvent.requestId, interceptResponse: true })
+      return arkalis.client.Fetch.continueRequest({ requestId: requestPausedEvent.requestId, interceptResponse: true }).catch(() => {})
     })
   })
 

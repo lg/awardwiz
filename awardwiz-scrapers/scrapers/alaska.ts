@@ -17,7 +17,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   const url = `https://www.alaskaair.com/searchbff/V3/search?origins=${query.origin}&destinations=${query.destination}&dates=${query.departureDate}&numADTs=1&fareView=as_awards&sessionID=&solutionSetIDs=&solutionIDs=`
   arkalis.goto(url)
   const waitForResult = await arkalis.waitFor({
-    "success": { type: "url", url: "https://www.alaskaair.com/searchbff/V3/search*", statusCode: 200 }
+    "success": { type: "url", url: "https://www.alaskaair.com/searchbff/V3/search*", onlyStatusCode: 200, othersThrow: true },
   })
   if (waitForResult.name !== "success")
     throw new Error(waitForResult.name)

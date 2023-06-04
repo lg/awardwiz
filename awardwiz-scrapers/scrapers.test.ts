@@ -39,7 +39,7 @@ type KeysEnum<T> = { [_ in keyof Required<T>]: true }
 const runQuery = async (scraperName: string, route: string[], checkDate = dayjs().add(3, "months").format("YYYY-MM-DD")) => {
   const scraper = await import(`./scrapers/${scraperName}.ts`) as AwardWizScraperModule
   const datedRoute: DatedRoute = { origin: route[0]!, destination: route[1]!, departureDate: checkDate }
-  const options: DebugOptions = { maxAttempts: 2, showRequests: false, liveLog: null, }
+  const options: DebugOptions = { maxAttempts: 1, showRequests: false, liveLog: null, }
   const identifier = `debug-${scraper.meta.name}-${datedRoute.origin}${datedRoute.destination}-${datedRoute.departureDate.substring(5, 7)}${datedRoute.departureDate.substring(8, 10)}`
 
   return runArkalis(async (arkalis) => {

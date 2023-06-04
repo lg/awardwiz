@@ -4,7 +4,7 @@ import dayjs from "dayjs"
 import util from "util"
 import winston from "winston"
 import pRetry from "p-retry"
-import { arkalisStats } from "./stats.js"
+import { arkalisRequests } from "./requests.js"
 import { arkalisInterceptor } from "./interceptor.js"
 import { arkalisProxy } from "./proxy.js"
 import { arkalisBrowser } from "./browser.js"
@@ -132,7 +132,7 @@ const DEFAULT_PLUGINS = {
   arkalisProxy,            // pick a proxy server (if one is required)
   arkalisBrowser,          // launch chrome (w/ blocking, window, timezone, proxy)
   arkalisInteraction,      // human-y mouse and keyboard control
-  arkalisStats,            // keep track of requests, their cached status and bytes utilized
+  arkalisRequests,         // subscribe to request events and see stats like bytes used and cache hits
   arkalisInterceptor,      // adds ability to intercept requests, plus adds http auth proxy support
   arkalisPageHelpers       // page helpers
 }
