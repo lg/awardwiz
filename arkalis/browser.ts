@@ -9,6 +9,7 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     // pick a random window size
     const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
       exec("xdpyinfo | grep dimensions", (err, stdout) =>
+        // eslint-disable-next-line regexp/no-unused-capturing-group
         resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
     })
     let size = [1920, 1080]

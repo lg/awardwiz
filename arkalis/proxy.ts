@@ -24,6 +24,7 @@ export const arkalisProxy = (arkalis: ArkalisCore): { proxy?: string, onAuthRequ
 
   // if the format is `http://user:pass_country-UnitedStates_session-AAABBBCC@proxy.abcdef.io:31112`, roll the
   // proxy session id to get a new ip address
+  // eslint-disable-next-line regexp/no-unused-capturing-group
   const dynamicProxy = /http.*:\/\/.+:(?<start>\S{16}_country-\S+_session-)(?<sess>\S{8})@/u.exec(proxyUrl)
   if (dynamicProxy)
     proxyUrl = proxyUrl.replace(dynamicProxy.groups!["sess"]!, Math.random().toString(36).slice(2).substring(0, 8))

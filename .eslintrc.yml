@@ -1,6 +1,3 @@
-env:
-  browser: true
-  es2022: true
 plugins:
   - "@typescript-eslint"
   - promise
@@ -16,26 +13,14 @@ extends:
   - plugin:regexp/all
 parser: "@typescript-eslint/parser"
 parserOptions:
-  ecmaFeatures:
-    jsx: true
   ecmaVersion: latest
   sourceType: module
   project: ["./tsconfig.json"]
-settings:
-  react:
-    version: detect
 rules:
-  # disabled due to performance issues
-  "import/namespace": off
-  "import/default": off
-  "import/no-named-as-default": off
-  "import/no-named-as-default-member": off
-
-  quotes: ["error", "double"]
-  semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
+  quotes: ["warn", "double"]
+  semi: ["warn", "never"]
   max-len: off
   "@typescript-eslint/no-unused-vars": ["warn", { "args": "none", "varsIgnorePattern": "_.*" }]
-  no-use-before-define: off
   max-classes-per-file: off
   comma-dangle: off
   no-multiple-empty-lines: off
@@ -50,9 +35,7 @@ rules:
   object-curly-newline: off
   lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
 
-  import/prefer-default-export: off
-  import/no-unresolved: off
-  import/order: off
+  import/no-unresolved: off # because we use .js in the import statements
 
   "@typescript-eslint/no-empty-function": off
   import/newline-after-import: off
@@ -65,23 +48,18 @@ rules:
   "@typescript-eslint/ban-ts-comment": off
   "@typescript-eslint/no-explicit-any": off
   quote-props: off
-  no-restricted-syntax: off
   "@typescript-eslint/consistent-type-definitions": off
   "@typescript-eslint/prefer-string-starts-ends-with": off
 
   "@typescript-eslint/no-floating-promises": ["error", { "ignoreVoid": true }]   # need to handle these or it could bubble up
-  "no-void": off
-  "no-shadow": ["error", { "ignoreOnInitialization": true }]
   "newline-per-chained-call": off
   "import/named": off
-  "@typescript-eslint/no-throw-literal": off
   "@typescript-eslint/explicit-member-accessibility": ["error"]
   "@typescript-eslint/prefer-readonly": ["error"]
   "@typescript-eslint/promise-function-async": ["error"]
   "@typescript-eslint/no-unnecessary-type-assertion": "error"
   "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": { "arguments": false } }]
 
-  "regexp/no-unused-capturing-group": off
   promise/no-nesting: off
 
   "no-restricted-globals": ["error",
