@@ -80,10 +80,13 @@ const standardizeResults = (slices: Slice[], query: AwardWizQuery): FlightWithFa
           const cabinByFareCode = { "F": "first", "J": "business", "W": "economy", "Y": "economy" }[product.extendedFareCode?.[0] ?? ""]
           const awardCabinByFareCode = { "Z": "first", "U": "business", "T": "economy", "X": "economy" }[product.extendedFareCode?.[0] ?? ""]
 
-          const cabin = awardCabinByFareCode ?? cabinByFareCode ??
+          let cabin = awardCabinByFareCode ?? cabinByFareCode ??
             { "COACH": "economy", "PREMIUM_ECONOMY": "economy", "FIRST": "first", "BUSINESS": "business" }[product.productType]
           if (!cabin)
             throw new Error(`Unknown cabin type on ${segment.flight.carrierCode} ${segment.flight.flightNumber}. Fare code: ${product.extendedFareCode?.[0] ?? "undefined"}, product type: ${product.productType}\n${JSON.stringify(segment, null, 2)}`)
+
+          if (segment.flight.carrierCode === "B6" && cabin === "first")   // jetblue doesn't have first class
+            cabin = "business"
 
           return {
             cash: product.perPassengerTaxesAndFees.amount,
