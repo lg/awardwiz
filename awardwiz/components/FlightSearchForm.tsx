@@ -1,7 +1,7 @@
 import { Button, DatePicker, Form } from "antd"
-import { SearchQuery } from "../types/scrapers"
+import { SearchQuery } from "../types/scrapers.js"
 import { LeftOutlined, LoadingOutlined, RightOutlined, SearchOutlined, SwapOutlined } from "@ant-design/icons"
-import { SelectAirport } from "./SelectAirport"
+import { SelectAirport } from "./SelectAirport.js"
 import { default as dayjs, Dayjs } from "dayjs"
 
 type FlightSearchFormProps = {
@@ -11,11 +11,11 @@ type FlightSearchFormProps = {
 }
 
 export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: FlightSearchFormProps) => {
-  const swapOriginsAndDestinations = () => form.setFieldsValue({ origins: form.getFieldValue("destinations"), destinations: form.getFieldValue("origins") })
-  const addDay = (days: number) => form.setFieldsValue({ departureDate: dayjs(form.getFieldValue("departureDate")).add(days, "day") })
+  const [form] = Form.useForm()
+  const swapOriginsAndDestinations = () => form.setFieldsValue({ origins: form.getFieldValue("destinations") as string[], destinations: form.getFieldValue("origins") as string[] })
+  const addDay = (days: number) => form.setFieldsValue({ departureDate: dayjs(form.getFieldValue("departureDate") as number).add(days, "day") })
 
   const initialValuesWithDate = { ...searchQuery, departureDate: dayjs(searchQuery.departureDate) }
-  const [form] = Form.useForm()
   return (
     <Form form={form} initialValues={initialValuesWithDate} layout="inline" onFinish={onSearchClick}>
       <Form.Item name="origins" rules={[{ type: "array", min: 1 }]} style={{ width: 200, marginRight: 5, marginBottom: 0 }}>
@@ -33,7 +33,7 @@ export const FlightSearchForm = ({ searchQuery, isSearching, onSearchClick }: Fl
       <Button icon={<RightOutlined />} size="small" style={{ marginRight: 5, marginTop: 5 }} onClick={() => addDay(1)} />
 
       <Form.Item wrapperCol={{ offset: 2, span: 3 }} style={{ marginLeft: 10 }}>
-        <Button type="primary" onFocus={(event) => event.currentTarget.blur()} htmlType="submit" icon={isSearching ? <LoadingOutlined /> : <SearchOutlined />}>
+        <Button type="primary" onFocus={(event: React.FocusEvent<HTMLElement>) => event.currentTarget.blur()} htmlType="submit" icon={isSearching ? <LoadingOutlined /> : <SearchOutlined />}>
           {isSearching ? "Stop" : "Search"}
         </Button>
       </Form.Item>

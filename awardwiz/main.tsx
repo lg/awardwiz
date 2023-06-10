@@ -5,9 +5,9 @@ import { persistQueryClient } from "@tanstack/react-query-persist-client"
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
 
 import "./index.css"
-import { FlightSearch } from "./components/FlightSearch"
+import { FlightSearch } from "./components/FlightSearch.js"
 import { QueryClientProvider } from "@tanstack/react-query"
-import { LoginScreen } from "./components/LoginScreen"
+import { LoginScreen } from "./components/LoginScreen.js"
 
 const queryClient = new ReactQuery.QueryClient({
   defaultOptions: {
@@ -23,10 +23,12 @@ const queryClient = new ReactQuery.QueryClient({
 })
 
 if (import.meta.env.VITE_REACT_QUERY_CACHE_OFF !== "true") {
+  // eslint-disable-next-line no-console
   console.debug("Using persistent cache")
   const localStoragePersister = createSyncStoragePersister({ storage: window.localStorage })
   persistQueryClient({ queryClient, persister: localStoragePersister })
 } else {
+  // eslint-disable-next-line no-console
   console.debug("Not using persistent cache")
 }
 

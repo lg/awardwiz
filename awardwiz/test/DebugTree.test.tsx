@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { act, render, fireEvent } from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import { DebugTree, DebugTreeNode } from "../components/DebugTree"
+import { DebugTree, DebugTreeNode } from "../components/DebugTree.js"
 
 beforeAll(() => { vi.useFakeTimers() })
 afterAll(() => { vi.runOnlyPendingTimers(); vi.useRealTimers() })
@@ -13,7 +13,7 @@ afterAll(() => { vi.runOnlyPendingTimers(); vi.useRealTimers() })
 describe("DebugTree", () => {
   const defaultItem: DebugTreeNode = { key: "root", parentKey: "", text: "abc", stableIcon: <></>, isLoading: false }
 
-  it("should support a basic item", async () => {
+  it("should support a basic item", () => {
     // make sure an empty tree works
     render(<DebugTree debugTree={[]} rootKey="root" />)
 
@@ -24,7 +24,7 @@ describe("DebugTree", () => {
 
   it("should support items with errors", () => {
     const out = render(<DebugTree debugTree={[{ ...defaultItem, error: true }]} rootKey="root" />)
-    expect(out.getByText(/abc/i)).toHaveStyle("color: red")
+    expect(out.getByText(/abc/iu)).toHaveStyle("color: red")
   })
 
   it("should support items that are loading", async () => {
@@ -35,7 +35,7 @@ describe("DebugTree", () => {
 
     // removing the loading flag and waiting should show the total time in the text and stop the spinner
     await act(() => {
-      items[0].isLoading = false
+      items[0]!.isLoading = false
       vi.advanceTimersByTime(1500)
     })
     out.rerender(<DebugTree debugTree={items} rootKey="root" />)
@@ -43,13 +43,16 @@ describe("DebugTree", () => {
     expect(out.queryByRole("img", { name: "loading" })).not.toBeInTheDocument()
 
     // resetting loading flag should show spinner and remove the total-time from before
-    await act(() => { items[0].isLoading = true })
+    await act(() => { items[0]!.isLoading = true })
     out.rerender(<DebugTree debugTree={items} rootKey="root" />)
     expect(out.queryByRole("img", { name: "loading" })).toBeInTheDocument()
-    expect(out.queryByText(/\(.*?s\)/)).not.toBeInTheDocument()
+
+    // TODO: fix
+    // eslint-disable-next-line regexp/no-super-linear-move
+    expect(out.queryByText(/\(.*?s\)/u)).not.toBeInTheDocument()
   })
 
-  it("should support popover when clicking on the item", async () => {
+  it("should support popover when clicking on the item", () => {
     const out = render(<DebugTree debugTree={[{ ...defaultItem, details: "hello" }]} rootKey="root" />)
     expect(out.queryByText("hello")).not.toBeInTheDocument()
 

@@ -1,40 +1,36 @@
-# env:
-#   browser: true
-#   es2022: true
-# plugins:
-#   - react
-#   - "@typescript-eslint"
-#   - promise
-#   - react-hooks
-#   - deprecation
+env:
+  browser: true
+  es2022: true
 plugins:
   - "@typescript-eslint"
   - promise
   - regexp
+  - react
+  - react-hooks
 extends:
   - eslint:recommended
   - plugin:import/recommended
   - plugin:import/typescript
+  - plugin:import/errors
+  - plugin:import/warnings
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
   - plugin:@typescript-eslint/strict
   - plugin:promise/recommended
   - plugin:regexp/all
-  # - plugin:@typescript-eslint/strict
-  # - plugin:react/recommended
-  # - plugin:react/jsx-runtime
-  # - plugin:promise/recommended
-  # - plugin:react-hooks/recommended
+  - plugin:react/recommended
+  - plugin:react/jsx-runtime
+  - plugin:react-hooks/recommended
 parser: "@typescript-eslint/parser"
 parserOptions:
-  # ecmaFeatures:
-  #   jsx: true
+  ecmaFeatures:
+    jsx: true
   ecmaVersion: latest
   sourceType: module
   project: ["./tsconfig.json"]
-# settings:
-#   react:
-#     version: detect
+settings:
+  react:
+    version: detect
 rules:
   quotes: ["warn", "double"]
   semi: ["warn", "never"]
@@ -51,23 +47,23 @@ rules:
   import/extensions: off
   no-debugger: off
 
-  # react/jsx-one-expression-per-line: off
-  # react/state-in-constructor: off
-  # react/button-has-type: off # really dont think this is necessary
-  # react/destructuring-assignment: off
-  # react/jsx-filename-extension: ["error", { "extensions": [".ts", ".tsx"] }]
-  # react/function-component-definition: ["error", { "namedComponents": "arrow-function" }]
-  # react/require-default-props: off
-  # react/jsx-closing-bracket-location: off
-  # react/jsx-max-props-per-line: off
-  # react/jsx-first-prop-new-line: off
-  # react/jsx-props-no-spreading: off
-  # react/prop-types: ["error", { skipUndeclared: true }]
-  # react/jsx-no-useless-fragment: off
-  # react/prefer-stateless-function: off
+  react/jsx-one-expression-per-line: off
+  react/state-in-constructor: off
+  react/button-has-type: off # really dont think this is necessary
+  react/destructuring-assignment: off
+  react/jsx-filename-extension: ["error", { "extensions": [".ts", ".tsx"] }]
+  react/function-component-definition: ["error", { "namedComponents": "arrow-function" }]
+  react/require-default-props: off
+  react/jsx-closing-bracket-location: off
+  react/jsx-max-props-per-line: off
+  react/jsx-first-prop-new-line: off
+  react/jsx-props-no-spreading: off
+  react/prop-types: ["error", { skipUndeclared: true }]
+  react/jsx-no-useless-fragment: off
+  react/prefer-stateless-function: off
 
-  # react-hooks/rules-of-hooks: "error"
-  # "react-hooks/exhaustive-deps": "warn"
+  react-hooks/rules-of-hooks: "error"
+  "react-hooks/exhaustive-deps": "warn"
 
   no-console: ["warn", { "allow": ["warn", "error"] }]
   object-curly-newline: off
@@ -80,7 +76,6 @@ rules:
 
   spaced-comment: off
 
-  import/no-import-module-exports: off    # so i can embed the scrapers in the main codebase
   padded-blocks: off
   "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
   "@typescript-eslint/ban-ts-comment": off
@@ -92,7 +87,6 @@ rules:
 
   "@typescript-eslint/no-floating-promises": ["error", { "ignoreVoid": true }]   # need to handle these or it could bubble up
   "newline-per-chained-call": off
-  "import/named": off
   "@typescript-eslint/explicit-member-accessibility": ["error"]
   "@typescript-eslint/prefer-readonly": ["error"]
   "@typescript-eslint/promise-function-async": ["error"]

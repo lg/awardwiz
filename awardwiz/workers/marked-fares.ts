@@ -1,10 +1,12 @@
-import { MarkedFare } from "../components/SearchResults"
+/* eslint-disable no-console */
+
+import { MarkedFare } from "../components/SearchResults.js"
 import dayjs from "dayjs"
-import LocalizedFormat from "dayjs/plugin/localizedFormat"
-import utc from "dayjs/plugin/utc"
-import timezone from "dayjs/plugin/timezone"
+import LocalizedFormat from "dayjs/plugin/localizedFormat.js"
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
 import { Listr } from "listr2"
-import { runListrTask } from "../helpers/common"
+import { runListrTask } from "../helpers/common.js"
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
 import notificationEmail from "../../emails/notification.html?raw"
@@ -22,13 +24,13 @@ for (const key of ["VITE_SCRAPERS_URL"])
 let app: admin.app.App
 if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") {
   console.log("\u001B[33mUsing Firebase emulators\u001B[0m")
-  process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080"
-  process.env.FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
+  process.env["FIRESTORE_EMULATOR_HOST"] = "localhost:8080"
+  process.env["FIREBASE_AUTH_EMULATOR_HOST"] = "127.0.0.1:9099"
   app = admin.initializeApp({ projectId: "awardwiz" })
 
 } else {
   if (!Object.keys(import.meta.env).includes("VITE_FIREBASE_SERVICE_ACCOUNT_JSON")) throw new Error("Missing VITE_FIREBASE_SERVICE_ACCOUNT_JSON environment variable")
-  app = admin.initializeApp({ credential: admin.credential.cert(JSON.parse(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT_JSON)) })
+  app = admin.initializeApp({ credential: admin.credential.cert(JSON.parse(import.meta.env.VITE_FIREBASE_SERVICE_ACCOUNT_JSON) as admin.ServiceAccount) })
 }
 
 //////////////////////////////////////
@@ -67,12 +69,12 @@ const { transporter, template } = await runListrTask("Creating email transport..
 }, () => import.meta.env.VITE_SMTP_CONNECTION_STRING ? "using prod SMTP" : "\u001B[33musing test account\u001B[0m")
 
 // Needs to be imported here because of some 'fs' hook happydom seems to do which breaks Firebase file opening in initializeApp
-import { genQueryClient, search } from "../helpers/awardSearchStandalone"
+import { genQueryClient, search } from "../helpers/awardSearchStandalone.js"
 const qc = genQueryClient() // Use the same query client for all searches for caching
 
-await new Listr<{}>(
+await new Listr<object>(
   markedFares.map((markedFare) => ({
-    title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid}`,
+    title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid ?? "unknown user"}`,
     task: async (_context, task) => {
       const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
       const foundSaver = results.searchResults.some((result) =>
@@ -85,7 +87,7 @@ await new Listr<{}>(
       // eslint-disable-next-line no-param-reassign
       task.title = `${task.title}: ${markedFare.curAvailable ? "available" : "unavailable"} ➡️ ${foundSaver ? "available 🎉" : "unavailable 👎"}`
 
-      return task.newListr<{}>([{
+      return task.newListr<object>([{
         title: "Sending notification email...",
         task: async (_context2, task2) => {
           // TODO: make the buttons work and remove the email restriction above
@@ -116,6 +118,7 @@ await new Listr<{}>(
       }, {
         title: "Updating marked fare...",
         task: async (_context2, task2) => {
+          if (!markedFare.id) throw new Error("Missing id for marked fare")
           const docRef = admin.firestore().doc(`marked_fares/${markedFare.id}`)
           await docRef.update("curAvailable", foundSaver)
 

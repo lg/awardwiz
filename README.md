@@ -72,3 +72,14 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 5. Getting a scraper to be complete end-to-end in **5 seconds** is amazing, **5-10 seconds** is good, **10-15 seconds** is ok, **15+ seconds** isn't great. Cache everything that you can, block unnecessary outside vendors they're using, try to directly do xhr requests instead of filling out forms (when possible). It's all a balance of the amount of anti-botting they're using vs scraping speed. The more clever and thoughtful you are, the faster and more resilient the scraper will be.
 6. If the xhr for the actual flight results takes a while to get requested, use `showFullRequest` to see when the request actually starts, maybe there's a dependent request that can be cached.
 7. If stuck behind anti-botting, try: `useIpTimezone`, `useRandomUserAgent`, `useBrowsers`, etc
+
+### Getting started [still rough]
+
+- `awardwiz`: the frontend website. in dev this gets run with vite, in prod this is built as a static page. vite root dir is `awardwiz/`.
+- `awardwiz-scrapers`: the backend api that does the scraping. in dev this needs to get run manually, in prod this is run independently.
+
+1. `npm i`
+2. install `just`
+3. configure your `.env` file
+4. `just run-server`
+5. `just start-vite`

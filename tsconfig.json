@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ESNext",
 
-    //   "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "lib": ["ESNext"],
     "allowJs": false,
     "skipLibCheck": true,                   // doesnt type check .d.ts files (DISABLE WHEN https://github.com/vitejs/vite/issues/11552 IS FIXED)
@@ -27,13 +26,11 @@
     "noErrorTruncation": true,
 
     "inlineSourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
 
-    //   "jsx": "react-jsx",
-    //   "types": ["unplugin-icons/types/react", "vitest/globals"]
+    "jsx": "react-jsx",
+    "types": ["vitest/globals", "unplugin-icons/types/react"]
   },
-  "include": ["arkalis", "awardwiz-scrapers", "vite.config.ts"],
+  "include": ["arkalis", "awardwiz-scrapers", "awardwiz"],
   "exclude": ["node_modules", "dist"]
-
-  // "include": ["src", "vite.config.ts"],
 }

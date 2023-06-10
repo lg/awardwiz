@@ -25,14 +25,14 @@ clean:
 
 check:
   @just lint
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch
   @echo 'ok'
 
 check-clean: clean check
 
 # build docker image for running locally
 build-docker debug="1" tag=localtag platform=dockerarch: build
-  docker buildx build -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
+  docker buildx build --file ./awardwiz-scrapers/Dockerfile -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
 
 # build arkalis docker image
 build-arkalis-docker:
@@ -79,3 +79,6 @@ test-anti-botting-prod:
     --rm --restart=Never --pod-running-timeout=30s --attach --stdin \
     --image=registry.kub.lg.io:31119/awardwiz:test --image-pull-policy=Always \
     -- node --enable-source-maps dist/arkalis/test-anti-botting.js
+
+start-vite:
+  npm exec -- vite --config awardwiz/vite.config.ts

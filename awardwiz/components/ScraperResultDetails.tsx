@@ -1,7 +1,6 @@
 import * as ReactQuery from "@tanstack/react-query"
-import { ScraperResponse } from "../types/scrapers"
+import { ScraperResponse } from "../types/scrapers.js"
 import { Alert, Button, Tabs } from "antd"
-import Ansi from "ansi-to-react"
 
 type ScraperResultDetailsProps = {
   response: ScraperResponse | undefined
@@ -15,9 +14,9 @@ export const ScraperResultDetails = ({ response, queryKey }: ScraperResultDetail
 
   let log = <Alert showIcon message="Loading..." type="info" />
   if (logLines.length > 0)
-    log = <pre style={{ fontSize: 10, height: "100%" }}><Ansi>{logLines.join("\n")}</Ansi></pre>
+    log = <pre style={{ fontSize: 10, height: "100%" }}>{logLines.join("\n")}</pre>
 
-  const buttons = <Button style={{ marginLeft: 100 }} onClick={() => queryClient.resetQueries(queryKey)} size="small">Reload</Button>
+  const buttons = <Button style={{ marginLeft: 100 }} onClick={() => void queryClient.resetQueries(queryKey) } size="small">Reload</Button>
   const tabItems = [
     { label: "Log", key: "log", children: log },
   ]

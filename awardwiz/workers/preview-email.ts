@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
 import notificationEmail from "../../emails/notification.html?raw"

@@ -1,5 +1,5 @@
-import { QueryKey } from "@tanstack/react-query"
-import { FlightRadar24Response } from "./fr24"
+import type { QueryKey } from "@tanstack/react-query"
+import { FlightRadar24Response } from "./fr24.js"
 
 export type ScraperQuery = {
   origin: string
