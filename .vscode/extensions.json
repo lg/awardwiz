@@ -1,6 +1,6 @@
 {
   "recommendations": [
-    "spadin.memento-inputs",
-    "dbaeumer.vscode-eslint",
+    // "spadin.memento-inputs",
+    // "dbaeumer.vscode-eslint",
   ]
 }

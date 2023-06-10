@@ -1,25 +1,39 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+
+    //   "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": ["ESNext"],
     "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "noFallthroughCasesInSwitch": true,       // makes sure all cases are covered
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
+    "skipLibCheck": true,                   // doesnt type check .d.ts files (DISABLE WHEN https://github.com/vitejs/vite/issues/11552 IS FIXED)
+    "esModuleInterop": true,                // also enables allowSyntheticDefaultImports (allows for importing default exports)
+
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "NodeNext",
     "resolveJsonModule": true,             // allows for importing .json files (and creating the schema)
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "types": ["unplugin-icons/types/react", "vitest/globals"]
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,         // Record<X, Y | undefined> is automaticly checked for
+    "noFallthroughCasesInSwitch": true,       // makes sure all cases are covered
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    "useDefineForClassFields": false,      // set to true to compile #private to something more compatible
+
+    "noErrorTruncation": true,
+
+    "inlineSourceMap": true,
+    "outDir": "dist"
+
+    //   "jsx": "react-jsx",
+    //   "types": ["unplugin-icons/types/react", "vitest/globals"]
   },
-  "include": ["src", "vite.config.ts"],
-  "exclude": ["node_modules"]
+  "include": ["arkalis", "awardwiz-scrapers", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
+
+  // "include": ["src", "vite.config.ts"],
 }

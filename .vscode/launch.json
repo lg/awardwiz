@@ -5,71 +5,98 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug Current Test File",
-      "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
-      "args": ["run", "${relativeFile}"],
-      "smartStep": true,
-      "console": "integratedTerminal",
-      "env": {
-        "VITE_LIVE_SCRAPER_TESTS": "1"
-      }
-    },
-    {
-      "name": "Marked Fares Worker",
-      "request": "launch",
-      "runtimeArgs": ["exec", "vite-node", "src/workers/marked-fares.ts"],
-      "env": {
-        "VITE_LOKI_LOGGING_UID": "debug_marked_fares_worker",
-        "NODE_NO_WARNINGS": "1"
-      },
-      "runtimeExecutable": "pnpm",
-      "skipFiles": ["<node_internals>/**"],
-      "type": "node"
-    },
-    {
-      "name": "Generate Statics Worker",
-      "request": "launch",
-      "runtimeArgs": ["exec", "vite-node", "src/workers/gen-statics.ts"],
-      "env": {
-        "NODE_NO_WARNINGS": "1"
-      },
-      "runtimeExecutable": "pnpm",
-      "skipFiles": ["<node_internals>/**"],
-      "type": "node"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Scraper Remote",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "exec",
-        "vite-node",
-        "src/scrapers/debug.ts",
-        "--",
-        "${input:params}"
+      "name": "Attach to Docker",
+      "address": "127.0.0.1",
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/usr/src/awardwiz",
+      "request": "attach",
+      "skipFiles": [
+        "<node_internals>/**"
       ],
-      "env": {
-        "VITE_LOKI_LOGGING_UID": "debug_scraper_script"
-      },
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "internalConsoleOptions": "openOnSessionStart",
-    }
-  ],
-  "inputs": [
+      "type": "node",
+      "continueOnAttach": true,
+    },
     {
-      "id": "params",
-      "type": "command",
-      "command": "memento.promptString",
-      "args": {
-        "id": "params",
-        "description": "Parameters? (from, to, date, scraper, chromium|browserless-func|browserless-websockets, ip)",
-        "default": "YOW,YYZ,2022-10-20,aeroplan,browserless-func,10.0.1.1"
-      }
+      "name": "Launch Debug",
+      // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
+      "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
+      "args": ["jetblue", "SFO", "BOS", "2023-05-18"],
+      "envFile": "${workspaceFolder}/.env",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**", "**/node_modules/**"
+      ],
+      "type": "node",
+      "preLaunchTask": "tsc",
+      "console": "integratedTerminal",
     }
+//   {
+//     "type": "node",
+//     "request": "launch",
+//     "name": "Debug Current Test File",
+//     "autoAttachChildProcesses": true,
+//     "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+//     "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+//     "args": ["run", "${relativeFile}"],
+//     "smartStep": true,
+//     "console": "integratedTerminal",
+//     "env": {
+//       "VITE_LIVE_SCRAPER_TESTS": "1"
+//     }
+//   },
+//   {
+//     "name": "Marked Fares Worker",
+//     "request": "launch",
+//     "runtimeArgs": ["exec", "vite-node", "src/workers/marked-fares.ts"],
+//     "env": {
+//       "VITE_LOKI_LOGGING_UID": "debug_marked_fares_worker",
+//       "NODE_NO_WARNINGS": "1"
+//     },
+//     "runtimeExecutable": "pnpm",
+//     "skipFiles": ["<node_internals>/**"],
+//     "type": "node"
+//   },
+//   {
+//     "name": "Generate Statics Worker",
+//     "request": "launch",
+//     "runtimeArgs": ["exec", "vite-node", "src/workers/gen-statics.ts"],
+//     "env": {
+//       "NODE_NO_WARNINGS": "1"
+//     },
+//     "runtimeExecutable": "pnpm",
+//     "skipFiles": ["<node_internals>/**"],
+//     "type": "node"
+//   },
+//   {
+//     "type": "node",
+//     "request": "launch",
+//     "name": "Scraper Remote",
+//     "runtimeExecutable": "pnpm",
+//     "runtimeArgs": [
+//       "exec",
+//       "vite-node",
+//       "src/scrapers/debug.ts",
+//       "--",
+//       "${input:params}"
+//     ],
+//     "env": {
+//       "VITE_LOKI_LOGGING_UID": "debug_scraper_script"
+//     },
+//     "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+//     "internalConsoleOptions": "openOnSessionStart",
+//   }
+// ],
+// "inputs": [
+//   {
+//     "id": "params",
+//     "type": "command",
+//     "command": "memento.promptString",
+//     "args": {
+//       "id": "params",
+//       "description": "Parameters? (from, to, date, scraper, chromium|browserless-func|browserless-websockets, ip)",
+//       "default": "YOW,YYZ,2022-10-20,aeroplan,browserless-func,10.0.1.1"
+//     }
+//   }
   ]
 }
