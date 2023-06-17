@@ -5,32 +5,46 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Docker",
+      "name": "Run scraper",
+      "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
+      "args": "${input:run-scraper-params}",
+      "envFile": "${workspaceFolder}/.env",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "type": "node",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "console": "integratedTerminal",
+    },
+    {
+      "name": "Run scraper with Docker",    // Edit the parameters in tasks.json
+      "request": "attach",
+      "type": "node",
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+
+      "preLaunchTask": "start scrapers docker",
+      "postDebugTask": "stop scrapers docker",
+
       "address": "127.0.0.1",
       "port": 9229,
       "localRoot": "${workspaceFolder}",
       "remoteRoot": "/usr/src/awardwiz",
-      "request": "attach",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "type": "node",
       "continueOnAttach": true,
-    },
-    {
-      "name": "Launch Debug",
-      // "program": "${workspaceFolder}/dist/arkalis/test-anti-botting.js",
-      "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
-      "args": ["jetblue", "SFO", "BOS", "2023-05-18"],
-      "envFile": "${workspaceFolder}/.env",
-      "request": "launch",
-      "skipFiles": [
-        "<node_internals>/**", "**/node_modules/**"
-      ],
-      "type": "node",
-      "preLaunchTask": "tsc",
-      "console": "integratedTerminal",
     }
+  ],
+  "inputs": [
+    {
+      "id": "run-scraper-params",
+      "type": "command",
+      "command": "memento.promptString",
+      "args": {
+        "id": "run-scraper-params",
+        "description": "Run scraper params: (ex. united SFO LAX 2023-12-25)",
+        "default": "united SFO LAX 2023-12-25"
+      }
+    }
+  ]
+}
+
 //   {
 //     "type": "node",
 //     "request": "launch",
@@ -68,35 +82,3 @@
 //     "skipFiles": ["<node_internals>/**"],
 //     "type": "node"
 //   },
-//   {
-//     "type": "node",
-//     "request": "launch",
-//     "name": "Scraper Remote",
-//     "runtimeExecutable": "pnpm",
-//     "runtimeArgs": [
-//       "exec",
-//       "vite-node",
-//       "src/scrapers/debug.ts",
-//       "--",
-//       "${input:params}"
-//     ],
-//     "env": {
-//       "VITE_LOKI_LOGGING_UID": "debug_scraper_script"
-//     },
-//     "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-//     "internalConsoleOptions": "openOnSessionStart",
-//   }
-// ],
-// "inputs": [
-//   {
-//     "id": "params",
-//     "type": "command",
-//     "command": "memento.promptString",
-//     "args": {
-//       "id": "params",
-//       "description": "Parameters? (from, to, date, scraper, chromium|browserless-func|browserless-websockets, ip)",
-//       "default": "YOW,YYZ,2022-10-20,aeroplan,browserless-func,10.0.1.1"
-//     }
-//   }
-  ]
-}
