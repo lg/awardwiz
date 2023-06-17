@@ -19,6 +19,8 @@ clean:
 # ⭐️ builds, lints, checks dependencies and runs tests (TODO: run tests)
 check: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
+  docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+  docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch
   @echo 'ok'
 
@@ -33,9 +35,21 @@ lets-upgrade-packages:
 # FRONTEND
 ##############################
 
-# starts the vite frontend
-start-vite:
-  npm exec -- vite --config awardwiz/vite.config.ts
+# ⭐️ starts the vite frontend
+start-vite args="": build
+  npm exec -- vite --config awardwiz/vite.config.ts {{args}}
+
+# generate statics from internet (used by Github Actions when deploying)
+gen-statics:
+  npm exec -- vite-node --config awardwiz/vite.config.ts awardwiz/workers/gen-statics.ts
+
+# generate awardwiz/dist directory for frontend (used by Github Actions when deploying)
+gen-frontend-dist:
+  just start-vite build
+
+# run the marked fares worker (looks at watches fares and sends notifications when availability changes)
+run-marked-fares-worker:
+  npm exec -- vite-node --config awardwiz/vite.config.ts awardwiz/workers/marked-fares.ts
 
 ##############################
 # SCRAPERS
@@ -72,7 +86,7 @@ run-live-scraper-tests:
   just run-docker "awardwiz:scrapers npm exec -- vitest run"
 
 ##############################
-# SCRAPERS - LG (you probably don't need these, they're more for deploying awardwiz.com)
+# DEPLOYMENT (you probably don't need these, they're more for deploying awardwiz.com)
 ##############################
 
 # build arkalis docker image

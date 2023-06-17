@@ -6,6 +6,10 @@ on:
   schedule:
     - cron: '*/10 * * * *' # every 10 minutes
 
+concurrency:
+  group: "marked-fares-worker"
+  cancel-in-progress: true
+
 jobs:
   marked-fares-worker:
     name: marked-fares-worker
@@ -23,9 +27,9 @@ jobs:
       VITE_LOKI_LOGGING_UID: marked_fares_worker
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: extractions/setup-just@v1
       - uses: actions/setup-node@v3
         with:
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run marked-fares-worker
+          cache: 'npm'
+      - run: npm ci
+      - run: just run-marked-fares-worker

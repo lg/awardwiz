@@ -26,7 +26,7 @@
 # old/
 # coverage/
 # .vercel
-# stats.html
+stats.html
 # src/**/*.schema.d.ts
 
 # tmp.ts

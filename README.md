@@ -79,7 +79,9 @@ export const runScraper: AwardWizScraper = async (sc, query) => {
 - `awardwiz-scrapers`: the backend api that does the scraping. in dev this needs to get run manually, in prod this is run independently.
 
 1. `npm i`
-2. install `just`
+2. install `just
 3. configure your `.env` file
-4. `just run-server`
-5. `just start-vite`
+5. `just run-server`
+6. `just start-vite`
+7. run github actions locally with `act --list` and `act -j <job-id>`
+

@@ -1,6 +1,7 @@
 name: Commit Tests
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   run-checks:
@@ -13,9 +14,9 @@ jobs:
       VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
     steps:
       - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2.2.4
+      - uses: extractions/setup-just@v1
       - uses: actions/setup-node@v3
         with:
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run check
+          cache: 'npm'
+      - run: npm ci
+      - run: just check

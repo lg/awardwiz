@@ -23,5 +23,5 @@ const airports = Object.values(fr24Airports).map((fr24Airport): Airport | undefi
   } satisfies Airport : undefined
 }).filter((airport): airport is Airport => !!airport).sort((a, b) => a.popularity > b.popularity ? -1 : 1)
 
-writeFileSync("airports.json", JSON.stringify(airports, undefined, 2))
+writeFileSync("awardwiz/airports.json", JSON.stringify(airports, undefined, 2))
 console.log(`Wrote airports database to airports.json in ${(Date.now() - startTime) / 1000}s`)
