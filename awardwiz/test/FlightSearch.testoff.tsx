@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { render, cleanup } from "@testing-library/react"
 import "@testing-library/jest-dom"
 
-import { FlightSearch } from "../components/FlightSearch"
+import { FlightSearch } from "../components/FlightSearch.js"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 beforeAll(() => {
@@ -25,6 +25,6 @@ describe("FlightSearch", () => {
     const node = wrapper({ children: <FlightSearch /> })
     const rendered = render(node).container
     expect(rendered.querySelectorAll(".ant-tree-title").length).toBeGreaterThanOrEqual(3)
-    expect(rendered.querySelectorAll(".ant-tree-title")[0].textContent).toMatch(/Search for .*? → .*? on .*?-.*?-.*/)
+    expect(rendered.querySelectorAll(".ant-tree-title")[0]!.textContent).toMatch(/Search for .*? → .*? on .*?-.*?-.*/u)
   })
 })

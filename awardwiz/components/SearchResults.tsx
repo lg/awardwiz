@@ -1,16 +1,17 @@
-import { Badge, ConfigProvider, Empty, Table, TableColumnType, TableColumnsType, Tag } from "antd"
-import { Airport, FlightFare, FlightWithFares } from "../types/scrapers"
+import { Badge, ConfigProvider, Empty, Table, Tag } from "antd"
+import type { TableColumnType, TableColumnsType } from "antd"
+import { Airport, FlightFare, FlightWithFares } from "../types/scrapers.js"
 import MaterialSymbolsAirlineSeatFlat from "~icons/material-symbols/airline-seat-flat"
 import MaterialSymbolsWifiRounded from "~icons/material-symbols/wifi-rounded"
 import MdiAirplane from "~icons/mdi/airplane"
-import awardwizImageUrl from "../wizard.png"
-import { FastTooltip } from "./FastTooltip"
+import awardwizImageUrl from "../../wizard.png"
+import { FastTooltip } from "./FastTooltip.js"
 import { default as dayjs } from "dayjs"
 import * as Firestore from "firebase/firestore"
-import { firebaseAuth, firestore } from "../helpers/firebase"
+import { firebaseAuth, firestore } from "../helpers/firebase.js"
 import React, { useState } from "react"
-import timezone from "dayjs/plugin/timezone"
-import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone.js"
+import utc from "dayjs/plugin/utc.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -36,7 +37,7 @@ const airlineLogoUrl = (airlineCode: string) => {
 
 export const SearchResults = ({ results, isLoading }: { results?: FlightWithFares[], isLoading: boolean }) => {
   const [airports, setAirports] = React.useState<Airport[]>([])
-  React.useEffect(() => { void import("../../airports.json").then((data) => { return setAirports(data.default)}) }, [])
+  React.useEffect(() => { void import("../airports.json").then((data) => { return setAirports(data.default)}) }, [])
 
   const [markedFares, setMarkedFares] = useState<MarkedFare[]>([])
   React.useEffect(() => {
@@ -134,14 +135,14 @@ export const SearchResults = ({ results, isLoading }: { results?: FlightWithFare
       check.date.slice(0, 10) === record.departureDateTime.slice(0, 10) &&
       check.checkCabin === cabin)
 
-    const clickedFare = async () => {
+    const clickedFare = () => {
       if (existingMarkedFare) {
         void Firestore.deleteDoc(Firestore.doc(firestore, "marked_fares", existingMarkedFare.id!))   // remove the marked fare
 
       } else {
         const tzName = airports.find((checkAirport) => checkAirport.iataCode === record.origin)?.tzName
         if (!tzName)
-          throw "Unknown time zone for marked fare"
+          throw new Error("Unknown time zone for marked fare")
         const originTime = dayjs(record.departureDateTime).tz(tzName)
 
         void Firestore.addDoc(Firestore.collection(firestore, "marked_fares"), {

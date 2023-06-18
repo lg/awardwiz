@@ -1,7 +1,7 @@
 import { Listr } from "listr2"
 
 export const runListrTask = async <T extends object>(title: string, task: () => Promise<T>, suffix?: (returnValue: T) => string) => {
-  let returnTask: T
+  let returnTask: T | undefined
   await new Listr([{ title, task: async (_context, taskObject) => {
     returnTask = await task()
     // eslint-disable-next-line no-param-reassign

@@ -20,11 +20,10 @@ COPY package.json package-lock.json ./
 RUN NODE_ENV=production npm install -g npm && npm i
 
 # used for tests with vitest
-COPY vite.config.ts ./
 COPY awardwiz-scrapers/ awardwiz-scrapers/
 COPY arkalis/ arkalis/
 
 COPY dist/ dist/
-COPY entrypoint.sh ./
+COPY awardwiz-scrapers/entrypoint.sh ./
 
 ENTRYPOINT ["./entrypoint.sh"]

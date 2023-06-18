@@ -1,5 +1,3 @@
-/// <reference types="vitest" />
-
 import { defineConfig, splitVendorChunkPlugin } from "vite"
 import react from "@vitejs/plugin-react"
 import Icons from "unplugin-icons/vite"
@@ -9,19 +7,23 @@ import path from "node:path"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: "awardwiz",
+  envDir: "../",
   clearScreen: false,
   server: {
-    port: 5000
+    port: 5000,
   },
 
   plugins: [
+    // @ts-expect-error
     react(),
+    // @ts-expect-error
     Icons({
       compiler: "jsx",
       jsx: "react",
       defaultStyle: "vertical-align: text-bottom;"
     }),
-    visualizer({ open: process.env.SHOW_VIZ ? process.env.SHOW_VIZ === "true" : true }),
+    visualizer({ open: process.env["SHOW_VIZ"] ? process.env["SHOW_VIZ"] === "true" : true }),
     watchAndRun([{
       name: "generate-ts-schemas",
       watch: path.resolve("src/**/*.schema.json"),

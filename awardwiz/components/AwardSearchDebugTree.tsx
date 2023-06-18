@@ -1,13 +1,13 @@
 import * as ReactQuery from "@tanstack/react-query"
-import { DebugTree, DebugTreeNode } from "./DebugTree"
+import { DebugTree, DebugTreeNode } from "./DebugTree.js"
 import { Typography } from "antd"
 import CarbonPaintBrush from "~icons/carbon/paint-brush"
 import CarbonCircleDash from "~icons/carbon/circle-dash"
 import { NodeIndexOutlined, SearchOutlined } from "@ant-design/icons"
-import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "../hooks/useAwardSearch"
-import { SearchQuery } from "../types/scrapers"
+import { AwardSearchProgress, doesScraperSupportAirline, queryKeyForAirlineRoute, queryKeyForScraperResponse, queryKeysEqual, scraperConfig, } from "../hooks/useAwardSearch.js"
+import { SearchQuery } from "../types/scrapers.js"
 import CarbonWarningAlt from "~icons/carbon/warning-alt"
-import { ScraperResultDetails } from "./ScraperResultDetails"
+import { ScraperResultDetails } from "./ScraperResultDetails.js"
 
 const { Text } = Typography
 
@@ -26,7 +26,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
     error: undefined
   })
 
-  debugTree.push(...datedRoutes.map((datedRoute): DebugTreeNode => {
+  debugTree.push(...datedRoutes.map((datedRoute) => {
     const queryKey: ReactQuery.QueryKey = queryKeyForAirlineRoute(datedRoute)
     return {
       key: `${datedRoute.origin}${datedRoute.destination}`,
@@ -35,7 +35,7 @@ export const AwardSearchDebugTree = ({ searchQuery, datedRoutes, airlineRoutes, 
       stableIcon: <NodeIndexOutlined />,
       isLoading: loadingQueriesKeys.some((check) => queryKeysEqual(check, queryKey)),
       error: !!errors.find((query) => queryKeysEqual(query.queryKey, queryKey))?.error,
-    }
+    } satisfies DebugTreeNode
   }))
 
   debugTree.push(...scrapersToRun.map((scraperToRun): DebugTreeNode => {

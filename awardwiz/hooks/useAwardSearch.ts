@@ -1,11 +1,34 @@
 import * as ReactQuery from "@tanstack/react-query"
 import { AxiosError } from "axios"
-import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers"
+import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers.js"
 import scrapersRaw from "../config.json"
-import { Scraper, ScrapersConfig } from "../types/config.schema"
 import React from "react"
-import { useQueryClient, UseQueryOptions } from "@tanstack/react-query"
-import { runScraper } from "../helpers/runScraper"
+import { useQueryClient } from "@tanstack/react-query"
+import type { UseQueryOptions } from "@tanstack/react-query"
+import { runScraper } from "../helpers/runScraper.js"
+
+export interface ScrapersConfig {
+  excludeAirlines?: string[]
+  chaseUnsupportedAirlines?: string[]
+  airlineGroups?: Record<string, string[]>
+  saverBookingClasses?: Record<string, string[]>
+  airlineAmenities?: AirlineAmenity[]
+  scrapers: Scraper[]
+}
+
+export interface AirlineAmenity {
+  airlineCode?: string
+  podsAircraft?: string[]
+  wifiAircraft?: string[]
+}
+
+export interface Scraper {
+  name: string
+  disabled?: boolean
+  supportedAirlines: string[]
+  nativeAirline?: string | null
+  cashOnlyFares?: boolean
+}
 
 export const scraperConfig = scrapersRaw as ScrapersConfig
 
@@ -54,7 +77,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     enabled: !stoppedQueries.some((stoppedQuery) => queryKeysEqual(stoppedQuery, queryKeyForAirlineRoute(datedRoute)))
   }))
   const airlineRouteQueries = ReactQuery.useQueries({ queries: airlineRouteQueriesOpts })
-  const keyedAirlineRouteQueries = airlineRouteQueries.map((query, index) => ({ ...query, queryKey: airlineRouteQueriesOpts[index].queryKey! }))
+  const keyedAirlineRouteQueries = airlineRouteQueries.map((query, index) => ({ ...query, queryKey: airlineRouteQueriesOpts[index]!.queryKey! }))
 
   // Returns the list of scraper-airline-route-date that'll be necessary to run: [{scraper, matchedAirlines[]}]
   const { scrapersToRun, airlineRoutes } = React.useMemo(() => {
@@ -89,7 +112,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
   const scraperQueries = ReactQuery.useQueries({ queries: scraperQueriesOpts })
-  const keyedScraperQueries = scraperQueries.map((query, index) => ({ ...query, queryKey: scraperQueriesOpts[index].queryKey! }))
+  const keyedScraperQueries = scraperQueries.map((query, index) => ({ ...query, queryKey: scraperQueriesOpts[index]!.queryKey! }))
 
   // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const { flights, scraperResponses } = React.useMemo(() => {
@@ -113,7 +136,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
 
   const stop = async () => {
     setStoppedQueries([...loadingQueriesKeys])
-    await Promise.all(loadingQueriesKeys.map((queryKey) => queryClient.cancelQueries(queryKey)))
+    await Promise.all(loadingQueriesKeys.map(async (queryKey) => queryClient.cancelQueries(queryKey)))
   }
 
   return { searchResults: flights, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors, stop }
@@ -149,7 +172,7 @@ const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionCont
     .map((item) => ({ origin: item.airport.origin.code.iata, destination: item.airport.destination.code.iata, airlineCode: item.airline?.code.iata, airlineName: item.airline?.name }))
     .filter((item): item is AirlineRoute => !!item.airlineName && !!item.airlineCode)    // dont take airlines who dont have a name/code
     .filter((item, index, self) => self.findIndex((t) => t.origin === item.origin && t.destination === item.destination && t.airlineCode === item.airlineCode) === index)   // remove duplicates
-    .filter((item) => !scraperConfig.excludeAirlines?.includes(item.airlineCode!))
+    .filter((item) => !scraperConfig.excludeAirlines?.includes(item.airlineCode))
 }
 
 export const doesScraperSupportAirline = (scraper: Scraper, airlineCode: string, includeCashOnly: boolean): boolean => {
@@ -166,8 +189,11 @@ const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: React
   const scraperToRun = meta.scraperToRun
 
   const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, signal).catch((error: AxiosError<ScraperResponse>) => {
+    // TODO: throw proper errors
     if (error.response?.data)
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw { logLines: error.response.data.logLines, message: "Internal scraper error", name: "ScraperError" } as ScraperError
+    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
   })
   response.data.forKey = queryKey
@@ -206,14 +232,16 @@ const mergeFlightsByFlightNo = (flights: FlightWithFares[]) => {
       existingFlight = returnFlights.find((returnFlight) => returnFlight.departureDateTime.slice(0, 16) === flight.departureDateTime.slice(0, 16) && returnFlight.arrivalDateTime.slice(0, 16) === flight.arrivalDateTime.slice(0, 16))
 
       // If the existing flight is from a cash-only scraper, take the new flight number, since other scrapers don't usually use codeshare flights
-      if (existingFlight && scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0].scraper)?.cashOnlyFares)
+      if (existingFlight && scraperConfig.scrapers.find((scraper) => scraper.name === existingFlight?.fares[0]!.scraper)?.cashOnlyFares)
         existingFlight.flightNo = flight.flightNo
     }
 
     if (existingFlight) {
       for (const key in flight) {
         if (existingFlight[key as keyof FlightWithFares] === undefined) {
+          // TODO: need a better way to do this
           // @ts-expect-error
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           existingFlight[key] = flight[key]
         }
       }

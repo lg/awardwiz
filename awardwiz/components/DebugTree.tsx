@@ -32,7 +32,7 @@ export const DebugTree = ({ debugTree, rootKey }: { debugTree: DebugTreeNode[], 
 
     let title = <span style={{ color: node.error ? "red" : undefined }}>{node.text}</span>
     if (meta?.startTime && meta.endTime && !node.error) {
-      title = <span>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime! - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></span>
+      title = <span>{title} <Text style={{ fontSize: "0.75em" }}>({((meta.endTime - meta.startTime) / 1000).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}s)</Text></span>
     }
 
     let popover = title

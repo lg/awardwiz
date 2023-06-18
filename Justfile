@@ -7,44 +7,102 @@ localtag := "awardwiz:scrapers"
 default:
   @just --list
 
-lets-upgrade-packages:
-  npm exec -- npm-check -u
-
 [private]
 build:
   npm exec tsc
 
 [private]
-lint: build
-  TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
-
-[private]
 clean:
   npm clean-install
-  rm -rf dist/ .eslintcache
+  rm -rf dist/
 
-check:
-  @just lint
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format
+# ⭐️ builds, lints, checks dependencies and runs tests (TODO: run tests)
+check: build
+  TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
+  docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
+  docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch
   @echo 'ok'
 
+[private]
 check-clean: clean check
 
-# build docker image for running locally
+# runs an interactive npm package update tool to get the latest versions of everything
+lets-upgrade-packages:
+  npm exec -- npm-check -u
+
+##############################
+# FRONTEND
+##############################
+
+# ⭐️ starts the vite frontend
+start-vite args="": build
+  npm exec -- vite --config awardwiz/vite.config.ts {{args}}
+
+# generate statics from internet (used by Github Actions when deploying)
+gen-statics:
+  npm exec -- vite-node --config awardwiz/vite.config.ts awardwiz/workers/gen-statics.ts
+
+# generate awardwiz/dist directory for frontend (used by Github Actions when deploying)
+gen-frontend-dist:
+  just start-vite build
+
+# run the marked fares worker (looks at watches fares and sends notifications when availability changes)
+run-marked-fares-worker:
+  npm exec -- vite-node --config awardwiz/vite.config.ts awardwiz/workers/marked-fares.ts
+
+##############################
+# SCRAPERS
+##############################
+
+# build the scrapers docker image for running locally
+[private]
 build-docker debug="1" tag=localtag platform=dockerarch: build
-  docker buildx build -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
+  docker buildx build --file ./awardwiz-scrapers/Dockerfile -t {{tag}} --platform "linux/{{platform}}" --build-arg DEBUG={{debug}} ./
+
+# 9229 is for node debugger, 8282 is for the vnc web server. be aware this uploads your .env file and tmp/ directory
+[private]
+run-docker extra="": build-docker
+  docker run -it --rm -p 8282:8282 -p 9229:9229 --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro --volume $(pwd)/tmp:/usr/src/awardwiz/tmp {{extra}}
+
+# run the scrapers http server on port 2222 (make sure your .env has your config in there)
+run-server:
+  just run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-server.js"
+
+# ⭐️ starts a scraper in docker (ex. `just run-scraper aa SFO LAX 2023-12-01`)
+run-scraper scraper origin destination date:
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+
+# starts a scraper in docker and breaks waiting for debugger (to be used with the vscode launch.json config)
+run-scraper-brk scraper origin destination date:
+  just run-docker "awardwiz:scrapers node --inspect-brk=0.0.0.0:9229 --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
+
+# runs live anti-botting tests online against a variety of websites bot fingerprinting websites (EXPERIMENTAL and still doesn't fully succeed)
+run-live-botting-tests:
+  just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"
+
+# ⭐️ runs live scraper tests online against all supported websites
+run-live-scraper-tests:
+  just run-docker "awardwiz:scrapers npm exec -- vitest run"
+
+##############################
+# DEPLOYMENT (you probably don't need these, they're more for deploying awardwiz.com)
+##############################
 
 # build arkalis docker image
+[private]
 build-arkalis-docker:
   docker buildx build --platform=linux/amd64 --file ./arkalis/Dockerfile -t "arkalis" ./
 
 # build, deploy and run in prod
+[private]
 deploy-prod tag="registry.kub.lg.io:31119/awardwiz:scrapers" platform="amd64" kubectl-deployment="-n awardwiz deployment/awardwiz": (build-docker "0" tag platform)
   docker push {{tag}}
   kubectl rollout restart {{kubectl-deployment}}
   kubectl rollout status {{kubectl-deployment}}
 
 # tail logs in production on k8s
+[private]
 tail-prod-logs:
   #!/bin/bash
   while true; do
@@ -52,26 +110,7 @@ tail-prod-logs:
     sleep 1
   done
 
-# 9229 is for node debugger, 8282 is for the vnc web server
 [private]
-run-docker extra="": build-docker
-  docker run -it --rm -p 8282:8282 -p 9229:9229 --volume $(pwd)/.env:/usr/src/awardwiz/.env:ro --volume $(pwd)/tmp:/usr/src/awardwiz/tmp {{extra}}
-
-run-server:
-  just run-docker "-p 2222:2222 -e PORT=2222 awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-server.js"
-
-run-debug scraper origin destination date:
-  just run-docker "awardwiz:scrapers node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
-
-run-debug-brk scraper origin destination date:
-  just run-docker "awardwiz:scrapers node --inspect-brk=0.0.0.0:9229 --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}"
-
-run-tests:
-  just run-docker "awardwiz:scrapers npm exec -- vitest run"
-
-test-anti-botting:
-  just run-docker "awardwiz:scrapers node --enable-source-maps dist/arkalis/test-anti-botting.js"
-
 test-anti-botting-prod:
   @just build-docker "1" "registry.kub.lg.io:31119/awardwiz:test" "amd64"
   docker push "registry.kub.lg.io:31119/awardwiz:test"

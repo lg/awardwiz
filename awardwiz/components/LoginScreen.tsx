@@ -1,10 +1,13 @@
-import { CredentialResponse, GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"
+import type { CredentialResponse } from "@react-oauth/google"
 import * as React from "react"
-import { Col, Row, Typography, Alert, AlertProps, Avatar, Dropdown } from "antd"
-import awardwizImageUrl from "../wizard.png"
+import { Col, Row, Typography, Alert, Avatar, Dropdown } from "antd"
+import { AlertProps } from "antd/lib/alert"
+import awardwizImageUrl from "../../wizard.png"
 import CarbonLogout from "~icons/carbon/logout"
-import { GoogleAuthProvider, signInWithCredential, User } from "firebase/auth"
-import { firebaseAuth } from "../helpers/firebase"
+import { GoogleAuthProvider, signInWithCredential } from "firebase/auth"
+import type { User } from "firebase/auth"
+import { firebaseAuth } from "../helpers/firebase.js"
 
 export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   const [message, setMessage] = React.useState<{ type: AlertProps["type"], text: string }>({ type: undefined, text: "" })
@@ -18,24 +21,26 @@ export const LoginScreen = ({ children }: { children: JSX.Element }) => {
   }, [])
 
   React.useEffect(() => {
+    // eslint-disable-next-line no-console
     console.log(`Current user logged in: ${user?.email ?? "(not logged in)"}`)
   }, [user])
 
-  const onGoogleCredential = async (credentialResponse: CredentialResponse) => {
+  const onGoogleCredential = (credentialResponse: CredentialResponse) => {
+    // eslint-disable-next-line no-console
     console.log("Google credential received, logging into Firebase...")
     if (!credentialResponse.credential || !credentialResponse.clientId) { setMessage({ type: "error", text: "Failed to log in with Google" }); return }
 
     const idToken = credentialResponse.credential
     const credential = GoogleAuthProvider.credential(idToken)
     void signInWithCredential(firebaseAuth, credential).catch((error) => {
-      setMessage({ type: "error", text: `Failed to log into Firebase with Google credential: ${error.message}` })
+      setMessage({ type: "error", text: `Failed to log into Firebase with Google credential: ${(error as Error).message}` })
       throw error
     })
   }
 
   // Logged in view
   if (user) {
-    const avatarMenuItems = { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: () => firebaseAuth.signOut() }
+    const avatarMenuItems = { key: "logOut", icon: <CarbonLogout />, label: "Log out", onClick: async () => firebaseAuth.signOut() }
     return (
       <>
         <Dropdown menu={avatarMenuItems} trigger={["click"]}>
