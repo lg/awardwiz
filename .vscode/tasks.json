@@ -4,9 +4,36 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Delete scraper dist directory",
-      "type": "shell",
-      "command": "rm -rf ${workspaceFolder}/src/scrapers/dist"
+      "label": "start scrapers docker",
+      "type": "process",
+      "command": "just",
+      "args": ["run-scraper-brk", "united", "SFO", "LAX", "2023-12-25"],
+      "dependsOn": "tsc: build - tsconfig.json",
+      "isBackground": true,
+      "problemMatcher": {
+        "base": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Debugger listening on .*",
+          "endsPattern": "Debugger listening on .*"
+        },
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "presentation": {
+        "showReuseMessage": false,
+      }
+    },
+    {
+      "label": "stop scrapers docker",
+      "type": "process",
+      "command": "bash",
+      "args": ["-c", "CONTAINER=$(docker ps | grep awardwiz | awk '{ print $1 }'); docker stop -t 0 $CONTAINER"],
+      "presentation": {
+        "close": true,
+        "reveal": "never"
+      }
     }
   ]
 }

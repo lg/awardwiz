@@ -3,19 +3,5 @@
   "search.exclude": {
     "**/node_modules": true,
     "**/package-lock.json": true,
-  },
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/CVS": true,
-    "**/.eslintcache": true,
-    "**/node_modules": true,
-    "coverage": true,
-    "src/scrapers/dist": true,
-    "old": true,
-    "**/dist": true,
-    "**/*-debug.log": true,
-    "stats.html": true
   }
 }

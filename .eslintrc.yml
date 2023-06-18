@@ -2,19 +2,24 @@ env:
   browser: true
   es2022: true
 plugins:
-  - react
   - "@typescript-eslint"
   - promise
+  - regexp
+  - react
   - react-hooks
-  - deprecation
 extends:
   - eslint:recommended
   - plugin:import/recommended
   - plugin:import/typescript
+  - plugin:import/errors
+  - plugin:import/warnings
+  - plugin:@typescript-eslint/recommended
+  - plugin:@typescript-eslint/recommended-requiring-type-checking
   - plugin:@typescript-eslint/strict
+  - plugin:promise/recommended
+  - plugin:regexp/all
   - plugin:react/recommended
   - plugin:react/jsx-runtime
-  - plugin:promise/recommended
   - plugin:react-hooks/recommended
 parser: "@typescript-eslint/parser"
 parserOptions:
@@ -27,19 +32,10 @@ settings:
   react:
     version: detect
 rules:
-  # disabled due to performance issues
-  "import/namespace": off
-  "import/default": off
-  "import/no-named-as-default": off
-  "import/no-named-as-default-member": off
-
-  quotes: ["error", "double"]
-  semi: ["error", "never", { "beforeStatementContinuationChars": "always" }]
+  quotes: ["warn", "double"]
+  semi: ["warn", "never"]
   max-len: off
-  no-unused-vars: ["error", { "args": "none", "varsIgnorePattern": "_.*" }]
-  "@typescript-eslint/no-unused-vars": off # ["error", { "args": "none" }]
-  no-use-before-define: off
-  no-undef: off # because of JSX
+  "@typescript-eslint/no-unused-vars": ["warn", { "args": "none", "varsIgnorePattern": "_.*" }]
   max-classes-per-file: off
   comma-dangle: off
   no-multiple-empty-lines: off
@@ -50,10 +46,6 @@ rules:
   "@typescript-eslint/no-non-null-assertion": off
   import/extensions: off
   no-debugger: off
-  no-console: off
-  object-curly-newline: off
-  no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["result", "acc"] }]
-  lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
 
   react/jsx-one-expression-per-line: off
   react/state-in-constructor: off
@@ -68,39 +60,40 @@ rules:
   react/jsx-props-no-spreading: off
   react/prop-types: ["error", { skipUndeclared: true }]
   react/jsx-no-useless-fragment: off
-
-  # these should be on before commiting
   react/prefer-stateless-function: off
 
-  import/prefer-default-export: off
-  import/no-unresolved: off
-  import/order: off
+  react-hooks/rules-of-hooks: "error"
+  "react-hooks/exhaustive-deps": "warn"
+
+  no-console: ["warn", { "allow": ["warn", "error"] }]
+  object-curly-newline: off
+  lines-between-class-members: ["error", "always", { "exceptAfterSingleLine": true }]
+
+  import/no-unresolved: off # because we use .js in the import statements
 
   "@typescript-eslint/no-empty-function": off
   import/newline-after-import: off
 
-  react-hooks/rules-of-hooks: "error"
-  "react-hooks/exhaustive-deps": "warn"
   spaced-comment: off
 
-  import/no-import-module-exports: off    # so i can embed the scrapers in the main codebase
   padded-blocks: off
   "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
   "@typescript-eslint/ban-ts-comment": off
   "@typescript-eslint/no-explicit-any": off
   quote-props: off
-  no-restricted-syntax: off
+
   "@typescript-eslint/consistent-type-definitions": off
   "@typescript-eslint/prefer-string-starts-ends-with": off
 
-  "@typescript-eslint/no-floating-promises": ["error"]
-  "no-void": off
-  "no-shadow": ["error", { "ignoreOnInitialization": true }]
+  "@typescript-eslint/no-floating-promises": ["error", { "ignoreVoid": true }]   # need to handle these or it could bubble up
   "newline-per-chained-call": off
-  "import/named": off
-  "@typescript-eslint/no-throw-literal": off
+  "@typescript-eslint/explicit-member-accessibility": ["error"]
+  "@typescript-eslint/prefer-readonly": ["error"]
+  "@typescript-eslint/promise-function-async": ["error"]
+  "@typescript-eslint/no-unnecessary-type-assertion": "error"
+  "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": { "arguments": false } }]
 
-  "deprecation/deprecation": "warn"
+  promise/no-nesting: off
 
   "no-restricted-globals": ["error",
     { name: "setInterval", message: "Avoid using regular timers, use promises that allow signals: https://github.com/sindresorhus/promise-fun" },

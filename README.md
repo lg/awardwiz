@@ -1,7 +1,7 @@
 <div align="center">
-  <div><img src="src/wizard.png" style="width:200px" /></div>
+  <div><img src="wizard.png" style="width:200px" /></div>
   <div><h1>AwardWiz</h1></div>
-  <div><img src="src/screenshot.png" style="max-width:600px" /></div>
+  <div><img src="screenshot.png" style="max-width:600px" /></div>
 </div>
 <br/>
 
@@ -9,19 +9,23 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 
 - Searches all permutations of origins and destinations (direct flights only for now)
 - See when low-fares are available (`X`, `I`, `O`, etc) vs cash-based fares (for [Chase Ultimate Rewards](https://thepointsguy.com/guide/redeeming-chase-ultimate-rewards-maximum-value/))
-- Searches: `aa`, `aeroplan`, `alaska`, `delta`, `jetblue`, `southwest` and `united`, along with `skiplagged` and `skyscanner` (currently disabled) for points-to-cash estimates
-- Scrapers used to obtain data usually avoid various anti-botting mitigations used by airlines and live tests are run [twice-daily](https://github.com/lg/awardwiz/actions/workflows/scraper-tests.yaml) to make sure scrapers usually work
-- Know when WiFi and/or lie-flat pods will be available
+- Searches: `aa`, `aeroplan`, `alaska`, `delta` (temp broken), `jetblue`, `southwest` and `united` (temp broken), along with `skiplagged` for points-to-cash estimates
+- Diligently tried to avoid the various commercial anti-botting mitigations used by airlines
+- Tries getting reliable WiFi and/or lie-flat pod availability
 - *Coming soon* Get emailed when award space opens up
-- *Coming soon* Automatically calculate region-based miles based on published award charts
+- *Coming soonish* Automatically calculate region-based miles based on published award charts
 
 # Architecture
 
-The Typescript React-based frontend calls a [Browserless](https://github.com/browserless/chrome) backend to scrape airlines' award search pages with [Puppeteer](https://github.com/puppeteer/puppeteer). Backend database for user prefs is [Firebase](http://firebase.google.com). [Vite](https://github.com/vitejs/vite) is used as the dev server (`pnpm start`), [Vitest](https://github.com/vitest-dev/vitest) is used for tests (`pnpm test` and `pnpm test-scrapers`). UI framework is [Ant Design](https://github.com/ant-design/ant-design/). The recommended package manager is [pnpm](https://github.com/pnpm/pnpm).
+There are three parts to Awardwiz: the frontend (in `awardwiz/`), the scrapers that run on the serverside (in `awardwiz-scrapers/`), and Arkalis (in `arkalis/`) which is the detection-sensitive scraping engine written for this project. Firebase is currently also used to store the user database, although this will be replaces soon.
 
-Source code formatting and acceptable patterns are highly opinionated and enforced via eslint. This is checked as a git commit hook but can also be run with `pnpm run check` (also checks dependencies, and builds the page).
+This is a Node.js project with a strict Typescript setup (and enforced by eslint, via git commit hooks, and `just check` runs). `just` is used for common actions and `npm` is assumed for package management for Node.
 
-## Running locally
+The frontend is a React app that uses [Ant Design](https://github.com/ant-design/ant-design/) for UI components. It's built using [Vite](https://github.com/vitejs/vite).
+
+The backend is a Node.js server that uses [Arkalis](arkalis/README.md) to run scrapers. It has a variety of commands to help write and debug scrapers.
+
+## Running locally (NEEDS UPDATING)
 
 A few environment variables are used to start the server and frontend. These can be listed in a `.env.local` file:
 
@@ -38,3 +42,23 @@ A few environment variables are used to start the server and frontend. These can
 - `VITE_FIREBASE_SERVICE_ACCOUNT_JSON`: Set to the full service account JSON without line breaks from 'Settings > Project settings > Service accounts' from when you created it. If you create a new one now, note the old one will be immediately disabled. The service account is used by workers. The format is: `{"type": "service_account", "project_id": "awardwiz", "private_key_id": "...", ...}`. **This is a secret and should not be public**
 
 You can start a local instance of Browserless using `docker-compose up`.
+
+### Helpful best practices when writing scrapers (NEEDS UPDATING)
+
+1. Most important rule: Try your best to not need to keep changing proxies because you get detected by anti-botting. Proxies are slow, unreliable and can get expensive. It's cheaper and easier to scale things by writing scrapers that don't get detected easily.
+2. See the Javadoc comments in `scraper.ts`.
+3. When running locally, a vnc server is started that can be controlled by visiting: http://127.0.0.1:8282/vnc.html
+4. Use `pauseAfterError` and `pauseAfterRun` when writing the initial scraper code such that you can debug unexpected errors. This uses Playwright's `page.pause()` which shows the `codegen` tool that can help pick good selectors for the scraper rules. `sc.page.setDefaultTimeout(5000)` might be helpful at the beginning of your scraper too to fail quicker when things are missing.
+5. Getting a scraper to be complete end-to-end in **5 seconds** is amazing, **5-10 seconds** is good, **10-15 seconds** is ok, **15+ seconds** isn't great. Cache everything that you can, block unnecessary outside vendors they're using, try to directly do xhr requests instead of filling out forms (when possible). It's all a balance of the amount of anti-botting they're using vs scraping speed. The more clever and thoughtful you are, the faster and more resilient the scraper will be.
+6. If the xhr for the actual flight results takes a while to get requested, use `showFullRequest` to see when the request actually starts, maybe there's a dependent request that can be cached.
+7. If stuck behind anti-botting, try: `useIpTimezone`, `useRandomUserAgent`, `useBrowsers`, etc
+
+### Getting started (NEEDS UPDATING, SORRY)
+
+1. `npm i`
+2. install `just`
+3. configure your `.env` file
+5. `just run-server`
+6. `just start-vite`
+7. run github actions locally with `act --list` and `act -j <job-id>`
+
