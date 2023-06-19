@@ -1,7 +1,7 @@
 import * as ReactQuery from "@tanstack/react-query"
 import { AxiosError } from "axios"
 import { FlightFare, FlightWithFares, ScraperResponse, SearchQuery, FlightAmenities, FR24Response } from "../types/scrapers.js"
-import scrapersRaw from "../config.json"
+import scrapersRaw from "../../config.json"
 import React from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import type { UseQueryOptions } from "@tanstack/react-query"
