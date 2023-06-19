@@ -15,6 +15,15 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 - *Coming soon* Get emailed when award space opens up
 - *Coming soonish* Automatically calculate region-based miles based on published award charts
 
+# Quickstart
+
+```
+npm i
+# TODO: gen .env file
+just run-server
+just start-vite
+```
+
 # Architecture
 
 There are three parts to Awardwiz: the frontend (in `awardwiz/`), the scrapers that run on the serverside (in `awardwiz-scrapers/`), and Arkalis (in `arkalis/`) which is the detection-sensitive scraping engine written for this project. Firebase is currently also used to store the user database, although this will be replaces soon.
@@ -62,3 +71,7 @@ You can start a local instance of Browserless using `docker-compose up`.
 6. `just start-vite`
 7. run github actions locally with `act --list` and `act -j <job-id>`
 
+
+TODO:
+- fix skiplagged for same-day, fix united, fix southwest
+- fix the thing from saying "missing scraper for united"

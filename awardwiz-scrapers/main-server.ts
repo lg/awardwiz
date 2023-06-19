@@ -65,6 +65,8 @@ if (SERVER_CONFIG.serviceWorkerJwtSecret) {
         algorithms: ["HS256"],
       })(req, res, next)
     : next(err))
+} else {
+  logGlobal(c.yellowBright("WARNING: No SERVICE_WORKER_JWT_SECRET provided, service workers will not be able to log in."))
 }
 
 // Log the request and stop if there was an error
