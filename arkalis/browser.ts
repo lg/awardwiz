@@ -100,7 +100,6 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
       await arkalis.client.DOM.disable().catch(() => {})
 
       await arkalis.client.Browser.close().catch(() => {})
-      await arkalis.wait(1000)                                      // TODO: is this still necessary (netlog gets cut off otherwise)
       await arkalis.client.close().catch(() => {})
 
       instance.kill()

@@ -1,3 +1,5 @@
+// TODO: net log gets cut off if the browser isn't closed properly
+
 import { readFile, writeFile } from "fs/promises"
 import type { Entry, Log, PostData, QueryString } from "har-format" // TODO: why does depcheck not detect this
 import c from "ansi-colors"
