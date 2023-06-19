@@ -125,7 +125,7 @@ await new Listr<object>(
           // eslint-disable-next-line no-param-reassign
           task2.title = `${task2.title} ok`
         }
-     }], { rendererOptions: { collapse: false } })
+     }], { rendererOptions: { collapseErrors: false, collapseSkips: false, collapseSubtasks: false } })
     },
     retry: 3,
   })), { concurrent: 5, exitOnError: true, registerSignalListeners: false, rendererOptions: { collapseErrors: false } }

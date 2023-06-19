@@ -21,7 +21,7 @@ check: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
   docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
   docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx
   @echo 'ok'
 
 [private]
