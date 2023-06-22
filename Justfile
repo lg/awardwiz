@@ -20,6 +20,7 @@ clean:
 # ⭐️ builds, lints, checks dependencies and runs tests (TODO: run tests)
 check: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
+  npm exec -- vitest run ./awardwiz/hooks/awardSearch.test.ts
   docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
   docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema

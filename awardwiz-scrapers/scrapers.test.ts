@@ -24,14 +24,14 @@ type ScraperConfig = [string, {
 const RETRIES = 0
 
 const scrapers: ScraperConfig = [
-  ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["HND", "FUK", "JL 303"], plusOneDayRoute: ["SFO", "JFK"] }],
-  ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["FRA", "MUC", "LH 106"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
-  ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"], missingAttribs: ["aircraft"] }],
-  // ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"], sameDayTz: "America/New_York" }],
-  ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"], sameDayTz: "America/New_York" }],
-  ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
-  ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
-  ["united", { popularRoute: ["SFO", "EWR"], partnerRoute: ["FRA", "MUC", "LH 106"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
+  // ["aa", { popularRoute: ["SFO", "LAX"], partnerRoute: ["HND", "FUK", "JL 303"], plusOneDayRoute: ["SFO", "JFK"] }],
+  // ["aeroplan", { popularRoute: ["YOW", "YYZ"], partnerRoute: ["FRA", "MUC", "LH 106"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
+  // ["alaska", { popularRoute: ["SFO", "JFK"], partnerRoute: ["SFO", "DUB", "EI 60"], plusOneDayRoute: ["HNL", "SFO"], missingFareAttribs: ["bookingClass"], missingAttribs: ["aircraft"] }],
+  // // ["delta", { popularRoute: ["SFO", "JFK"], partnerRoute: ["LIH", "OGG", "HA 140"], plusOneDayRoute: ["LAX", "JFK"], sameDayTz: "America/New_York" }],
+  // ["jetblue", { popularRoute: ["SFO", "JFK"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "JFK"], sameDayTz: "America/New_York" }],
+  // ["southwest", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], longtermSearchEmptyOk: true }],
+  // ["skiplagged", { popularRoute: ["SFO", "LAX"], partnerRoute: undefined, plusOneDayRoute: ["SFO", "EWR"], zeroMilesOk: true, missingAttribs: ["aircraft"], missingFareAttribs: ["bookingClass"] }],
+  // ["united", { popularRoute: ["SFO", "EWR"], partnerRoute: ["FRA", "MUC", "LH 106"], plusOneDayRoute: ["SFO", "EWR"], sameDayTz: "America/New_York" }],
 ]
 
 type KeysEnum<T> = { [_ in keyof Required<T>]: true }

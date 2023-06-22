@@ -29,7 +29,7 @@
     "outDir": "dist",
 
     "jsx": "react-jsx",
-    "types": ["vitest/globals", "unplugin-icons/types/react"]
+    "types": ["unplugin-icons/types/react"]
   },
   "include": ["arkalis", "awardwiz-scrapers", "awardwiz"],
   "exclude": ["node_modules", "dist"]

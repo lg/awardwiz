@@ -1,6 +1,6 @@
 import axios from "axios"
 import type { GenericAbortSignal } from "axios"
-import { DatedRoute } from "../hooks/useAwardSearch.js"
+import { DatedRoute } from "../hooks/awardSearch.js"
 import { ScraperResponse } from "../types/scrapers.js"
 import { firebaseAuth } from "../helpers/firebase.js"
 

@@ -12,13 +12,10 @@ export type BrowserlessPostData = {
   context: ScraperQuery
 }
 
-export type FR24Response = {
-  result: FlightRadar24Response | undefined,
-  log: string[]
-}
+export type AWFR24Response = ScraperResponse<FlightRadar24Response>
 
-export type ScraperResponse = {
-  result: FlightWithFares[] | undefined
+export type ScraperResponse<T = FlightWithFares[]> = {
+  result: T | undefined
   logLines: string[]
 
   // patched on after receiving

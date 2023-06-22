@@ -219,7 +219,7 @@ export interface Other {
 
 export interface Errors {
   message: string
-  errors: Errors2
+  errors: Errors2 | object
 }
 
 export interface Errors2 {
