@@ -10,6 +10,7 @@ default:
 [private]
 build:
   npm exec tsc
+  @just gen-json-schemas
 
 [private]
 clean:
@@ -21,7 +22,7 @@ check: build
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
   docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
   docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
-  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx
+  NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema
   @echo 'ok'
 
 [private]
@@ -38,6 +39,10 @@ lets-upgrade-packages:
 # ⭐️ starts the vite frontend
 start-vite args="": build
   npm exec -- vite --config awardwiz/vite.config.ts {{args}}
+
+# generate .schema.json files from .ts files
+gen-json-schemas:
+  npm exec -- typescript-json-schema tsconfig.json ScrapersConfig --topRef --noExtraProps | sed 's/import.*)\.//g' > config.schema.json
 
 # generate statics from internet (used by Github Actions when deploying)
 gen-statics:

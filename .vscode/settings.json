@@ -3,5 +3,14 @@
   "search.exclude": {
     "**/node_modules": true,
     "**/package-lock.json": true,
-  }
+  },
+  "files.associations": {
+    "*.json": "jsonc"
+  },
+  "json.schemas": [
+    {
+      "fileMatch": ["config.json"],
+      "url": "./config.schema.json"   // generated using `just gen-json-schemas`
+    }
+  ],
 }
