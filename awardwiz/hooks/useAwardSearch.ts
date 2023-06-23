@@ -32,17 +32,21 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   const queryClient = useQueryClient()
   const [stoppedQueries, setStoppedQueries] = React.useState<ReactQuery.QueryKey[]>([])
 
-  // Take all origins and destinations and create a list of all possible pairs: [{origin, destination, departureDate}]
+  // 1. Take all origins and destinations and create a list of all possible pairs.
+  // Returns: [{origin, destination, departureDate}]
   const datedRoutes = React.useMemo(() => {
     setStoppedQueries([])
     return expandOriginsDestinations(searchQuery)
   }, [searchQuery])
 
-  // Returns the airlines flying a route: [{origin, destination, airlineCode, airlineName}]
+  // 2. Look up those pairs and find out which airlines fly them, excluding cargo/invalid airlines.
+  // Returns: [{origin, destination, airlineCode, airlineName}]
   const airlineRouteQueriesOpts = datedRoutes.map((datedRoute): UseQueryOptions<AirlineRoute[], Error> => ({
     queryKey: queryKeyForAirlineRoute(datedRoute),
-    queryFn: fetchAirlineRoutes,
-    meta: datedRoute,
+    queryFn: async ({ signal }) => {
+      const request = await runScraper<AWFR24Response>("fr24", datedRoute, signal)
+      return fr24ResponseToAirlineRoutes(request.data)
+    },
     staleTime: 1000 * 60 * 60 * 24 * 30,
     cacheTime: 1000 * 60 * 60 * 24 * 30,
     retry: 3,
@@ -51,7 +55,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   const airlineRouteQueries = ReactQuery.useQueries({ queries: airlineRouteQueriesOpts })
   const keyedAirlineRouteQueries = airlineRouteQueries.map((query, index) => ({ ...query, queryKey: airlineRouteQueriesOpts[index]!.queryKey! }))
 
-  // Returns the list of scraper-airline-route-date that'll be necessary to run: [{scraper, matchedAirlines[]}]
+  // 3. Find out which scrapers scrape the airlines. If one scraper does multiple, only run it once.
+  // Returns: [{scraper, matchedAirlines[]}]
   const { scrapersToRun, airlineRoutes } = React.useMemo(() => {
     const stableAirlineRoutes = airlineRouteQueries.flatMap((query) => query.data).filter((item): item is AirlineRoute => !!item)
     const scrapersToRun = scrapersByAirlineRoutes(stableAirlineRoutes, searchQuery.departureDate)
@@ -59,20 +64,31 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     return { scrapersToRun, airlineRoutes: stableAirlineRoutes }
   }, [airlineRouteQueries, searchQuery.departureDate])
 
-  // Returns the scraper results from all scrapers: [{ flightsWithFares: { flightNo, origin, amenities, ... }, errored, ]
+  // 4. Run the scrapers and get results.
+  // Returns: [{ flightsWithFares: { flightNo, origin, amenities, ... }, errored, ]
   const scraperQueriesOpts = scrapersToRun.map((scraperToRun): UseQueryOptions<ScraperResponse, Error> => ({
     queryKey: queryKeyForScraperResponse(scraperToRun),
     staleTime: 1000 * 60 * 15,
     cacheTime: 1000 * 60 * 15,
-    queryFn: fetchAwardAvailability,
-    meta: { scraperToRun } as UseQueryMeta,
+    queryFn: async ({ signal }) => {
+      const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, signal).catch((error: AxiosError<ScraperResponse>) => {
+        // TODO: throw proper errors
+        if (error.response?.data)
+          // eslint-disable-next-line @typescript-eslint/no-throw-literal
+          throw { logLines: error.response.data.logLines, message: "Internal scraper error", name: "ScraperError" } as ScraperError
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
+      })
+      response.data.forKey = queryKeyForScraperResponse(scraperToRun)
+      return response.data
+    },
     refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))
   }))
   const scraperQueries = ReactQuery.useQueries({ queries: scraperQueriesOpts })
   const keyedScraperQueries = scraperQueries.map((query, index) => ({ ...query, queryKey: scraperQueriesOpts[index]!.queryKey! }))
 
-  // Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
+  // 5. Take the results and do final calculations (like merging like flights' details and merging amenities/fares)
   const { flights, scraperResponses } = React.useMemo(() => {
     const scraperResponses = scraperQueries.flatMap((query) => query.data).filter((item): item is ScraperResponse => !!item)
     return { flights: flightsFromScraperResponses(scraperResponses), scraperResponses }
@@ -88,29 +104,4 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
   }
 
   return { searchResults: flights, datedRoutes, airlineRoutes, scrapersToRun, scraperResponses, loadingQueriesKeys, errors, stop }
-}
-
-//////////////////////
-
-const fetchAirlineRoutes = async ({ signal, meta }: ReactQuery.QueryFunctionContext): Promise<AirlineRoute[]> => {
-  const datedRoute = meta as DatedRoute
-
-  const request = await runScraper<AWFR24Response>("fr24", datedRoute, signal)
-  return fr24ResponseToAirlineRoutes(request.data)
-}
-
-const fetchAwardAvailability = async ({ signal, meta: metaRaw, queryKey }: ReactQuery.QueryFunctionContext): Promise<ScraperResponse> => {
-  const meta = metaRaw as UseQueryMeta
-  const scraperToRun = meta.scraperToRun
-
-  const response = await runScraper(scraperToRun.scraperName, scraperToRun.forDatedRoute, signal).catch((error: AxiosError<ScraperResponse>) => {
-    // TODO: throw proper errors
-    if (error.response?.data)
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
-      throw { logLines: error.response.data.logLines, message: "Internal scraper error", name: "ScraperError" } as ScraperError
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
-    throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
-  })
-  response.data.forKey = queryKey
-  return response.data
 }
