@@ -31,7 +31,7 @@ check-clean: clean check
 
 # runs an interactive npm package update tool to get the latest versions of everything
 lets-upgrade-packages:
-  npm exec -- npm-check -u
+  npm exec -- npm-check -u --ignore vite-node
 
 ##############################
 # FRONTEND
