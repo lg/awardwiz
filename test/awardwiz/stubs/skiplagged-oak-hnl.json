@@ -1,0 +1,30 @@
+{
+  "result": [
+    {
+      "departureDateTime": "2023-12-25 08:25",
+      "arrivalDateTime": "2023-12-25 12:05",
+      "origin": "OAK",
+      "destination": "HNL",
+      "flightNo": "HA 47",
+      "duration": 340,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 284.5,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    }
+  ],
+  "logLines": [
+    "[2023-06-24 18:16:38.197] Starting Arkalis run for scraper skiplagged",
+    "[2023-06-24 18:16:38.197] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 18:16:38.745] Running scraper for { origin: \u001b[32m'OAK'\u001b[39m, destination: \u001b[32m'HNL'\u001b[39m, departureDate: \u001b[32m'2023-12-25'\u001b[39m }",
+    "[2023-06-24 18:16:38.745] navigating to https://skiplagged.com/api/search.php?from=OAK&to=HNL&depart=2023-12-25&return=&format=v3&counts%5Badults%5D=1&counts%5Bchildren%5D=0",
+    "[2023-06-24 18:16:39.031] \u001b[32mCompleted with 1 results\u001b[39m",
+    "[2023-06-24 18:16:39.032] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 835ms (2 reqs, 0 hits, 2 misses, 545 bytes)"
+  ]
+}

@@ -1,0 +1,223 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`findAwardFlights > should support a simple search 1`] = `
+[
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 17:23",
+    "departureDateTime": "2023-12-25 13:40",
+    "destination": "HNL",
+    "duration": 343,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 45634.666666666664,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 300",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 10:37",
+    "departureDateTime": "2023-12-25 07:00",
+    "destination": "HNL",
+    "duration": 337,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 31968.666666666668,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 1581",
+    "origin": "SFO",
+  },
+  {
+    "aircraft": "Boeing 737-900 (Winglets) Passenger",
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": true,
+    },
+    "arrivalDateTime": "2023-12-25 15:40",
+    "departureDateTime": "2023-12-25 11:58",
+    "destination": "HNL",
+    "duration": 342,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": undefined,
+        "miles": 37566.666666666664,
+        "scraper": "skiplagged",
+      },
+      {
+        "bookingClass": "C",
+        "cabin": "business",
+        "cash": 5.6,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 95000,
+        "scraper": "alaska",
+      },
+      {
+        "bookingClass": "H",
+        "cabin": "economy",
+        "cash": 5.6,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 50000,
+        "scraper": "alaska",
+      },
+    ],
+    "flightNo": "AS 877",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 12:30",
+    "departureDateTime": "2023-12-25 09:00",
+    "destination": "HNL",
+    "duration": 330,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 31968.666666666668,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 1175",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": undefined,
+    },
+    "arrivalDateTime": "2023-12-25 11:40",
+    "departureDateTime": "2023-12-25 08:00",
+    "destination": "HNL",
+    "duration": 340,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 22300,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "HA 11",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 22:12",
+    "departureDateTime": "2023-12-25 18:40",
+    "destination": "HNL",
+    "duration": 332,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 45666.666666666664,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 473",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 20:07",
+    "departureDateTime": "2023-12-25 16:35",
+    "destination": "HNL",
+    "duration": 332,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 31968.666666666668,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 1509",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": false,
+    },
+    "arrivalDateTime": "2023-12-25 14:56",
+    "departureDateTime": "2023-12-25 11:10",
+    "destination": "HNL",
+    "duration": 346,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 31968.666666666668,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "UA 2380",
+    "origin": "SFO",
+  },
+  {
+    "amenities": {
+      "hasPods": false,
+      "hasWiFi": undefined,
+    },
+    "arrivalDateTime": "2023-12-25 12:05",
+    "departureDateTime": "2023-12-25 08:25",
+    "destination": "HNL",
+    "duration": 340,
+    "fares": [
+      {
+        "cabin": "economy",
+        "cash": 0,
+        "currencyOfCash": "USD",
+        "isSaverFare": false,
+        "miles": 18966.666666666668,
+        "scraper": "skiplagged",
+      },
+    ],
+    "flightNo": "HA 47",
+    "origin": "OAK",
+  },
+]
+`;

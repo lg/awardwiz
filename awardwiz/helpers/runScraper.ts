@@ -8,10 +8,11 @@ export const runScraper = async <T = ScraperResponse>(scraperName: string, dated
   const token = import.meta.env.VITE_SCRAPERS_TOKEN ?? await firebaseAuth.currentUser?.getIdToken()
   if (!token)
     throw new Error("Missing token for scraper call")
-  return axios.get<T>(`${import.meta.env.VITE_SCRAPERS_URL}/run/${scraperName}-${datedRoute.origin}-${datedRoute.destination}-${datedRoute.departureDate}`, {
+  const axiosResponse = await axios.get<T>(`${import.meta.env.VITE_SCRAPERS_URL}/run/${scraperName}-${datedRoute.origin}-${datedRoute.destination}-${datedRoute.departureDate}`, {
     headers: {
       Authorization: `Bearer ${token}`
     },
     signal
   })
+  return axiosResponse.data
 }

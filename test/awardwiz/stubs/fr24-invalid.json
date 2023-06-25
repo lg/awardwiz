@@ -1,0 +1,28 @@
+{
+  "result": {
+    "request": {
+      "query": "default",
+      "limit": 50,
+      "format": "json",
+      "origin": "SFO",
+      "destination": "YOW",
+      "fetchBy": "",
+      "callback": null,
+      "token": null,
+      "pk": null
+    },
+    "response": {
+      "flight": {
+        "item": {
+          "current": 0
+        },
+        "timestamp": 1687326987,
+        "data": null
+      }
+    }
+  },
+  "_api": {
+    "copyright": "okok",
+    "legalNotice": "okok"
+  }
+}

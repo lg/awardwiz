@@ -1,0 +1,45 @@
+{
+  "result": [
+    {
+      "departureDateTime": "2023-12-25 11:58:00",
+      "arrivalDateTime": "2023-12-25 15:40:00",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "AS 877",
+      "duration": 342,
+      "aircraft": "Boeing 737-900 (Winglets) Passenger",
+      "fares": [
+        {
+          "bookingClass": "C",
+          "cabin": "business",
+          "cash": 5.6,
+          "currencyOfCash": "USD",
+          "miles": 95000,
+          "scraper": "alaska",
+          "isSaverFare": false
+        },
+        {
+          "bookingClass": "H",
+          "cabin": "economy",
+          "cash": 5.6,
+          "currencyOfCash": "USD",
+          "miles": 50000,
+          "scraper": "alaska",
+          "isSaverFare": false
+        }
+      ],
+      "amenities": {
+        "hasWiFi": true
+      }
+    }
+  ],
+  "logLines": [
+    "[2023-06-24 18:16:38.596] Starting Arkalis run for scraper alaska",
+    "[2023-06-24 18:16:38.596] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 18:16:39.125] Running scraper for { origin: \u001b[32m'SFO'\u001b[39m, destination: \u001b[32m'HNL'\u001b[39m, departureDate: \u001b[32m'2023-12-25'\u001b[39m }",
+    "[2023-06-24 18:16:39.125] navigating to https://www.alaskaair.com/searchbff/V3/search?origins=SFO&destinations=HNL&dates=2023-12-25&numADTs=1&fareView=as_awards&sessionID=&solutionSetIDs=&solutionIDs=",
+    "[2023-06-24 18:16:41.804] parsing results",
+    "[2023-06-24 18:16:41.804] \u001b[32mCompleted with 1 results\u001b[39m",
+    "[2023-06-24 18:16:41.804] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 3,208ms (1 reqs, 0 hits, 1 misses, 603 bytes)"
+  ]
+}

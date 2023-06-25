@@ -31,6 +31,16 @@ parserOptions:
 settings:
   react:
     version: detect
+overrides:
+  - files: ["**/*.test.ts"]
+    plugins:
+      - vitest
+    extends:
+      - plugin:vitest/all
+    rules:
+      vitest/no-hooks: off
+      vitest/no-conditional-in-test: off
+      vitest/no-conditional-expect: off
 rules:
   quotes: ["warn", "double"]
   semi: ["warn", "never"]

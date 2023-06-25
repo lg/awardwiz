@@ -45,7 +45,7 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
     queryKey: queryKeyForAirlineRoute(datedRoute),
     queryFn: async ({ signal }) => {
       const request = await runScraper<AWFR24Response>("fr24", datedRoute, signal)
-      return fr24ResponseToAirlineRoutes(request.data)
+      return fr24ResponseToAirlineRoutes(request)
     },
     staleTime: 1000 * 60 * 60 * 24 * 30,
     cacheTime: 1000 * 60 * 60 * 24 * 30,
@@ -79,8 +79,8 @@ export const useAwardSearch = (searchQuery: SearchQuery): AwardSearchProgress =>
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw { logLines: [ "*** Network error calling scraper ***", error.message ], message: "Network error calling scraper", name: "ScraperError" } as ScraperError
       })
-      response.data.forKey = queryKeyForScraperResponse(scraperToRun)
-      return response.data
+      response.forKey = queryKeyForScraperResponse(scraperToRun)
+      return response
     },
     refetchOnWindowFocus: () => !queryClient.getQueryState<ScraperResponse, { message: string, log: string[]}>(queryKeyForScraperResponse(scraperToRun))?.error,  // dont refresh if it was an error
     enabled: !stoppedQueries.some((check) => queryKeysEqual(check, queryKeyForScraperResponse(scraperToRun)))

@@ -1,4 +1,5 @@
 import scrapersRaw from "../../config.json"
+import { runScraper } from "../helpers/runScraper.js"
 import { AWFR24Response, FlightAmenities, FlightFare, FlightWithFares, ScraperResponse, SearchQuery } from "../types/scrapers.js"
 export const scraperConfig: ScrapersConfig = scrapersRaw
 
@@ -58,6 +59,24 @@ export type AirlineAmenity = {
 export type DatedRoute = { origin: string, destination: string, departureDate: string }
 export type ScraperToRun = { scraperName: string, forAirlines: string[], forDatedRoute: DatedRoute }
 export type AirlineRoute = { origin: string, destination: string, airlineCode: string, airlineName: string } // remove airlinename
+
+///////////////////////
+
+export const findAwardFlights = async (searchQuery: SearchQuery): Promise<FlightWithFares[]> => {
+  const allRoutes = expandOriginsDestinations(searchQuery)
+  const fr24Responses = await Promise.all(allRoutes.map(async (route) => {
+    const datedRoute: DatedRoute = { origin: route.origin, destination: route.destination, departureDate: route.departureDate }
+    return runScraper<AWFR24Response>("fr24", datedRoute, undefined)
+  }))
+  const airlineRoutes = fr24Responses.flatMap((response) => fr24ResponseToAirlineRoutes(response))
+  const scrapersToRun = scrapersByAirlineRoutes(airlineRoutes, searchQuery.departureDate)
+  const scraperResponses = await Promise.all(scrapersToRun.map(async (scraperToRun) => {
+    const datedRoute: DatedRoute = { origin: scraperToRun.forDatedRoute.origin, destination: scraperToRun.forDatedRoute.destination, departureDate: scraperToRun.forDatedRoute.departureDate }
+    return runScraper(scraperToRun.scraperName, datedRoute, undefined)
+  }))
+
+  return flightsFromScraperResponses(scraperResponses)
+}
 
 ///////////////////////
 

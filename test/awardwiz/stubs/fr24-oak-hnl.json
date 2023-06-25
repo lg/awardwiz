@@ -1,0 +1,6061 @@
+{
+  "result": {
+    "result": {
+      "request": {
+        "query": "default",
+        "limit": 50,
+        "format": "json",
+        "origin": "OAK",
+        "destination": "HNL",
+        "fetchBy": "",
+        "callback": null,
+        "token": null,
+        "pk": null
+      },
+      "response": {
+        "flight": {
+          "item": {
+            "current": 50
+          },
+          "timestamp": 1687567325,
+          "data": [
+            {
+              "identification": {
+                "id": "30c04328",
+                "row": 5374444176,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 19:25",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1686979533,
+                    "local": 1686943533
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N617FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1686963240,
+                  "arrival": 1686980940
+                },
+                "real": {
+                  "departure": 1686962883,
+                  "arrival": 1686979533
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1686979533
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5374653642,
+                "number": {
+                  "default": null,
+                  "alternative": null
+                },
+                "callsign": "N700QS",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Estimated dep 22:54*",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": true,
+                "generic": {
+                  "status": {
+                    "text": "estimated",
+                    "type": "departure",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1686981240,
+                    "local": 1686956040
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "CL35",
+                  "text": "Bombardier Challenger 350"
+                },
+                "registration": "N700QS",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "NetJets",
+                "code": {
+                  "iata": null,
+                  "icao": "EJA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1686980880,
+                  "arrival": 1687001040
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": 1686981240,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c17e89",
+                "row": 5374690990,
+                "number": {
+                  "default": "FX75",
+                  "alternative": null
+                },
+                "callsign": "FDX75",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 05:43",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687016606,
+                    "local": 1686980606
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B77L",
+                  "text": "Boeing 777-FS2"
+                },
+                "registration": "N878FD",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1686999480,
+                  "arrival": 1687017360
+                },
+                "real": {
+                  "departure": 1687000111,
+                  "arrival": 1687016606
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687016606
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c27d65",
+                "row": 5371825501,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 10:41",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687034480,
+                    "local": 1686998480
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N382HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687015800,
+                  "arrival": 1687035300
+                },
+                "real": {
+                  "departure": 1687017127,
+                  "arrival": 1687034480
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687034480
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c28535",
+                "row": 5371875649,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:05",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687035942,
+                    "local": 1686999942
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8776L",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687017600,
+                  "arrival": 1687037400
+                },
+                "real": {
+                  "departure": 1687018457,
+                  "arrival": 1687035942
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687035942
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c383ba",
+                "row": 5371876325,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 17:07",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687057649,
+                    "local": 1687021649
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8727M",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687039200,
+                  "arrival": 1687059000
+                },
+                "real": {
+                  "departure": 1687039893,
+                  "arrival": 1687057649
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687057649
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c5e401",
+                "row": 5372231962,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:14",
+                "icon": "yellow",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "yellow",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687122849,
+                    "local": 1687086849
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N392HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687102200,
+                  "arrival": 1687121700
+                },
+                "real": {
+                  "departure": 1687104380,
+                  "arrival": 1687122849
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687122849
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c5d55b",
+                "row": 5372112028,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:06",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687122386,
+                    "local": 1687086386
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B738",
+                  "text": "Boeing 737-8H4"
+                },
+                "registration": "N8305E",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687104000,
+                  "arrival": 1687123800
+                },
+                "real": {
+                  "departure": 1687104739,
+                  "arrival": 1687122386
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687122386
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c6c6b8",
+                "row": 5372115651,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 17:23",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687145002,
+                    "local": 1687109002
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N1807U",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687125600,
+                  "arrival": 1687145400
+                },
+                "real": {
+                  "departure": 1687126733,
+                  "arrival": 1687145002
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687145002
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c725da",
+                "row": 5375344250,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 20:19",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687155578,
+                    "local": 1687119578
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B77L",
+                  "text": "Boeing 777-FS2"
+                },
+                "registration": "N886FD",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687138260,
+                  "arrival": 1687156140
+                },
+                "real": {
+                  "departure": 1687137836,
+                  "arrival": 1687155578
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687155578
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c92749",
+                "row": 5372537448,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 10:50",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687207813,
+                    "local": 1687171813
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N380HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687188600,
+                  "arrival": 1687208100
+                },
+                "real": {
+                  "departure": 1687189487,
+                  "arrival": 1687207813
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687207813
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c93095",
+                "row": 5372644863,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:49",
+                "icon": "yellow",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "yellow",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687211392,
+                    "local": 1687175392
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N1802U",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687190400,
+                  "arrival": 1687210200
+                },
+                "real": {
+                  "departure": 1687192567,
+                  "arrival": 1687211392
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687211392
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30c96f2b",
+                "row": 5375887187,
+                "number": {
+                  "default": null,
+                  "alternative": null
+                },
+                "callsign": "N864AM",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 12:51",
+                "icon": "yellow",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "yellow",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687215109,
+                    "local": 1687179109
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "H25B",
+                  "text": "Hawker 800XPi"
+                },
+                "registration": "N864AM",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": null,
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687193400,
+                  "arrival": 1687214047
+                },
+                "real": {
+                  "departure": 1687193776,
+                  "arrival": 1687215109
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687215109
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30ca2e11",
+                "row": 5372647972,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 17:38",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687232316,
+                    "local": 1687196316
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8715Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687212000,
+                  "arrival": 1687231800
+                },
+                "real": {
+                  "departure": 1687214033,
+                  "arrival": 1687232316
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687232316
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30cbba32",
+                "row": 5375870094,
+                "number": {
+                  "default": "FX77",
+                  "alternative": null
+                },
+                "callsign": "FDX77",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 06:02",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687276943,
+                    "local": 1687240943
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B77L",
+                  "text": "Boeing 777-F"
+                },
+                "registration": "N893FD",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687258680,
+                  "arrival": 1687276560
+                },
+                "real": {
+                  "departure": 1687258797,
+                  "arrival": 1687276943
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687276943
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30ccab7d",
+                "row": 5372899249,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:00",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687294802,
+                    "local": 1687258802
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N361HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687275000,
+                  "arrival": 1687294500
+                },
+                "real": {
+                  "departure": 1687275578,
+                  "arrival": 1687294802
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687294802
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30ccb80b",
+                "row": 5373007179,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:50",
+                "icon": "yellow",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "yellow",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687297859,
+                    "local": 1687261859
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8732S",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687276800,
+                  "arrival": 1687296600
+                },
+                "real": {
+                  "departure": 1687279099,
+                  "arrival": 1687297859
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687297859
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30cdbfe0",
+                "row": 5373010277,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 18:04",
+                "icon": "yellow",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "yellow",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687320240,
+                    "local": 1687284240
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8779Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687298400,
+                  "arrival": 1687318200
+                },
+                "real": {
+                  "departure": 1687301140,
+                  "arrival": 1687320240
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687320240
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30ce0056",
+                "row": 5376005403,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 19:18",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687324683,
+                    "local": 1687288683
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N572FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687308600,
+                  "arrival": 1687326300
+                },
+                "real": {
+                  "departure": 1687306424,
+                  "arrival": 1687324683
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687324683
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30cf4b5e",
+                "row": 5376227976,
+                "number": {
+                  "default": "FX77",
+                  "alternative": null
+                },
+                "callsign": "FDX77",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 05:53",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687362828,
+                    "local": 1687326828
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B77L",
+                  "text": "Boeing 777-FS2"
+                },
+                "registration": "N868FD",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687345080,
+                  "arrival": 1687362960
+                },
+                "real": {
+                  "departure": 1687344442,
+                  "arrival": 1687362828
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687362828
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d04b42",
+                "row": 5373282043,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:07",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687381660,
+                    "local": 1687345660
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N384HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687361400,
+                  "arrival": 1687380900
+                },
+                "real": {
+                  "departure": 1687362133,
+                  "arrival": 1687381660
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687381660
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d0522f",
+                "row": 5373391043,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:37",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687383422,
+                    "local": 1687347422
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8792Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687363200,
+                  "arrival": 1687383000
+                },
+                "real": {
+                  "departure": 1687364440,
+                  "arrival": 1687383422
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687383422
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d1632f",
+                "row": 5373394152,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 17:22",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687404158,
+                    "local": 1687368158
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8761L",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687384800,
+                  "arrival": 1687404600
+                },
+                "real": {
+                  "departure": 1687385341,
+                  "arrival": 1687404158
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687404158
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d1aca3",
+                "row": 5376481359,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 19:29",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687411761,
+                    "local": 1687375761
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N582FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687395000,
+                  "arrival": 1687412700
+                },
+                "real": {
+                  "departure": 1687393862,
+                  "arrival": 1687411761
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687411761
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d2f9b2",
+                "row": 5376629773,
+                "number": {
+                  "default": "FX9077",
+                  "alternative": null
+                },
+                "callsign": "FDX9077",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 05:51",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687449094,
+                    "local": 1687413094
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N631FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687431420,
+                  "arrival": 1687449000
+                },
+                "real": {
+                  "departure": 1687431436,
+                  "arrival": 1687449094
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687449094
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d3fb65",
+                "row": 5373683287,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 10:58",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687467501,
+                    "local": 1687431501
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N374HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687447800,
+                  "arrival": 1687467300
+                },
+                "real": {
+                  "departure": 1687448388,
+                  "arrival": 1687467501
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687467501
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d40168",
+                "row": 5373794028,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:35",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687469715,
+                    "local": 1687433715
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8721J",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687449600,
+                  "arrival": 1687469400
+                },
+                "real": {
+                  "departure": 1687451930,
+                  "arrival": 1687469715
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687469715
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d51bb0",
+                "row": 5373797166,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 17:41",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687491690,
+                    "local": 1687455690
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8704Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687471200,
+                  "arrival": 1687491000
+                },
+                "real": {
+                  "departure": 1687473149,
+                  "arrival": 1687491690
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687491690
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d56198",
+                "row": 5376918437,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 18:56",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687496182,
+                    "local": 1687460182
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N594FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687481400,
+                  "arrival": 1687499100
+                },
+                "real": {
+                  "departure": 1687478334,
+                  "arrival": 1687496182
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687496182
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d6b255",
+                "row": 5377046164,
+                "number": {
+                  "default": "FX77",
+                  "alternative": null
+                },
+                "callsign": "FDX77",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 06:03",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687536231,
+                    "local": 1687500231
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B77L",
+                  "text": "Boeing 777-FS2"
+                },
+                "registration": "N852FD",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687517880,
+                  "arrival": 1687535760
+                },
+                "real": {
+                  "departure": 1687518609,
+                  "arrival": 1687536231
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687536231
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d7a9c6",
+                "row": 5374104239,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 10:51",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687553498,
+                    "local": 1687517498
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N378HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687534200,
+                  "arrival": 1687553700
+                },
+                "real": {
+                  "departure": 1687534968,
+                  "arrival": 1687553498
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687553498
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d7aa24",
+                "row": 5374216877,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 11:26",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687555563,
+                    "local": 1687519563
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8738K",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687536000,
+                  "arrival": 1687555800
+                },
+                "real": {
+                  "departure": 1687537187,
+                  "arrival": 1687555563
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687555563
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d7f31a",
+                "row": 5377459005,
+                "number": {
+                  "default": "SXI2325",
+                  "alternative": null
+                },
+                "callsign": "SXI2325",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Landed 12:04",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "landed",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687557854,
+                    "local": 1687521854
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "E190",
+                  "text": "Embraer E190AR"
+                },
+                "registration": "N934QQ",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southern Cross International",
+                "code": {
+                  "iata": null,
+                  "icao": "SXI"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687539600,
+                  "arrival": 1687558132
+                },
+                "real": {
+                  "departure": 1687539704,
+                  "arrival": 1687557854
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": 1687557854
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d8cd14",
+                "row": 5374220039,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Estimated 17:33",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "estimated",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687577600,
+                    "local": 1687541600
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8780Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687557600,
+                  "arrival": 1687577400
+                },
+                "real": {
+                  "departure": 1687560072,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": 1687577600
+                },
+                "other": {
+                  "eta": 1687577600
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": "30d90a5f",
+                "row": 5377190356,
+                "number": {
+                  "default": "FX3875",
+                  "alternative": null
+                },
+                "callsign": "FDX3875",
+                "codeshare": null
+              },
+              "status": {
+                "live": true,
+                "text": "Estimated 19:07",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "estimated",
+                    "type": "arrival",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687583232,
+                    "local": 1687547232
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "MD11",
+                  "text": "McDonnell Douglas MD-11F"
+                },
+                "registration": "N615FE",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687568040,
+                  "arrival": 1687585740
+                },
+                "real": {
+                  "departure": 1687566211,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": 1687583232
+                },
+                "other": {
+                  "eta": 1687583232
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5377401218,
+                "number": {
+                  "default": "FX75",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "FedEx",
+                "code": {
+                  "iata": "FX",
+                  "icao": "FDX"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687604280,
+                  "arrival": 1687622160
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5374527096,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": "HAL47",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Canceled",
+                "icon": "red",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "canceled",
+                    "type": "departure",
+                    "color": "red",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N388HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687620600,
+                  "arrival": 1687640100
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5374630046,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": "SWA808",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Estimated dep 09:00",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "estimated",
+                    "type": "departure",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687622400,
+                    "local": 1687597200
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8774Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687622400,
+                  "arrival": 1687642200
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": 1687622400,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5374632737,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": "SWA3753",
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Estimated dep 15:10",
+                "icon": "green",
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "estimated",
+                    "type": "departure",
+                    "color": "green",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": 1687644600,
+                    "local": 1687619400
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8773Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687644000,
+                  "arrival": 1687663800
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": 1687644600,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5374926283,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "A332",
+                  "text": "Airbus A330-243"
+                },
+                "registration": "N395HA",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687707000,
+                  "arrival": 1687726500
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375031498,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687708800,
+                  "arrival": 1687728600
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375034447,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": {
+                "model": {
+                  "code": "B38M",
+                  "text": "Boeing 737 MAX 8"
+                },
+                "registration": "N8765Q",
+                "country": {
+                  "id": 236,
+                  "name": "United States",
+                  "alpha2": "US",
+                  "alpha3": "USA"
+                }
+              },
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687730400,
+                  "arrival": 1687750200
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375295535,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687793400,
+                  "arrival": 1687812900
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375405926,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687795200,
+                  "arrival": 1687815000
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375409002,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687816800,
+                  "arrival": 1687836600
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375666039,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687879800,
+                  "arrival": 1687899300
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375773644,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687881600,
+                  "arrival": 1687901400
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5375776766,
+                "number": {
+                  "default": "WN3753",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687903200,
+                  "arrival": 1687923000
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5376092259,
+                "number": {
+                  "default": "HA47",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Hawaiian Airlines",
+                "code": {
+                  "iata": "HA",
+                  "icao": "HAL"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687966200,
+                  "arrival": 1687985700
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            },
+            {
+              "identification": {
+                "id": null,
+                "row": 5376184808,
+                "number": {
+                  "default": "WN808",
+                  "alternative": null
+                },
+                "callsign": null,
+                "codeshare": null
+              },
+              "status": {
+                "live": false,
+                "text": "Scheduled",
+                "icon": null,
+                "estimated": null,
+                "ambiguous": false,
+                "generic": {
+                  "status": {
+                    "text": "scheduled",
+                    "type": "departure",
+                    "color": "gray",
+                    "diverted": null
+                  },
+                  "eventTime": {
+                    "utc": null,
+                    "local": null
+                  }
+                }
+              },
+              "aircraft": null,
+              "airline": {
+                "name": "Southwest Airlines",
+                "code": {
+                  "iata": "WN",
+                  "icao": "SWA"
+                }
+              },
+              "airport": {
+                "origin": {
+                  "name": "Oakland International Airport",
+                  "code": {
+                    "iata": "OAK",
+                    "icao": "KOAK"
+                  },
+                  "position": {
+                    "latitude": 37.721272,
+                    "longitude": -122.220001,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Oakland"
+                    }
+                  },
+                  "timezone": {
+                    "name": "America/Los_Angeles",
+                    "offset": -25200,
+                    "abbr": "PDT",
+                    "abbrName": "Pacific Daylight Time",
+                    "isDst": true
+                  }
+                },
+                "destination": {
+                  "name": "Honolulu International Airport",
+                  "code": {
+                    "iata": "HNL",
+                    "icao": "PHNL"
+                  },
+                  "position": {
+                    "latitude": 21.31868,
+                    "longitude": -157.921997,
+                    "country": {
+                      "name": "United States",
+                      "code": "US",
+                      "id": 236
+                    },
+                    "region": {
+                      "city": "Honolulu"
+                    }
+                  },
+                  "timezone": {
+                    "name": "Pacific/Honolulu",
+                    "offset": -36000,
+                    "abbr": "HST",
+                    "abbrName": "Hawaii Standard Time",
+                    "isDst": false
+                  }
+                },
+                "real": null
+              },
+              "time": {
+                "scheduled": {
+                  "departure": 1687968000,
+                  "arrival": 1687987800
+                },
+                "real": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "estimated": {
+                  "departure": null,
+                  "arrival": null
+                },
+                "other": {
+                  "eta": null
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "_api": {
+      "copyright": "Copyright (c) 2014-2023 Flightradar24 AB. All rights reserved.",
+      "legalNotice": "The contents of this file and all derived data are the property of Flightradar24 AB for use exclusively by its products and applications. Using, modifying or redistributing the data without the prior written permission of Flightradar24 AB is not allowed and may result in prosecutions."
+    }
+  },
+  "logLines": [
+    "[2023-06-24 00:42:58.165] Starting Arkalis run for scraper fr24",
+    "[2023-06-24 00:42:58.165] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 00:42:58.746] Found and using cached result for result-fr24-OAKHNL",
+    "[2023-06-24 00:42:58.746] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 581ms (0 reqs, 0 hits, 0 misses, 0 bytes)"
+  ]
+}

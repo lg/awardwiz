@@ -1,0 +1,12 @@
+{
+  "result": [],
+  "logLines": [
+    "[2023-06-24 18:16:38.398] Starting Arkalis run for scraper aeroplan",
+    "[2023-06-24 18:16:38.398] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 18:16:38.928] Running scraper for { origin: \u001b[32m'SFO'\u001b[39m, destination: \u001b[32m'HNL'\u001b[39m, departureDate: \u001b[32m'2023-12-25'\u001b[39m }",
+    "[2023-06-24 18:16:38.928] navigating to https://www.aircanada.com/aeroplan/redeem/availability/outbound?org0=SFO&dest0=HNL&departureDate0=2023-12-25&lang=en-CA&tripType=O&ADT=1&YTH=0&CHD=0&INF=0&INS=0&marketCode=TNB",
+    "[2023-06-24 18:16:47.937] \u001b[93mWARN\u001b[39m \u001b[93mrequest returned error (NO FLIGHTS FOUND)\u001b[39m",
+    "[2023-06-24 18:16:47.937] \u001b[32mCompleted with 0 results\u001b[39m",
+    "[2023-06-24 18:16:47.938] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 9,540ms (51 reqs, 32 hits, 19 misses, 123,303 bytes)"
+  ]
+}

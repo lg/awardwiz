@@ -1,0 +1,13 @@
+{
+  "result": [],
+  "logLines": [
+    "[2023-06-24 18:16:38.796] Starting Arkalis run for scraper aa",
+    "[2023-06-24 18:16:38.797] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 18:16:39.332] Running scraper for { origin: \u001b[32m'OAK'\u001b[39m, destination: \u001b[32m'HNL'\u001b[39m, departureDate: \u001b[32m'2023-12-25'\u001b[39m }",
+    "[2023-06-24 18:16:39.333] navigating to https://www.aa.com/booking/find-flights",
+    "[2023-06-24 18:16:39.742] fetching itinerary",
+    "[2023-06-24 18:16:41.458] parsing",
+    "[2023-06-24 18:16:41.459] \u001b[32mCompleted with 0 results\u001b[39m",
+    "[2023-06-24 18:16:41.459] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 2,663ms (82 reqs, 61 hits, 21 misses, 106,594 bytes)"
+  ]
+}

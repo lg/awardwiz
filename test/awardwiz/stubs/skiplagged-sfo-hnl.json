@@ -1,0 +1,174 @@
+{
+  "result": [
+    {
+      "departureDateTime": "2023-12-25 13:40",
+      "arrivalDateTime": "2023-12-25 17:23",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 300",
+      "duration": 343,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 684.52,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 07:00",
+      "arrivalDateTime": "2023-12-25 10:37",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 1581",
+      "duration": 337,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 479.53,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 11:58",
+      "arrivalDateTime": "2023-12-25 15:40",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "AS 877",
+      "duration": 342,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 563.5,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 09:00",
+      "arrivalDateTime": "2023-12-25 12:30",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 1175",
+      "duration": 330,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 479.53,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 08:00",
+      "arrivalDateTime": "2023-12-25 11:40",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "HA 11",
+      "duration": 340,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 334.5,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 18:40",
+      "arrivalDateTime": "2023-12-25 22:12",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 473",
+      "duration": 332,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 685,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 11:58",
+      "arrivalDateTime": "2023-12-25 15:40",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "AA 7458",
+      "duration": 342,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 998.5,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 16:35",
+      "arrivalDateTime": "2023-12-25 20:07",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 1509",
+      "duration": 332,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 479.53,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    },
+    {
+      "departureDateTime": "2023-12-25 11:10",
+      "arrivalDateTime": "2023-12-25 14:56",
+      "origin": "SFO",
+      "destination": "HNL",
+      "flightNo": "UA 2380",
+      "duration": 346,
+      "amenities": {},
+      "fares": [
+        {
+          "cash": 479.53,
+          "currencyOfCash": "USD",
+          "miles": 0,
+          "cabin": "economy",
+          "scraper": "skiplagged"
+        }
+      ]
+    }
+  ],
+  "logLines": [
+    "[2023-06-24 18:16:37.998] Starting Arkalis run for scraper skiplagged",
+    "[2023-06-24 18:16:37.998] \u001b[93mWARN\u001b[39m \u001b[93mNot using proxy server!\u001b[39m",
+    "[2023-06-24 18:16:38.547] Running scraper for { origin: \u001b[32m'SFO'\u001b[39m, destination: \u001b[32m'HNL'\u001b[39m, departureDate: \u001b[32m'2023-12-25'\u001b[39m }",
+    "[2023-06-24 18:16:38.547] navigating to https://skiplagged.com/api/search.php?from=SFO&to=HNL&depart=2023-12-25&return=&format=v3&counts%5Badults%5D=1&counts%5Bchildren%5D=0",
+    "[2023-06-24 18:16:38.875] \u001b[32mCompleted with 9 results\u001b[39m",
+    "[2023-06-24 18:16:38.875] Completed attempt \u001b[92mSUCCESSFULLY\u001b[39m in 877ms (2 reqs, 0 hits, 2 misses, 545 bytes)"
+  ]
+}

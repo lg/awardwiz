@@ -1,0 +1,275 @@
+{
+  "result": {
+    "request": {
+      "query": "default",
+      "limit": 50,
+      "format": "json",
+      "origin": "SFO",
+      "destination": "LIH",
+      "fetchBy": "",
+      "callback": null,
+      "token": null,
+      "pk": null
+    },
+    "response": {
+      "flight": {
+        "item": {
+          "current": 27
+        },
+        "timestamp": 1687404130,
+        "data": [
+          {
+            "identification": {
+              "id": "30bb099f",
+              "row": 5371053685,
+              "number": {
+                "default": "UA1111",
+                "alternative": null
+              },
+              "callsign": "UAL1111",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 11:07",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1686863257,
+                  "local": 1686827257
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-824"
+              },
+              "registration": "N76517",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "United Airlines",
+              "code": {
+                "iata": null,
+                "icao": null
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Francisco International Airport",
+                "code": {
+                  "iata": "SFO",
+                  "icao": "KSFO"
+                },
+                "position": {
+                  "latitude": 37.618969,
+                  "longitude": -122.374001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Francisco"
+                  }
+                },
+                "timezone": {
+                  "name": "America\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Lihue Airport",
+                "code": {
+                  "iata": "LIH",
+                  "icao": "PHLI"
+                },
+                "position": {
+                  "latitude": 21.975981,
+                  "longitude": -159.337997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Lihue"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1686845100,
+                "arrival": 1686865260
+              },
+              "real": {
+                "departure": 1686845742,
+                "arrival": 1686863257
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1686863257
+              }
+            }
+          },
+          {
+            "identification": {
+              "id": "30bcaeb0",
+              "row": 5371054849,
+              "number": {
+                "default": "UA1684",
+                "alternative": null
+              },
+              "callsign": "UAL1684",
+              "codeshare": null
+            },
+            "status": {
+              "live": false,
+              "text": "Landed 20:32",
+              "icon": "green",
+              "estimated": null,
+              "ambiguous": false,
+              "generic": {
+                "status": {
+                  "text": "landed",
+                  "type": "arrival",
+                  "color": "green",
+                  "diverted": null
+                },
+                "eventTime": {
+                  "utc": 1686897145,
+                  "local": 1686861145
+                }
+              }
+            },
+            "aircraft": {
+              "model": {
+                "code": "B738",
+                "text": "Boeing 737-824"
+              },
+              "registration": "N77530",
+              "country": {
+                "id": 236,
+                "name": "United States",
+                "alpha2": "US",
+                "alpha3": "USA"
+              }
+            },
+            "airline": {
+              "name": "",
+              "code": {
+                "iata": "UA",
+                "icao": "UAL"
+              }
+            },
+            "airport": {
+              "origin": {
+                "name": "San Francisco International Airport",
+                "code": {
+                  "iata": "SFO",
+                  "icao": "KSFO"
+                },
+                "position": {
+                  "latitude": 37.618969,
+                  "longitude": -122.374001,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "San Francisco"
+                  }
+                },
+                "timezone": {
+                  "name": "America\/Los_Angeles",
+                  "offset": -25200,
+                  "abbr": "PDT",
+                  "abbrName": "Pacific Daylight Time",
+                  "isDst": true
+                }
+              },
+              "destination": {
+                "name": "Lihue Airport",
+                "code": {
+                  "iata": "LIH",
+                  "icao": "PHLI"
+                },
+                "position": {
+                  "latitude": 21.975981,
+                  "longitude": -159.337997,
+                  "country": {
+                    "name": "United States",
+                    "code": "US",
+                    "id": 236
+                  },
+                  "region": {
+                    "city": "Lihue"
+                  }
+                },
+                "timezone": {
+                  "name": "Pacific\/Honolulu",
+                  "offset": -36000,
+                  "abbr": "HST",
+                  "abbrName": "Hawaii Standard Time",
+                  "isDst": false
+                }
+              },
+              "real": null
+            },
+            "time": {
+              "scheduled": {
+                "departure": 1686879000,
+                "arrival": 1686899160
+              },
+              "real": {
+                "departure": 1686879239,
+                "arrival": 1686897145
+              },
+              "estimated": {
+                "departure": null,
+                "arrival": null
+              },
+              "other": {
+                "eta": 1686897145
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "_api": {
+    "copyright": "okok",
+    "legalNotice": "okok"
+  }
+}
