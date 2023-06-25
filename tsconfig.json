@@ -30,6 +30,6 @@
     "jsx": "react-jsx",
     "types": ["unplugin-icons/types/react"]
   },
-  "include": ["arkalis", "awardwiz-scrapers", "awardwiz", "test/awardwiz/awardSearch.test.ts"],
+  "include": ["arkalis", "awardwiz-scrapers", "awardwiz", "test"],
   "exclude": ["node_modules", "dist"]
 }

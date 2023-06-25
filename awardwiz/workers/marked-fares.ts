@@ -11,6 +11,7 @@ import nodemailer from "nodemailer"
 import handlebars from "handlebars"
 import notificationEmail from "../../emails/notification.html?raw"
 import admin from "firebase-admin"
+import { findAwardFlights } from "../hooks/awardSearch.js"
 
 dayjs.extend(LocalizedFormat)
 dayjs.extend(utc)
@@ -68,16 +69,12 @@ const { transporter, template } = await runListrTask("Creating email transport..
   return { transporter, template }
 }, () => import.meta.env.VITE_SMTP_CONNECTION_STRING ? "using prod SMTP" : "\u001B[33musing test account\u001B[0m")
 
-// Needs to be imported here because of some 'fs' hook happydom seems to do which breaks Firebase file opening in initializeApp
-import { genQueryClient, search } from "../helpers/awardSearchStandalone.js"
-const qc = genQueryClient() // Use the same query client for all searches for caching
-
 await new Listr<object>(
   markedFares.map((markedFare) => ({
     title: `Querying ${markedFare.origin} to ${markedFare.destination} on ${markedFare.date} for ${markedFare.uid ?? "unknown user"}`,
     task: async (_context, task) => {
-      const results = await search({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date }, qc)
-      const foundSaver = results.searchResults.some((result) =>
+      const results = await findAwardFlights({ origins: [markedFare.origin], destinations: [markedFare.destination], departureDate: markedFare.date })
+      const foundSaver = results.some((result) =>
         result.flightNo === markedFare.checkFlightNo
         && result.fares.find((fare) => fare.cabin === markedFare.checkCabin && fare.isSaverFare))
 
@@ -132,5 +129,3 @@ await new Listr<object>(
 ).run()
 
 console.log("done")
-
-process.exit(0)   // TODO: this shouldn't be needed, but there's a leak somewhere with the ReactQuery QueryClient or nearby

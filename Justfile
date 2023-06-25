@@ -18,20 +18,22 @@ clean:
   rm -rf dist/
 
 # ⭐️ builds, lints, checks dependencies and runs tests (TODO: run tests)
-check: build
+check: build test
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
-  npm exec -- vitest run ./test/awardwiz/awardSearch.test.ts
   docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
   docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema
   @echo 'ok'
+
+test: build
+  npm exec -- vitest run ./test/**/*.test.ts
 
 [private]
 check-clean: clean check
 
 # runs an interactive npm package update tool to get the latest versions of everything
 lets-upgrade-packages:
-  npm exec -- npm-check -u --ignore vite-node
+  npm exec -- npm-check -u
 
 ##############################
 # FRONTEND
