@@ -21,7 +21,7 @@ AwardWiz searches airlines for award tickets so you can fly like a king, remorse
 npm i
 # TODO: gen .env file
 just run-server
-just start-vite
+just run-vite
 ```
 
 # Architecture
@@ -68,7 +68,7 @@ You can start a local instance of Browserless using `docker-compose up`.
 2. install `just`
 3. configure your `.env` file
 5. `just run-server`
-6. `just start-vite`
+6. `just run-vite`
 7. run github actions locally with `act --list` and `act -j <job-id>`
 
 

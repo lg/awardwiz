@@ -41,7 +41,7 @@ lets-upgrade-packages:
 ##############################
 
 # ⭐️ starts the vite frontend
-start-vite args="": build
+run-vite args="": build
   npm exec -- vite --config awardwiz/vite.config.ts {{args}}
 
 # generate .schema.json files from .ts files
@@ -54,7 +54,7 @@ gen-statics:
 
 # generate awardwiz/dist directory for frontend (used by Github Actions when deploying)
 gen-frontend-dist:
-  just start-vite build
+  just run-vite build
 
 # run the marked fares worker (looks at watches fares and sends notifications when availability changes)
 run-marked-fares-worker:
