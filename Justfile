@@ -22,6 +22,7 @@ check: build test
   TIMING=1 npm exec -- eslint --ext .ts --max-warnings=0 .
   docker run --rm -v $(pwd):/repo --workdir /repo rhysd/actionlint:latest -color
   docker run --rm -v $(pwd):/repo --workdir /repo hadolint/hadolint hadolint **/Dockerfile
+  docker run --rm --platform linux/amd64 -v $(pwd):/repo --workdir /repo 3scale/ajv:latest -s config.schema.json -d config.json
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema
   @echo 'ok'
 
