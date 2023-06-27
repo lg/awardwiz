@@ -9,7 +9,7 @@ import { Listr } from "listr2"
 import { runListrTask } from "../helpers/common.js"
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
-import notificationEmail from "../../emails/notification.html?raw"
+import notificationEmail from "../emails/notification.html?raw"
 import admin from "firebase-admin"
 import { findAwardFlights } from "../hooks/awardSearch.js"
 

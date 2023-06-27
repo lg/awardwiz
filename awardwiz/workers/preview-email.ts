@@ -2,7 +2,7 @@
 
 import nodemailer from "nodemailer"
 import handlebars from "handlebars"
-import notificationEmail from "../../emails/notification.html?raw"
+import notificationEmail from "../emails/notification.html?raw"
 
 console.log("creating test account")
 const testAccount = await nodemailer.createTestAccount()  // use this one for testing
