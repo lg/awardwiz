@@ -26,6 +26,13 @@ check: build test
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema
   @echo 'ok'
 
+# runs the github actions, note that this needs a properly configured .env
+check-with-act:
+  act --job run-checks --rm
+  act --job deploy --rm
+  act --job marked-fares-worked --rm
+  @echo 'ok'
+
 test: build
   npm exec -- vitest run ./test/**/*.test.ts
 

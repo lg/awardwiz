@@ -41,11 +41,14 @@ jobs:
       - name: Build website
         run: just gen-frontend-dist
       - name: Setup Github Pages
+        if: ${{ !env.ACT }}
         uses: actions/configure-pages@v2
       - name: Upload artifact
+        if: ${{ !env.ACT }}
         uses: actions/upload-pages-artifact@v1
         with:
           path: './awardwiz/dist'
       - name: Deploy to GitHub Pages
+        if: ${{ !env.ACT }}
         id: deployment
         uses: actions/deploy-pages@v1
