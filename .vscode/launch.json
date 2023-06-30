@@ -14,21 +14,7 @@
       "type": "node",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "console": "integratedTerminal",
-    },
-    {
-      "name": "Run scraper with Docker",    // Edit the parameters in tasks.json
-      "request": "attach",
-      "type": "node",
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-
-      "preLaunchTask": "start scrapers docker",
-      "postDebugTask": "stop scrapers docker",
-
-      "address": "127.0.0.1",
-      "port": 9229,
-      "localRoot": "${workspaceFolder}",
-      "remoteRoot": "/usr/src/awardwiz",
-      "continueOnAttach": true,
+      "internalConsoleOptions": "openOnSessionStart",
     }
   ],
   "inputs": [

@@ -1,0 +1,31 @@
+{
+  "name": "Awardwiz Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  "features": {
+    "ghcr.io/guiyomh/features/just:0": {},
+    "ghcr.io/devcontainers-contrib/features/actionlint:1": {},
+    "ghcr.io/dhoeric/features/hadolint:1": {}
+  },
+  "remoteUser": "root",
+  "postCreateCommand": "npm i && npm -g install playwright@1.35.1 && npx playwright install-deps && apt-get update && DEBIAN_FRONTEND=\"noninteractive\" TZ=\"America/Los_Angeles\" apt-get install --no-install-recommends -y xvfb=2:1.20.* x11vnc=0.9.* novnc=1:1.0.* fluxbox=1.3.*",
+  "containerEnv": {
+    "CHROME_PATH": "/root/.cache/ms-playwright/chromium-1067/chrome-linux/chrome",
+    "DISPLAY": ":0.0"
+  },
+  "postStartCommand": "./awardwiz-scrapers/entrypoint.sh echo \"ready\"",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "sclu1034.justfile",
+        "IronGeek.vscode-env",
+        "larrygadea.eslint-project-disabler",
+        "exiasr.hadolint",
+        "christian-kohler.npm-intellisense",
+        "timonwong.shellcheck",
+        "ZixuanChen.vitest-explorer",
+        "DevEscalus.git-commit-no-verify-action-button",
+        "spadin.memento-inputs"
+      ]
+    }
+  }
+}
