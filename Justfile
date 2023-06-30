@@ -10,12 +10,6 @@ default:
 [private]
 build:
   npm exec tsc
-  @just gen-json-schemas
-
-[private]
-clean:
-  npm clean-install
-  rm -rf dist/
 
 # ⭐️ builds, lints, checks dependencies and runs tests (TODO: run tests)
 check: build test
@@ -36,9 +30,6 @@ check-with-act:
 test: build
   npm exec -- vitest run ./test/**/*.test.ts
 
-[private]
-check-clean: clean check
-
 # runs an interactive npm package update tool to get the latest versions of everything
 lets-upgrade-packages:
   npm exec -- npm-check -u
@@ -52,7 +43,7 @@ run-vite args="": build
   npm exec -- vite --config awardwiz/vite.config.ts {{args}}
 
 # generate .schema.json files from .ts files
-gen-json-schemas:
+gen-json-schemas: build
   npm exec -- typescript-json-schema tsconfig.json ScrapersConfig --topRef --noExtraProps | sed 's/import.*)\.//g' > config.schema.json
 
 # generate statics from internet (used by Github Actions when deploying)

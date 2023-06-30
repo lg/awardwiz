@@ -3,7 +3,9 @@ import { runScraper } from "../helpers/runScraper.js"
 import { AWFR24Response, FlightAmenities, FlightFare, FlightWithFares, ScraperResponse, SearchQuery } from "../types/scrapers.js"
 export const scraperConfig: ScrapersConfig = scrapersRaw
 
-/** Config file that describes which scrapers are available, which airlines they support, and other airline rules */
+/** Config file that describes which scrapers are available, which airlines they support, and other airline rules.
+ * NOTE: Ensure that you run `just gen-json-schemas` to generate a new schema if you edit the below.
+*/
 export type ScrapersConfig = {
   /** Airline codes for airlines which should not be processed (ex. cargo airlines: `["FX"]`) */
   excludeAirlines?: string[]

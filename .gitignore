@@ -42,6 +42,3 @@ tmp/
 .DS_Store
 TODO.md
 awardwiz-scrapers/scrapers/dummy.ts
-
-# generated
-config.schema.json

@@ -1,0 +1,109 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "description": "Config file that describes which scrapers are available, which airlines they support, and other airline rules",
+    "properties": {
+        "airlineAmenities": {
+            "description": "Defines amenities available depending on aircraft type for an airline",
+            "items": {
+                "additionalProperties": false,
+                "description": "Defines amenities available depending on aircraft type for an airline",
+                "properties": {
+                    "airlineCode": {
+                        "description": "Airline code (ex. UA) this amenity set is for",
+                        "type": "string"
+                    },
+                    "podsAircraft": {
+                        "description": "Aircraft types which have pods as the first class or business seats (ex. [\"777\", \"Mint\"]). Use \"*\" to identify all.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    },
+                    "wifiAircraft": {
+                        "description": "Aircraft types which have WiFi available (ex. [\"777\"]). Use \"*\" to identify all.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    }
+                },
+                "type": "object"
+            },
+            "type": "array"
+        },
+        "airlineGroups": {
+            "additionalProperties": {
+                "items": {
+                    "type": "string"
+                },
+                "type": "array"
+            },
+            "description": "Group name to array of airlines mapping (ex. `{\"staralliance\": [\"AC\", \"UA\"]}`)",
+            "type": "object"
+        },
+        "chaseUnsupportedAirlines": {
+            "description": "Chase Ultimate Rewards only supports some airlines for booking cash fares, list the ones it doesn't here (ex. WN)",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "excludeAirlines": {
+            "description": "Airline codes for airlines which should not be processed (ex. cargo airlines: `[\"FX\"]`)",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "saverBookingClasses": {
+            "additionalProperties": {
+                "items": {
+                    "type": "string"
+                },
+                "type": "array"
+            },
+            "description": "Booking codes (per airline or group) to identify as saver results (ex. `{\"UA\": [\"I\", \"O\"]}`) used in addition to the scraper's `isSaver`",
+            "type": "object"
+        },
+        "scrapers": {
+            "description": "Defines scraper metadata used to select which scrapers to use for a query",
+            "items": {
+                "additionalProperties": false,
+                "description": "Defines scraper metadata used to select which scrapers to use for a query",
+                "properties": {
+                    "cashOnlyFares": {
+                        "description": "Identifies this scraper to be used for all search queries",
+                        "type": "boolean"
+                    },
+                    "disabled": {
+                        "description": "Set to true if this scraper should not be used",
+                        "type": "boolean"
+                    },
+                    "name": {
+                        "description": "Name of the scraper (also the filename of the scraper)",
+                        "type": "string"
+                    },
+                    "nativeAirline": {
+                        "description": "Airline code that this scraper defaults to (ex. aeroplan is \"AC\")",
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "supportedAirlines": {
+                        "description": "List of airline codes or group names which should trigger to use this scraper",
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array"
+                    }
+                },
+                "type": "object"
+            },
+            "type": "array"
+        }
+    },
+    "type": "object"
+}
+
