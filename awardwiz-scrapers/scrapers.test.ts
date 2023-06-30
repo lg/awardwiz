@@ -57,14 +57,14 @@ describe("awardwiz scrapers", () => {
 
   it.concurrent.each(scrapers)("basic search: %s", async (scraperName, scraper) => {
     const results = await runQuery(scraperName, scraper.popularRoute)
-    expect(results.result.length).toBeGreaterThanOrEqual(1)
-    expect(results.result.every((flight) => flight.fares.length > 0)).toBeTruthy()
+    expect(results.result!.length).toBeGreaterThanOrEqual(1)
+    expect(results.result!.every((flight) => flight.fares.length > 0)).toBeTruthy()
     if (!scraper.zeroMilesOk)
-      expect(results.result.every((flight) => flight.fares.every((fare) => fare.miles > 1000))).toBeTruthy()
+      expect(results.result!.every((flight) => flight.fares.every((fare) => fare.miles > 1000))).toBeTruthy()
 
     // Ensure that there there are no unexpected missing attributes
     const expectedFlightKeys: KeysEnum<FlightWithFares> = { flightNo: true, departureDateTime: true, arrivalDateTime: true, origin: true, destination: true, duration: true, fares: true, aircraft: true, amenities: true }
-    for (const flight of results.result) {
+    for (const flight of results.result!) {
       const rawFlight: Record<string, any> = flight
       const undefinedFlightKeys = Object.keys(expectedFlightKeys).filter((check) => rawFlight[check] === undefined && !(scraper.missingAttribs?.includes(check as keyof FlightWithFares)))
       expect(undefinedFlightKeys, `Expected flight \n\n${JSON.stringify(flight)}\n\n to not have any undefined keys`).toStrictEqual([])
@@ -95,7 +95,7 @@ describe("awardwiz scrapers", () => {
       const results = await runQuery(scraperName, scraper.partnerRoute!, checkDate)
       const expectFlightNo = scraper.partnerRoute![2]
 
-      found = results.result.some((flight) => flight.flightNo === expectFlightNo)
+      found = results.result!.some((flight) => flight.flightNo === expectFlightNo)
 
       checkDate = dayjs(checkDate).add(1, "days").format("YYYY-MM-DD")
     } while (dayjs(checkDate).isBefore(dayjs(checkDate).add(3, "days")) && !found)
@@ -111,8 +111,8 @@ describe("awardwiz scrapers", () => {
   it.concurrent.each(scrapers)("can search 10 months from now: %s", async (scraperName, scraper) => {
     const futureDate = dayjs().add(10, "months").format("YYYY-MM-DD")
     const results = await runQuery(scraperName, scraper.popularRoute, futureDate)
-    expect(results.result.length).toBeGreaterThanOrEqual(scraper.longtermSearchEmptyOk ? 0 : 1)
-    for (const flight of results.result) {
+    expect(results.result!.length).toBeGreaterThanOrEqual(scraper.longtermSearchEmptyOk ? 0 : 1)
+    for (const flight of results.result!) {
       const receivedDate = dayjs(flight.departureDateTime).format("YYYY-MM-DD")
       expect(receivedDate, `Expected date from results (${receivedDate}) to be the same as we searched (${futureDate})`).equals(futureDate)
     }

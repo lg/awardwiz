@@ -126,6 +126,7 @@ export type ArkalisPlugin = (arkalis: ArkalisCore) => Record<string, any> & Arka
 type ArkalisPluginExportsAll = Omit<Flatten<UnionToIntersection<Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>>>>, keyof ArkalisPluginBuiltins>
 type ArkalisPluginExports = Awaited<ReturnType<typeof DEFAULT_PLUGINS[keyof typeof DEFAULT_PLUGINS]>> & ArkalisPluginBuiltins
 export type Arkalis = Flatten<ArkalisCore & ArkalisPluginExportsAll>
+export type ArkalisResponse<T> = { result: T | undefined, logLines: string[] }
 
 const DEFAULT_PLUGINS = {
   arkalisResponseCache,    // add ability to cache results
@@ -136,9 +137,9 @@ const DEFAULT_PLUGINS = {
   arkalisInterceptor,      // adds ability to intercept requests, plus adds http auth proxy support
   arkalisPageHelpers,      // page helpers
   // arkalisHar,              // EXPERIMENTAL: adds ability to generate HAR files
-}
+} as const
 
-async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
+async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string): Promise<ArkalisResponse<T>> {
   const debugOptions = { ...defaultDebugOptions, ...debugOpts }
   const scraperMeta = { ...defaultScraperMetadata, ...scraperMetadata }
   const logLines: string[] = []
@@ -154,9 +155,15 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.
   let arkalis = { ...arkalisCore } as Arkalis
   for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
-    const loadedPlugin = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
-    loadedPlugins.push(loadedPlugin)
-    arkalis = { ...arkalis, ...loadedPlugin }
+    try {
+      const loadedPlugin = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
+      loadedPlugins.push(loadedPlugin)
+      arkalis = { ...arkalis, ...loadedPlugin }
+    } catch (err) {
+      arkalis.log(`Error loading plugin ${pluginName}: ${(err as Error).stack!}`)
+      await close()
+      return { result: undefined, logLines }
+    }
   }
 
   ////////////////////////////////////
@@ -240,7 +247,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   })
 }
 
-export async function runArkalis<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string) {
+export async function runArkalis<T>(code: (arkalis: Arkalis) => Promise<T>, debugOpts: DebugOptions, scraperMetadata: ScraperMetadata, cacheKey: string): Promise<ArkalisResponse<T>> {
   const allLogLines: string[] = []
 
   return pRetry(async() => {
