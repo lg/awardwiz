@@ -14,9 +14,8 @@ jobs:
       VITE_FIREBASE_CONFIG_JSON: ${{ secrets.VITE_FIREBASE_CONFIG_JSON }}
     steps:
       - uses: actions/checkout@v3
-      - uses: extractions/setup-just@v1
-      - uses: actions/setup-node@v3
+      - name: Run checks from container
+        uses: devcontainers/ci@v0.3
         with:
-          cache: 'npm'
-      - run: npm ci
-      - run: just check
+          push: never
+          runCmd: just check
