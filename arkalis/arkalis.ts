@@ -160,7 +160,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
       loadedPlugins.push(loadedPlugin)
       arkalis = { ...arkalis, ...loadedPlugin }
     } catch (err) {
-      arkalis.log(`Error loading plugin ${pluginName}: ${(err as Error).stack!}`)
+      arkalis.log(`Error loading plugin ${pluginName}: ${(err as Error).message}\n${(err as Error).stack!}`)
       await close()
       return { result: undefined, logLines }
     }

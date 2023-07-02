@@ -11,6 +11,10 @@
     {
       "fileMatch": ["config.json"],
       "url": "./config.schema.json"   // generated using `just gen-json-schemas`
+    },
+    {
+      "fileMatch": ["devcontainer-feature.json"],
+      "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json"
     }
   ],
 }
