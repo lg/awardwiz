@@ -65,15 +65,15 @@ run-marked-fares-worker:
 
 # run the scrapers http server on port 2222 (make sure your .env has your config in there)
 run-server: build
-  node dist/awardwiz-scrapers/main-server.js
+  node --enable-source-maps dist/awardwiz-scrapers/main-server.js
 
 # ⭐️ starts a scraper in docker (ex. `just run-scraper aa SFO LAX 2023-12-01`)
 run-scraper scraper origin destination date: build
-  node dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}
+  node --enable-source-maps dist/awardwiz-scrapers/main-debug.js {{scraper}} {{origin}} {{destination}} {{date}}
 
 # runs live anti-botting tests online against a variety of websites bot fingerprinting websites (EXPERIMENTAL and still doesn't fully succeed)
 run-live-botting-tests: build
-  node dist/arkalis/test-anti-botting.js
+  node --enable-source-maps dist/arkalis/test-anti-botting.js
 
 ##############################
 # DEPLOYMENT (you probably don't need these, they're more for deploying awardwiz.com)
