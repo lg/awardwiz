@@ -19,11 +19,12 @@ const options: DebugOptions = {
   browserDebug: true
 }
 
-if (process.argv.length < 6)
-  throw new Error("Not enough arguments. Example: <executable> delta SFO LAX 2023-05-01")
+const [scraperName, origin, destination, departureDate] = process.argv.slice(-4)
+if (!scraperName || !origin || !destination || !departureDate)
+  throw new Error("Incorrect usage. Example: <executable> delta SFO LAX 2023-05-01")
 
-const scraper = await import(`./scrapers/${process.argv[2]!}.js`) as AwardWizScraperModule
-const query: AwardWizQuery = { origin: process.argv[3]!, destination: process.argv[4]!, departureDate: process.argv[5]! }
+const scraper = await import(`./scrapers/${scraperName}.js`) as AwardWizScraperModule
+const query: AwardWizQuery = { origin, destination, departureDate }
 
 const result = await runArkalis(async (arkalis) => {
   arkalis.log("Using query:", query)
