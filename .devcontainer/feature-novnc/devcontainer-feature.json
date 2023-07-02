@@ -9,6 +9,6 @@
   "init": true,
   "entrypoint": "/usr/local/bin/start-novnc",
   "containerEnv": {
-    "DISPLAY": ":0"
+    "DISPLAY": ":0.0"
   }
 }
