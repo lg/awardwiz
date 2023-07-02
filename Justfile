@@ -17,6 +17,7 @@ check: build test
   actionlint -color
   hadolint **/Dockerfile
   npm exec -- ajv -s config.schema.json -d config.json
+  shellcheck **/*.sh .devcontainer/**/*.sh
   NODE_NO_WARNINGS=1 npm exec -- depcheck --ignores depcheck,npm-check,typescript,devtools-protocol,@types/har-format,@iconify/json,~icons,@vitest/coverage-c8,vite-node,node-fetch,geo-tz,@types/node-fetch,@svgr/plugin-jsx,typescript-json-schema,ajv-cli
   @echo 'ok'
 
