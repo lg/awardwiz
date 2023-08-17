@@ -1,25 +1,24 @@
-import { exec } from "node:child_process"
+import { promisify } from "util"
+import { exec as execNoPromise } from "node:child_process"
 import url from "node:url"
 import ChromeLauncher from "chrome-launcher"
 import { Arkalis, ArkalisCore } from "./arkalis.js"
 import CDP from "chrome-remote-interface"
 
+const exec = promisify(execNoPromise)
+
 export const arkalisBrowser = async (arkalis: ArkalisCore) => {
   async function genWindowCoords() {
-    // pick a random window size
-    const screenResolution = await new Promise<number[] | undefined>(resolve => {   // will return array of [width, height]
-      exec("xdpyinfo | grep dimensions", (err, stdout) =>
-        // eslint-disable-next-line regexp/no-unused-capturing-group
-        resolve(/ (?<res>\d+x\d+) /u.exec(stdout)?.[0].trim().split("x").map(num => parseInt(num)) ?? undefined))
-    })
-    let size = [1920, 1080]
-    let pos: number[] | undefined = undefined
-    if (screenResolution) {
-      size = [Math.ceil(screenResolution[0]! * (Math.random() * 0.2 + 0.8)), Math.ceil(screenResolution[1]! * (Math.random() * 0.2 + 0.8))]
-      pos = [Math.ceil((screenResolution[0]! - size[0]!) * Math.random()), Math.ceil((screenResolution[1]! - size[1]!) * Math.random())]
+    const screenResolution = await exec("xdpyinfo | grep dimensions")
+    const rawRes = / (?<res>\d+x\d+) /u.exec(screenResolution.stdout)?.groups?.["res"]?.trim().split("x")
+    if (!rawRes || rawRes.length !== 2)
+      throw new Error("Unable to get screen resolution")
+    const res = (rawRes as [string, string]).map(num => parseInt(num)) as [number, number]
+    const size = [Math.ceil(res[0] * (Math.random() * 0.2 + 0.8)), Math.ceil(res[1] * (Math.random() * 0.2 + 0.8))] as const
+    return {
+      size,
+      pos: [Math.ceil((res[0] - size[0]) * Math.random()), Math.ceil((res[1] - size[1]) * Math.random())] as const
     }
-
-    return { size, pos }
   }
 
   // generate a random window size
@@ -54,16 +53,19 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     arkalis.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
     arkalis.debugOptions.browserDebug === "verbose" ? "v=2" : "",
     arkalis.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir=${arkalis.debugOptions.globalBrowserCacheDir}` : "",
-    window.pos ? `window-position=${window.pos[0]!},${window.pos[1]!}` : "",
-    `window-size=${window.size[0]!},${window.size[1]!}`,
+    `window-position=${window.pos[0]},${window.pos[1]}`,
+    `window-size=${window.size[0]},${window.size[1]}`,
     `host-rules=${blockDomains.map(blockDomain => `MAP ${blockDomain} 0.0.0.0`).join(", ")}`,   // NOTE: detectable!
   ]
 
   // apply proxy
   const proxy = (arkalis as Arkalis).proxy
   if (proxy) {
-    switches.push(`proxy-server=${url.parse(proxy).protocol!}//${url.parse(proxy).host!}`)
-    switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${url.parse(proxy).hostname!}`)
+    const parsedProxy = url.parse(proxy)
+    if (!parsedProxy.hostname || !parsedProxy.protocol || !parsedProxy.host)
+      throw new Error(`Invalid proxy: ${proxy}`)
+    switches.push(`proxy-server=${parsedProxy.protocol}//${parsedProxy.host}`)
+    switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${parsedProxy.hostname}`)
   }
 
   // launch chrome
@@ -90,7 +92,6 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     await arkalis.client.Network.setBlockedURLs({ urls: arkalis.scraperMeta.blockUrls })
 
   return {
-    window,
     close: async () => {
       arkalis.debugOptions.browserDebug && arkalis.log("closing cdp client and browser")
 

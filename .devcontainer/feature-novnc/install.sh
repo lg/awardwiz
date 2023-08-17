@@ -23,7 +23,7 @@ check_packages() {
 
 ######################
 
-check_packages xvfb x11vnc novnc fluxbox
+check_packages xvfb x11vnc novnc fluxbox x11-utils
 
 cat > /usr/local/bin/start-novnc \
 << EOF
