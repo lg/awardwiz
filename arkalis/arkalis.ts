@@ -155,6 +155,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   // Loading plugins one at a time, populating the Arkalis object with their exports. Note that though we cast this
   // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.
   let arkalis = { ...arkalisCore } as Arkalis
+  process.on("SIGINT", handleSIGINT)   // close Arkalis plugins on SIGINT
   for (const pluginName of Object.keys(DEFAULT_PLUGINS)) {
     try {
       const loadedPlugin = await DEFAULT_PLUGINS[pluginName as keyof typeof DEFAULT_PLUGINS](arkalis as ArkalisCore)
@@ -172,6 +173,14 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   async function close() {
     for (const plugin of loadedPlugins.slice().reverse())
       plugin.close && await plugin.close()
+
+    // as we're closing, remove all SIGINT handlers
+    process.removeListener("SIGINT", handleSIGINT)
+  }
+
+  async function handleSIGINT() {
+    await close()
+    process.kill(process.pid, "SIGINT")   // re-raise SIGINT for other handlers
   }
 
   function log(...args: any[]) {

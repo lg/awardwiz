@@ -13,7 +13,7 @@ const launchChromeViaOsRunDocker = async (arkalis: ArkalisCore, switches: string
 
   const command =
     "netsh interface portproxy add v4tov4 listenaddress=10.0.2.15 listenport=9222 connectaddress=127.0.0.1 connectport=9222 " +
-    ` & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")}`
+    ` & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")} about:blank`
   arkalis.debugOptions.browserDebug && arkalis.log(`Launching chrome with command: ${command}`)
 
   const globalBrowserCacheDir = path.resolve(arkalis.debugOptions.globalBrowserCacheDir)
@@ -53,11 +53,11 @@ const launchChromeViaOsRunDocker = async (arkalis: ArkalisCore, switches: string
       arkalis.debugOptions.browserDebug && arkalis.log("Waiting for browser to close on its own")
       const startTime = Date.now()
       const container = docker.getContainer(containerName)
-      while (await container.inspect().catch(() => undefined) !== undefined && Date.now() - startTime < 3000) {
+      while (await container.inspect().catch(() => undefined) !== undefined && Date.now() - startTime < 5000) {
         await arkalis.wait(200)
       }
       if (await container.inspect().catch(() => undefined) !== undefined) {
-        arkalis.debugOptions.browserDebug && arkalis.log("Browser did not close on its own after 3 seconds, killing it")
+        arkalis.debugOptions.browserDebug && arkalis.log("Browser did not close on its own after 5 seconds, killing it")
         await container.stop({ t: 0, signal: "SIGINT" }).catch(() => {})
       }
     }
@@ -114,8 +114,8 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     const parsedProxy = url.parse(proxy)
     if (!parsedProxy.hostname || !parsedProxy.protocol || !parsedProxy.host)
       throw new Error(`Invalid proxy: ${proxy}`)
-    switches.push(`proxy-server=${parsedProxy.protocol}//${parsedProxy.host}`)
-    switches.push(`host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE ${parsedProxy.hostname}`)
+    switches.push(`proxy-server="${parsedProxy.protocol}//${parsedProxy.host}"`)
+    switches.push(`host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE ${parsedProxy.hostname}"`)
   }
 
   // launch chrome
