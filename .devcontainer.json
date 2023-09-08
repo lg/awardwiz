@@ -5,14 +5,18 @@
     "ghcr.io/guiyomh/features/just:0": {},
     "ghcr.io/devcontainers-contrib/features/actionlint:1": {},
     "ghcr.io/dhoeric/features/hadolint:1": {},
-    "./feature-playwright": { "version": "1.31.1" },
-    "./feature-novnc": {},
-    "ghcr.io/lukewiwa/features/shellcheck:0": {}
+    "ghcr.io/lukewiwa/features/shellcheck:0": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
+  "privileged": true, // to pass through /dev/kvm for osrun (in docker-in-docker)
+  "mounts": [ // for osrun to store its Windows image
+    {
+      "source": "osrun-cache",
+      "target": "/osruncache",
+      "type": "volume"
+    }
+  ],
   "postCreateCommand": "npm i",
-  "containerEnv": {
-    "CHROME_PATH": "/ms-playwright/chromium-1048/chrome-linux/chrome"
-  },
   "customizations": {
     "vscode": {
       "extensions": [

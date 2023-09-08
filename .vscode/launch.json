@@ -9,12 +9,14 @@
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
       "args": "${input:run-scraper-params}",
       "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "TZ": "America/Los_Angeles",
+      },
       "request": "launch",
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "type": "node",
       "preLaunchTask": "tsc: build - tsconfig.json",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "openOnSessionStart",
     }
   ],
   "inputs": [

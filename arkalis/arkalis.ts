@@ -117,6 +117,7 @@ export type ArkalisCore = {
   pause: () => Promise<unknown>,
   scraperMeta: Required<ScraperMetadata>,
   debugOptions: Required<DebugOptions>,
+  identifier: string,
 }
 
 type ArkalisPluginBuiltins = {
@@ -149,7 +150,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
   const loadedPlugins: ArkalisPluginExports[] = []
-  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause }
+  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause, identifier }
 
   // Loading plugins one at a time, populating the Arkalis object with their exports. Note that though we cast this
   // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.
