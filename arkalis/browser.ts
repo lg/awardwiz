@@ -1,9 +1,12 @@
 import url from "node:url"
 import { Arkalis, ArkalisCore } from "./arkalis.js"
-import CDP from "chrome-remote-interface"
-import Dockerode from "dockerode"
+import Bun from "bun"
 import path from "node:path"
-import fs from "node:fs"
+
+// Hack of the century right here to get chrome-remote-interface to use a Bun-compatible websocket wrapper
+const patchPath = "node_modules/chrome-remote-interface/lib/chrome.js"
+await Bun.write(patchPath, (await Bun.file(patchPath).text()).replace(/\('ws'\)/gu, "('./websocket-wrapper.js')"))
+const CDP = await import("chrome-remote-interface")
 
 const launchChromeViaOsRunDocker = async (arkalis: ArkalisCore, switches: string[]) => {
   switches.push(...[
@@ -14,52 +17,40 @@ const launchChromeViaOsRunDocker = async (arkalis: ArkalisCore, switches: string
   const command =
     "netsh interface portproxy add v4tov4 listenaddress=10.0.2.15 listenport=9222 connectaddress=127.0.0.1 connectport=9222 " +
     ` & "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" ${switches.map(s => s.length > 0 ? `--${s}` : "").join(" ")} about:blank`
-  arkalis.debugOptions.browserDebug && arkalis.log(`Launching chrome with command: ${command}`)
 
-  const globalBrowserCacheDir = path.resolve(arkalis.debugOptions.globalBrowserCacheDir)
-  if (arkalis.scraperMeta.useGlobalBrowserCache && !fs.existsSync(globalBrowserCacheDir))
-    fs.mkdirSync(globalBrowserCacheDir, { recursive: true })
-  arkalis.debugOptions.browserDebug && arkalis.log(`Using global browser cache: ${globalBrowserCacheDir}`)
+  const dockerCommand = ["docker", "run",
+    "--interactive",
+    "--rm",
+    "--name", `arkalis-${arkalis.identifier}`,
+    "--publish", "9222:9222",
+    "--publish", "8000:8000",
+    "--env", "TZ=America/Los_Angeles",
+    "--volume", "/osruncache:/cache",
+    ...arkalis.scraperMeta.useGlobalBrowserCache
+      ? ["--volume", `${path.resolve(arkalis.debugOptions.globalBrowserCacheDir)}:/tmp/qemu-status/chrome-cache`] : [""],
+    "--device", "/dev/kvm",
 
-  const docker = new Dockerode()
-  const containerName = `arkalis-${arkalis.identifier}`
-  void docker.run("ghcr.io/lg/osrun", ["-f", "9222", command], process.stdout, {
-    name: containerName,
-    ExposedPorts: { "8000/tcp": {}, "9222/tcp": {} },
-    Env: [ "TZ=America/Los_Angeles" ],
-    HostConfig: {
-      AutoRemove: true,
-      Mounts: [
-        { Type: "bind", Source: "/osruncache", Target: "/cache" },
-        arkalis.scraperMeta.useGlobalBrowserCache ? { Type: "bind", Source: globalBrowserCacheDir, Target: "/tmp/qemu-status/chrome-cache" } : undefined,
-      ].filter(m => !!m) as Dockerode.MountConfig,
-      Devices: [ { PathOnHost: "/dev/kvm", PathInContainer: "/dev/kvm", CGroupPermissions: "rwm" } ],
-      PortBindings: { "8000/tcp": [{ HostPort: "8000" }], "9222/tcp": [{ HostPort: "9222" }] },
-    }
-  }, )
+    "ghcr.io/lg/osrun",
+    "-f", "9222",
+    "-v",
+    `${command}`
+  ]
+  arkalis.debugOptions.browserDebug && arkalis.log(`Launching docker with command: ${dockerCommand.join(" ")}`)
+  const proc = Bun.spawn(dockerCommand, { stdin: "inherit", stdout: "pipe", stderr: "pipe" })
 
   arkalis.debugOptions.browserDebug && arkalis.log("Waiting for chrome to be ready on port 9222")
   let client = undefined
-  while ((client = await CDP({ port: 9222 }).catch(() => undefined)) === undefined) {
-    await arkalis.wait(500)
-  }
+  while ((client = await CDP.default({ port: 9222 }).catch(() => undefined)) === undefined)
+    await arkalis.wait(200)
   arkalis.debugOptions.browserDebug && arkalis.log("Chrome ready on port 9222")
 
   return {
     client,
     closeBrowser: async () => {
       await closeCDPClient(arkalis)
-
-      arkalis.debugOptions.browserDebug && arkalis.log("Waiting for browser to close on its own")
-      const startTime = Date.now()
-      const container = docker.getContainer(containerName)
-      while (await container.inspect().catch(() => undefined) !== undefined && Date.now() - startTime < 5000) {
-        await arkalis.wait(200)
-      }
-      if (await container.inspect().catch(() => undefined) !== undefined) {
-        arkalis.debugOptions.browserDebug && arkalis.log("Browser did not close on its own after 5 seconds, killing it")
-        await container.stop({ t: 0, signal: "SIGINT" }).catch(() => {})
-      }
+      await new Response(proc.stdout).text()
+      await new Response(proc.stderr).text()
+      proc.kill()
     }
   }
 }
@@ -93,13 +84,11 @@ export const arkalisBrowser = async (arkalis: ArkalisCore) => {
     "force-fieldtrials=*BackgroundTracing/default/",
 
     // "no-sandbox", "disable-dev-shm-usage",  // for linux docker
-
-    // "disable-blink-features=AutomationControlled", // not working
     // "auto-open-devtools-for-tabs",
     //"log-net-log=./tmp/netlog.json", "net-log-capture-mode=Everything",
 
-    arkalis.debugOptions.browserDebug === "verbose" ? "enable-logging=stderr": "",
-    arkalis.debugOptions.browserDebug === "verbose" ? "v=2" : "",
+    // store the logs just incase we beed them
+    "enable-logging=stderr", "v=2",
     // arkalis.scraperMeta.useGlobalBrowserCache ? `disk-cache-dir=${arkalis.debugOptions.globalBrowserCacheDir}` : "",
     // `window-position=${window.pos[0]},${window.pos[1]}`,
     // `window-size=${window.size[0]},${window.size[1]}`,

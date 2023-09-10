@@ -7,8 +7,8 @@
     "esModuleInterop": true,                // also enables allowSyntheticDefaultImports (allows for importing default exports)
 
     "forceConsistentCasingInFileNames": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,             // allows for importing .json files (and creating the schema)
     "isolatedModules": true,
 
@@ -28,7 +28,10 @@
     "outDir": "dist",
 
     "jsx": "react-jsx",
-    "types": ["unplugin-icons/types/react"]
+    "types": ["unplugin-icons/types/react", "bun-types"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
   },
   "include": ["arkalis", "awardwiz-scrapers", "awardwiz", "test"],
   "exclude": ["node_modules", "dist"]
