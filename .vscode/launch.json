@@ -5,6 +5,40 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "bun",
+      "request": "launch",
+      "name": "Debug Bun",
+      "program": "${workspaceFolder}/awardwiz-scrapers/main-debug.ts",
+      "args": ["aa", "SFO", "LAX", "2023-12-20"],
+      "cwd": "${workspaceFolder}",
+
+
+      // The environment variables to pass to the program.
+      "env": {},
+
+      // If the environment variables should not be inherited from the parent process.
+      "strictEnv": false,
+
+      // If the program should be run in watch mode.
+      // This is equivalent to passing `--watch` to the `bun` executable.
+      // You can also set this to "hot" to enable hot reloading using `--hot`.
+      "watchMode": false,
+
+      // If the debugger should stop on the first line of the program.
+      "stopOnEntry": false,
+
+      // If the debugger should be disabled. (for example, breakpoints will not be hit)
+      "noDebug": false,
+
+      // The path to the `bun` executable, defaults to your `PATH` environment variable.
+      "runtime": "bun",
+
+      // The arguments to pass to the `bun` executable, if any.
+      // Unlike `args`, these are passed to the executable itself, not the program.
+      "runtimeArgs": [],
+
+    },
+    {
       "name": "Run scraper",
       "program": "${workspaceFolder}/dist/awardwiz-scrapers/main-debug.js",
       "args": "${input:run-scraper-params}",

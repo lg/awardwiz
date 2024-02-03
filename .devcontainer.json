@@ -6,16 +6,20 @@
     "ghcr.io/devcontainers-contrib/features/actionlint:1": {},
     "ghcr.io/dhoeric/features/hadolint:1": {},
     "ghcr.io/lukewiwa/features/shellcheck:0": {},
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/tailscale/codespace/tailscale": {},
+    "ghcr.io/shyim/devcontainers-features/bun": {}
   },
-  "privileged": true, // to pass through /dev/kvm for osrun (in docker-in-docker)
-  "mounts": [ // for osrun to store its Windows image
-    {
-      "source": "osrun-cache",
-      "target": "/osruncache",
-      "type": "volume"
-    }
-  ],
+  "runArgs": ["--device=/dev/net/tun"],
+
+  // "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  // "privileged": true, // to pass through /dev/kvm for osrun (in docker-in-docker)
+  // "mounts": [ // for osrun to store its Windows image
+  //   {
+  //     "source": "osrun-cache",
+  //     "target": "/osruncache",
+  //     "type": "volume"
+  //   }
+  // ],
   "postCreateCommand": "npm i",
   "customizations": {
     "vscode": {

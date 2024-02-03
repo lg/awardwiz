@@ -1,4 +1,3 @@
-import CDP from "chrome-remote-interface"
 import c from "ansi-colors"
 import dayjs from "dayjs"
 import util from "util"
@@ -11,6 +10,7 @@ import { arkalisBrowser } from "./browser.js"
 import { arkalisPageHelpers } from "./page-helpers.js"
 import { arkalisInteraction } from "./interaction.js"
 import { arkalisResponseCache } from "./response-cache.js"
+import { LGCDPClient } from "./cdp.ts"
 
 export type ScraperMetadata = {
   /** Unique name for the scraper */
@@ -96,12 +96,18 @@ export type DebugOptions = {
   /** Set the default TTL (in seconds) for the result cache. Set to 0 to not cache by default.
    * @default 0 */
   defaultResultCacheTtl?: number
+
+  /** Specify the chromes server.
+   * @default { host: "127.0.0.1", port: 9222 }
+   */
+  browserConfig?: { host: string, port: number }
 }
 export const defaultDebugOptions: Required<DebugOptions> = {
   maxAttempts: 3, pauseAfterError: false, pauseAfterRun: false, useProxy: true, browserDebug: false, winston: null,
   globalBrowserCacheDir: "./tmp/browser-cache", globalCachePath: null, drawMousePath: false,
   timezone: null, showRequests: true, useResultCache: false, defaultResultCacheTtl: 0,
-  liveLog: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */}
+  liveLog: (prettyLine: string) => { /* eslint-disable no-console */ console.log(prettyLine) /* eslint-enable no-console */},
+  browserConfig: { host: "127.0.0.1", port: 9222 },
 }
 
 type ArkalisError = Error & { arkalis: Arkalis, logLines: string[] }
@@ -110,7 +116,7 @@ type Flatten<T> = T extends Record<string, any> ? { [k in keyof T] : T[k] } : ne
 type UnionToIntersection<U> = (U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
 
 export type ArkalisCore = {
-  client: CDP.Client,
+  client: LGCDPClient,
   log: (...args: any[]) => void,
   warn: (...args: any[]) => never[],
   wait: (ms: number) => Promise<unknown>,
@@ -150,7 +156,7 @@ async function runArkalisAttempt<T>(code: (arkalis: Arkalis) => Promise<T>, debu
   log(`Starting Arkalis run for scraper ${scraperMeta.name}`)
 
   const loadedPlugins: ArkalisPluginExports[] = []
-  const arkalisCore: ArkalisCore = { client: undefined! as CDP.Client, log, warn, wait, scraperMeta, debugOptions, pause, identifier }
+  const arkalisCore: ArkalisCore = { client: undefined! as LGCDPClient, log, warn, wait, scraperMeta, debugOptions, pause, identifier }
 
   // Loading plugins one at a time, populating the Arkalis object with their exports. Note that though we cast this
   // object as ArkalisCore, it can be recasted to Arkalis in the plugin, allowing access to previous plugins' exports.

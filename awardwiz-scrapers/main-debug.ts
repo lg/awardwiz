@@ -7,7 +7,7 @@ dotenv.config()
 
 const options: DebugOptions = {
   maxAttempts: 1,
-  useProxy: true,
+  useProxy: false,
   pauseAfterRun: false,
   pauseAfterError: true,
   drawMousePath: false,
@@ -16,7 +16,9 @@ const options: DebugOptions = {
 
   useResultCache: true,
   globalCachePath: "./tmp/arkalis-cache",
-  browserDebug: true
+  browserDebug: true,
+  //browserConfig: { host: "100.106.119.139", port: 9222 },
+  browserConfig: { host: "10.0.1.96", port: 64000 },
 }
 
 const [scraperName, origin, destination, departureDate] = process.argv.slice(-4)

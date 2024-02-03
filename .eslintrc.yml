@@ -102,6 +102,7 @@ rules:
   "@typescript-eslint/promise-function-async": ["error"]
   "@typescript-eslint/no-unnecessary-type-assertion": "error"
   "@typescript-eslint/no-misused-promises": ["error", { "checksVoidReturn": { "arguments": false } }]
+  "@typescript-eslint/switch-exhaustiveness-check": ["error"]
 
   promise/no-nesting: off
 

@@ -49,6 +49,7 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
               return new Promise<WaitForReturn>((resolve, reject) => {
                 // eslint-disable-next-line @typescript-eslint/require-await
                 subscriptions.push((arkalis as Arkalis).subscribeToUrl(params.url, async (completedRequest) => {
+                  console.log("ZZZZZ")
                   const responseObj = { ...completedRequest.response!, body: completedRequest.body }
                   if (params.onlyStatusCode && responseObj.status !== params.onlyStatusCode) {
                     if (params.othersThrow)
@@ -64,6 +65,7 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
                 const htmlRegexp = typeof params.html === "string" ? globToRegexp(params.html, { extended: true, flags: "ugm" }) : params.html
                 // eslint-disable-next-line no-restricted-globals
                 pollingTimers.push(setInterval(async () => {
+                  try {
                   const evalResult = await arkalis.client.Runtime.evaluate(
                     { expression: "document.documentElement.outerHTML", returnByValue: true }).catch((e) => { reject(e); return undefined })
                   if (!evalResult) return
@@ -71,6 +73,10 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
                   const text = evalResult.result.value as string
                   if (htmlRegexp.test(text))
                     resolve({name})
+                  } catch (e) {
+                    console.log("YYY error", e)
+                    reject(e)
+                  }
                 }, 1000))
               })
 
@@ -78,10 +84,15 @@ export const arkalisPageHelpers = (arkalis: ArkalisCore) => {
               return new Promise<{name: string}>((resolve, reject) => {
                 // eslint-disable-next-line no-restricted-globals
                 pollingTimers.push(setInterval(async () => {
-                  const doc = await arkalis.client.DOM.getDocument({ depth: -1 })
-                  const node = await arkalis.client.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
-                  if (node.nodeId)
-                    resolve({name})
+                  try {
+                    const doc = await arkalis.client.DOM.getDocument({ depth: -1 })
+                    const node = await arkalis.client.DOM.querySelector({ nodeId: doc.root.nodeId, selector: params.selector })
+                    if (node.nodeId)
+                      resolve({name})
+                  } catch (e) {
+                    console.log("XXX error", e)
+                    reject(e)
+                  }
                 }, 1000))
               })
           }

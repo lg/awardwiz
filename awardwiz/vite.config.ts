@@ -15,9 +15,7 @@ export default defineConfig({
   },
 
   plugins: [
-    // @ts-expect-error
     react(),
-    // @ts-expect-error
     Icons({
       compiler: "jsx",
       jsx: "react",

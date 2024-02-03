@@ -41,9 +41,13 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
     })
   }
 
+  //await arkalis.wait(5000)
+  console.log("ok now go")
+
   const cmd = `fetch("https://www.aa.com/booking/api/search/itinerary", ${JSON.stringify(fetchRequest)});`
   void arkalis.evaluate(cmd)
   const xhrResponse = await arkalis.waitFor({ "search": { type: "url", url: "https://www.aa.com/booking/api/search/itinerary" }})
+
   const json = JSON.parse(xhrResponse.response!.body) as AAResponse
 
   // aa can return errors in two ways
@@ -55,6 +59,7 @@ export const runScraper: AwardWizScraper = async (arkalis, query) => {
   }
 
   arkalis.log("parsing")
+  // return standardizeResults([], query)
   return standardizeResults(json.slices ?? [], query)
 }
 

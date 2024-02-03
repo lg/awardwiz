@@ -33,27 +33,27 @@ export const arkalisRequests = (arkalis: ArkalisCore) => {
       requests[response.requestId]!.endTime = response.timestamp
   }
 
-  arkalis.client.Network.requestWillBeSent((request) => {
+  arkalis.client.Network.on("requestWillBeSent", (request) => {
     initRequest(request.requestId)
     requests[request.requestId] = { ...requests[request.requestId]!, request: request.request, startTime: request.timestamp }
   })
-  arkalis.client.Network.responseReceived((response) => {    // headers only
+  arkalis.client.Network.on("responseReceived", (response) => {    // headers only
     responseEvent(response)
     requests[response.requestId]!.response = response.response
     if (!response.response.fromDiskCache)
       requests[response.requestId]!.downloadedBytes += response.response.encodedDataLength
     requests[response.requestId]!.responseType = response.type
   })
-  arkalis.client.Network.dataReceived((response) => {
+  arkalis.client.Network.on("dataReceived", (response) => {
     responseEvent(response)
     requests[response.requestId]!.downloadedBytes += response.encodedDataLength
   })
-  arkalis.client.Network.loadingFinished((response) => {
+  arkalis.client.Network.on("loadingFinished", (response) => {
     responseEvent(response)
     requests[response.requestId]!.success = true
     void completedLoading(response.requestId)
   })
-  arkalis.client.Network.loadingFailed((response) => {
+  arkalis.client.Network.on("loadingFailed", (response) => {
     responseEvent(response)
     void completedLoading(response.requestId, response)
   })
